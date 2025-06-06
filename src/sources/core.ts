@@ -24,14 +24,9 @@ export interface Extractor<Value, Err extends DomainError> {
 	success: (value: Value) => void
 }
 
-export type Sink<
-	Value,
-	Index,
-	Err extends DomainError,
-	Pull extends AnyPull,
-	Succ,
-> = (observer: Observer<Value, Index, Err>) => {
+export type Sink<Succ, Err extends DomainError, Pull extends AnyPull> = (
+	extractor: Extractor<Succ, Err>,
+) => {
 	pull: Pull
 	unmount: () => void
-	result: () => Succ
 }

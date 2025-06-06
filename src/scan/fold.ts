@@ -1,5 +1,5 @@
-import { EmptyError, type DomainError } from '../errors'
-import type { AnyPull, Observable, Sink } from '../sources/core'
+import { EmptyError, emptyErrorValue, type DomainError } from '../errors'
+import type { AnyPull, Source, Sink } from '../sources/core'
 import { fromInit, isoAssert, type Init } from '@prncss-xyz/utils'
 
 export type Fold<Value, Acc, Index, R = Acc> =
@@ -34,7 +34,7 @@ export function fold<
 	Succ = Acc,
 >(
 	props: Fold<Value, Acc, Index, Succ>,
-): (sink: Observable<Value, Index, Err, P>) => Sink<Value, Index, Err, P, Succ>
+): (sink: Source<Value, Index, Err, P>) => Sink<Succ, Err, P>
 export function fold<
 	Value,
 	Index,
@@ -44,9 +44,7 @@ export function fold<
 	Succ = Value,
 >(
 	props: Fold1<Value, Index, Succ>,
-): (
-	source: Observable<Value, Index, Err, P>,
-) => Sink<Value, Index, Err | EmptyError, P, Value>
+): (source: Source<Value, Index, Err, P>) => Sink<Value, Err | EmptyError, P>
 export function fold<
 	Value,
 	Index,
@@ -61,11 +59,11 @@ export function fold<
 	result?: (acc: Acc) => Succ
 }) {
 	return function (
-		source: Observable<Value, Index, Err, P>,
-	): Sink<Value, Index, Err | EmptyError, P, Value> {
+		source: Source<Value, Index, Err, P>,
+	): Sink<Value, Err | EmptyError, P> {
 		const foldFn = props.foldDest ?? props.fold
 		isoAssert(foldFn)
-		return function ({ complete, error }) {
+		return function ({ success, error }) {
 			let dirty = false
 			let acc: Acc
 			if (props.init) {
@@ -83,14 +81,12 @@ export function fold<
 							dirty = true
 						}
 					},
-					complete,
+					complete() {
+						if (dirty) {
+							success(props.result ? props.result(acc) : (acc as any))
+						} else error(emptyErrorValue)
+					},
 				}),
-				result() {
-					if (dirty) {
-						if (props.result) return props.result(acc) as any
-						else return acc as any
-					} else error(new EmptyError())
-				},
 			}
 		}
 	}

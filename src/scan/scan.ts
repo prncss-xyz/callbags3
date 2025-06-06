@@ -1,5 +1,5 @@
 import { EmptyError, type DomainError } from '../errors'
-import type { AnyPull, Observable } from '../sources/core'
+import type { AnyPull, Source } from '../sources/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
 type Scan<Value, Acc, Index, R = Acc> = {
@@ -23,8 +23,8 @@ export function scan<
 >(
 	props: Scan<Value, Acc, Index, Succ>,
 ): (
-	source: Observable<Value, Index, Err, P>,
-) => Observable<Value, Index, Err, P>
+	source: Source<Value, Index, Err, P>,
+) => Source<Value, Index, Err, P>
 export function scan<
 	Value,
 	Index,
@@ -35,8 +35,8 @@ export function scan<
 >(
 	props: Scan1<Value, Index, Succ>,
 ): (
-	source: Observable<Value, Index, Err, P>,
-) => Observable<Value, Index, Err | EmptyError, P>
+	source: Source<Value, Index, Err, P>,
+) => Source<Value, Index, Err | EmptyError, P>
 export function scan<
 	Value,
 	Index,
@@ -50,8 +50,8 @@ export function scan<
 	result?: (acc: Acc) => Succ
 }) {
 	return function (
-		source: Observable<Value, Index, Err, P>,
-	): Observable<Value, Index, Err | EmptyError, P> {
+		source: Source<Value, Index, Err, P>,
+	): Source<Value, Index, Err | EmptyError, P> {
 		const foldFn = props.fold
 		return function ({ error, next, complete }) {
 			let dirty = false

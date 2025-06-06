@@ -1,8 +1,8 @@
-import type { Observable } from './core'
+import type { Source } from './core'
 
 export function interval(
 	period: number,
-): Observable<number, number, never, undefined> {
+): Source<number, number, never, undefined> {
 	return function ({ next }) {
 		let index = 0
 		let handler = setInterval(() => {
