@@ -1,11 +1,10 @@
-import type { DomainError } from '../errors'
 import type { AnyPull, Pull, SingleSource } from '../sources/core'
 
 type PR<P extends AnyPull, V> = P extends Pull ? V : Promise<V>
 type T<P, Q> = P extends unknown ? Q : never
 
 export function extract<
-	Err extends DomainError,
+	Err,
 	Succ,
 	S,
 	E,

@@ -12,6 +12,7 @@ export type Nothing = Guarded<typeof nothing.is>
 export type Maybe<S> = Just<S> | Nothing
 
 export class NothingError extends DomainError {}
+const nothingError = new NothingError()
 
 export function maybe<S>() {
 	return {
@@ -27,7 +28,7 @@ export function maybe<S>() {
 			onError: (e: NothingError) => void,
 		) {
 			if (just.is(value)) onSuccess(just.get(value))
-			else onError(new NothingError())
+			else onError(nothingError)
 		},
 	}
 }

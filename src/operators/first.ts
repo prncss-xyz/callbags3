@@ -1,12 +1,7 @@
-import { emptyError, EmptyError, type DomainError } from '../errors'
+import { emptyError, EmptyError } from '../errors'
 import type { AnyPull, MultiSource, SingleSource } from '../sources/core'
 
-export function first<
-	Value,
-	Index,
-	Err extends DomainError,
-	P extends AnyPull,
->() {
+export function first<Value, Index, Err, P extends AnyPull>() {
 	return function (
 		source: MultiSource<Value, Index, Err, P>,
 	): SingleSource<Value, Err | EmptyError, P> {

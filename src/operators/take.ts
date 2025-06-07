@@ -1,7 +1,6 @@
-import type { DomainError } from '../errors'
 import type { AnyPull, MultiSource } from '../sources/core'
 
-export function take<Value, Index, Err extends DomainError, P extends AnyPull>(
+export function take<Value, Index, Err, P extends AnyPull>(
 	n: number,
 ) {
 	return function (

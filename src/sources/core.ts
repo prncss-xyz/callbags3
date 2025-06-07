@@ -1,6 +1,4 @@
-import { DomainError } from '../errors'
-
-export interface Observer<Value, Index, Err extends DomainError> {
+export interface Observer<Value, Index, Err> {
 	complete: () => void
 	error: (fail: Err) => void
 	next: (value: Value, index: Index) => void
@@ -14,7 +12,7 @@ export type AnyMulti = Multi | undefined
 export type Source<
 	Value,
 	Index,
-	Err extends DomainError,
+	Err,
 	Pull extends AnyPull,
 	Multi extends AnyMulti,
 > = (observer: {
@@ -26,27 +24,22 @@ export type Source<
 	unmount: () => void
 }
 
-export type MultiSource<
-	Value,
-	Index,
-	Err extends DomainError,
-	Pull extends AnyPull,
-> = (observer: Observer<Value, Index, Err>) => {
+export type MultiSource<Value, Index, Err, Pull extends AnyPull> = (
+	observer: Observer<Value, Index, Err>,
+) => {
 	pull: Pull
 	unmount: () => void
 }
 
-export interface Extractor<Value, Err extends DomainError> {
+export interface Extractor<Value, Err> {
 	error: (fail: Err) => void
 	next: (value: Value) => void
 	complete: void
 }
 
-export type SingleSource<
-	Succ,
-	Err extends DomainError,
-	Pull extends AnyPull,
-> = (extractor: Extractor<Succ, Err>) => {
+export type SingleSource<Succ, Err, Pull extends AnyPull> = (
+	extractor: Extractor<Succ, Err>,
+) => {
 	pull: Pull
 	unmount: () => void
 }

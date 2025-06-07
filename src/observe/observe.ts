@@ -1,12 +1,11 @@
 import { isFunction, noop } from '@constellar/core'
-import type { DomainError } from '../errors'
 import type { AnyPull, MultiSource, Observer } from '../sources/core'
 
-export type ProObserver<Value, Index, Err extends DomainError> =
+export type ProObserver<Value, Index, Err> =
 	| ((value: Value, index: Index) => void)
 	| Partial<Observer<Value, Index, Err>>
 
-export function resolveObserver<Value, Index, Err extends DomainError>(
+export function resolveObserver<Value, Index, Err>(
 	observer: ProObserver<Value, Index, Err>,
 ) {
 	if (isFunction(observer)) {
@@ -28,7 +27,7 @@ function deferCond(sync: unknown, cb: () => void) {
 	else setTimeout(cb, 0)
 }
 
-export function observe<Value, Index, Err extends DomainError>(
+export function observe<Value, Index, Err>(
 	observer: ProObserver<Value, Index, Err>,
 ) {
 	return function (source: MultiSource<Value, Index, Err, AnyPull>) {
