@@ -1,5 +1,5 @@
-import { EmptyError, type DomainError } from '../errors'
-import type { AnyPull, Source } from '../sources/core'
+import { EmptyError, type DomainError } from '../../errors'
+import type { AnyPull, Source } from '../../sources/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
 type Scan<Value, Acc, Index, R = Acc> = {
@@ -22,9 +22,7 @@ export function scan<
 	Succ = Acc,
 >(
 	props: Scan<Value, Acc, Index, Succ>,
-): (
-	source: Source<Value, Index, Err, P>,
-) => Source<Value, Index, Err, P>
+): (source: Source<Value, Index, Err, P>) => Source<Value, Index, Err, P>
 export function scan<
 	Value,
 	Index,
@@ -56,9 +54,9 @@ export function scan<
 		return function ({ error, next, complete }) {
 			let dirty = false
 			let acc: Acc
-			if (props.init) {
+			if ('init' in props) {
 				dirty = true
-				acc = fromInit(props.init)
+				acc = fromInit(props.init)!
 			}
 			return source({
 				complete,

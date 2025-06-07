@@ -7,7 +7,7 @@ export function last<Value>() {
 	}
 }
 
-export function collect<Value, Index>(): Fold<Value, Value[], Index, Value[]> {
+export function toArray<Value, Index>(): Fold<Value, Value[], Index, Value[]> {
 	return {
 		fold: (t, acc) => [...acc, t],
 		foldDest(t, acc) {

@@ -1,5 +1,5 @@
-import { EmptyError, emptyErrorValue, type DomainError } from '../errors'
-import type { AnyPull, Source, Sink } from '../sources/core'
+import { EmptyError, emptyErrorValue, type DomainError } from '../../errors'
+import type { AnyPull, Source, Sink } from '../../sources/core'
 import { fromInit, isoAssert, type Init } from '@prncss-xyz/utils'
 
 export type Fold<Value, Acc, Index, R = Acc> =
@@ -66,9 +66,9 @@ export function fold<
 		return function ({ success, error }) {
 			let dirty = false
 			let acc: Acc
-			if (props.init) {
+			if ('init' in props) {
 				dirty = true
-				acc = fromInit(props.init)
+				acc = fromInit(props.init)!
 			}
 			return {
 				...source({

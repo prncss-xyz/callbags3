@@ -14,12 +14,16 @@ export function empty<Value, Index>(): Source<Value, Index, never, Pull> {
 
 export function once<Value>(value: Value): Source<Value, void, never, Pull> {
 	return function ({ next, complete }) {
+		let closed = false
 		return {
 			pull() {
 				next(value)
+				if (closed) return
 				complete()
 			},
-			unmount: noop,
+			unmount() {
+				closed = true
+			},
 		}
 	}
 }
@@ -34,7 +38,7 @@ export function iterable<Value>(
 				let index = 0
 				for (const value of values) {
 					next(value, index++)
-					if (closed) break
+					if (closed) return
 				}
 				complete()
 			},
