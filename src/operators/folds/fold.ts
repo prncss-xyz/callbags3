@@ -1,5 +1,5 @@
 import { EmptyError, emptyErrorValue, type DomainError } from '../../errors'
-import type { AnyPull, Source, Sink } from '../../sources/core'
+import type { AnyPull, MultiSource, SingleSource } from '../../sources/core'
 import { fromInit, isoAssert, type Init } from '@prncss-xyz/utils'
 
 export type Fold<Value, Acc, Index, R = Acc> =
@@ -34,7 +34,7 @@ export function fold<
 	Succ = Acc,
 >(
 	props: Fold<Value, Acc, Index, Succ>,
-): (sink: Source<Value, Index, Err, P>) => Sink<Succ, Err, P>
+): (sink: MultiSource<Value, Index, Err, P>) => SingleSource<Succ, Err, P>
 export function fold<
 	Value,
 	Index,
@@ -44,7 +44,9 @@ export function fold<
 	Succ = Value,
 >(
 	props: Fold1<Value, Index, Succ>,
-): (source: Source<Value, Index, Err, P>) => Sink<Value, Err | EmptyError, P>
+): (
+	source: MultiSource<Value, Index, Err, P>,
+) => SingleSource<Value, Err | EmptyError, P>
 export function fold<
 	Value,
 	Index,
@@ -59,11 +61,11 @@ export function fold<
 	result?: (acc: Acc) => Succ
 }) {
 	return function (
-		source: Source<Value, Index, Err, P>,
-	): Sink<Value, Err | EmptyError, P> {
+		source: MultiSource<Value, Index, Err, P>,
+	): SingleSource<Value, Err | EmptyError, P> {
 		const foldFn = props.foldDest ?? props.fold
 		isoAssert(foldFn)
-		return function ({ success, error }) {
+		return function ({ next, error }) {
 			let dirty = false
 			let acc: Acc
 			if ('init' in props) {
@@ -83,7 +85,7 @@ export function fold<
 					},
 					complete() {
 						if (dirty) {
-							success(props.result ? props.result(acc) : (acc as any))
+							next(props.result ? props.result(acc) : (acc as any))
 						} else error(emptyErrorValue)
 					},
 				}),

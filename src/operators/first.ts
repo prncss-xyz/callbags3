@@ -1,5 +1,5 @@
 import { emptyError, EmptyError, type DomainError } from '../errors'
-import type { AnyPull, Source, Sink } from '../sources/core'
+import type { AnyPull, MultiSource, SingleSource } from '../sources/core'
 
 export function first<
 	Value,
@@ -8,12 +8,12 @@ export function first<
 	P extends AnyPull,
 >() {
 	return function (
-		source: Source<Value, Index, Err, P>,
-	): Sink<Value, Err | EmptyError, P> {
-		return function ({ success, error }) {
+		source: MultiSource<Value, Index, Err, P>,
+	): SingleSource<Value, Err | EmptyError, P> {
+		return function ({ next, error }) {
 			return source({
 				error,
-				next: success,
+				next,
 				complete: emptyError,
 			})
 		}

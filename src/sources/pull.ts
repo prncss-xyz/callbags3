@@ -1,7 +1,7 @@
 import { noop } from '@constellar/core'
-import type { Source, Pull } from './core'
+import type { Pull, MultiSource } from './core'
 
-export function empty<Value, Index>(): Source<Value, Index, never, Pull> {
+export function empty<Value, Index>(): MultiSource<Value, Index, never, Pull> {
 	return function ({ complete }) {
 		return {
 			pull() {
@@ -12,7 +12,9 @@ export function empty<Value, Index>(): Source<Value, Index, never, Pull> {
 	}
 }
 
-export function once<Value>(value: Value): Source<Value, void, never, Pull> {
+export function once<Value>(
+	value: Value,
+): MultiSource<Value, void, never, Pull> {
 	return function ({ next, complete }) {
 		let closed = false
 		return {
@@ -30,7 +32,7 @@ export function once<Value>(value: Value): Source<Value, void, never, Pull> {
 
 export function iterable<Value>(
 	values: Iterable<Value>,
-): Source<Value, number, never, Pull> {
+): MultiSource<Value, number, never, Pull> {
 	return function ({ next, complete }) {
 		let closed = false
 		return {

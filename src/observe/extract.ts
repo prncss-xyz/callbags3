@@ -1,5 +1,5 @@
 import type { DomainError } from '../errors'
-import type { AnyPull, Pull, Sink } from '../sources/core'
+import type { AnyPull, Pull, SingleSource } from '../sources/core'
 
 type PR<P extends AnyPull, V> = P extends Pull ? V : Promise<V>
 type T<P, Q> = P extends unknown ? Q : never
@@ -17,14 +17,14 @@ export function extract<
 	onSuccess: (s: Succ) => S
 	onError: (e: Err) => E
 }) {
-	return function (sink: Sink<Succ, Err, P>): PR<P, T<Succ, S> | T<Err, E>> {
+	return function (sink: SingleSource<Succ, Err, P>): PR<P, T<Succ, S> | T<Err, E>> {
 		let res: S | E
 		let cp = function (v: S | E) {
 			props.unmount()
 			res = v
 		}
 		const props = sink({
-			success(s) {
+			next(s) {
 				props.unmount()
 				cp(onSuccess(s))
 			},
@@ -32,6 +32,7 @@ export function extract<
 				props.unmount()
 				cp(onError(e))
 			},
+			complete: undefined,
 		})
 		if (props.pull) {
 			props.pull()

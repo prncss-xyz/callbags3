@@ -1,5 +1,5 @@
 import { EmptyError, type DomainError } from '../../errors'
-import type { AnyPull, Source } from '../../sources/core'
+import type { AnyPull, MultiSource } from '../../sources/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
 type Scan<Value, Acc, Index, R = Acc> = {
@@ -22,7 +22,9 @@ export function scan<
 	Succ = Acc,
 >(
 	props: Scan<Value, Acc, Index, Succ>,
-): (source: Source<Value, Index, Err, P>) => Source<Value, Index, Err, P>
+): (
+	source: MultiSource<Value, Index, Err, P>,
+) => MultiSource<Value, Index, Err, P>
 export function scan<
 	Value,
 	Index,
@@ -33,8 +35,8 @@ export function scan<
 >(
 	props: Scan1<Value, Index, Succ>,
 ): (
-	source: Source<Value, Index, Err, P>,
-) => Source<Value, Index, Err | EmptyError, P>
+	source: MultiSource<Value, Index, Err, P>,
+) => MultiSource<Value, Index, Err | EmptyError, P>
 export function scan<
 	Value,
 	Index,
@@ -48,8 +50,8 @@ export function scan<
 	result?: (acc: Acc) => Succ
 }) {
 	return function (
-		source: Source<Value, Index, Err, P>,
-	): Source<Value, Index, Err | EmptyError, P> {
+		source: MultiSource<Value, Index, Err, P>,
+	): MultiSource<Value, Index, Err | EmptyError, P> {
 		const foldFn = props.fold
 		return function ({ error, next, complete }) {
 			let dirty = false

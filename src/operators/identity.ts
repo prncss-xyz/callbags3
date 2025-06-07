@@ -1,5 +1,5 @@
 import type { DomainError } from '../errors'
-import type { AnyPull, Source } from '../sources/core'
+import type { AnyPull, MultiSource } from '../sources/core'
 
 export function identity<
 	Value,
@@ -8,8 +8,8 @@ export function identity<
 	P extends AnyPull,
 >() {
 	return function (
-		source: Source<Value, Index, Err, P>,
-	): Source<Value, Index, Err, P> {
+		source: MultiSource<Value, Index, Err, P>,
+	): MultiSource<Value, Index, Err, P> {
 		return function (o) {
 			return source(o)
 		}
