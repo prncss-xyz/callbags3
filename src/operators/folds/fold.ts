@@ -26,12 +26,14 @@ export type Fold1<Acc, Index, R = Acc> =
 
 export function fold<Value, Index, Err, P extends AnyPull, Acc, S, Succ = Acc>(
 	props: Fold<Value, Acc, Index, Succ>,
-): (sink: MultiSource<Value, Index, Err, P>) => SingleSource<Succ, Err, P>
+): (
+	source: MultiSource<Value, Index, Err, P>,
+) => SingleSource<Succ, void, Err, P>
 export function fold<Value, Index, Err, P extends AnyPull, S, Succ = Value>(
 	props: Fold1<Value, Index, Succ>,
 ): (
-	source: MultiSource<Value, Index, Err, P>,
-) => SingleSource<Value, Err | EmptyError, P>
+	source: MultiSource<Value, Index, Err, any>,
+) => SingleSource<Value, any, Err | EmptyError, any>
 export function fold<Value, Index, Err, P extends AnyPull, Acc, Succ>(props: {
 	fold?: (value: Value, acc: Acc, index: Index) => Acc
 	foldDest?: (value: Value, acc: Acc, index: Index) => Acc
@@ -40,7 +42,7 @@ export function fold<Value, Index, Err, P extends AnyPull, Acc, Succ>(props: {
 }) {
 	return function (
 		source: MultiSource<Value, Index, Err, P>,
-	): SingleSource<Value, Err | EmptyError, P> {
+	): SingleSource<Value, void, Err | EmptyError, P> {
 		const foldFn = props.foldDest ?? props.fold
 		isoAssert(foldFn)
 		return function ({ next, error }) {

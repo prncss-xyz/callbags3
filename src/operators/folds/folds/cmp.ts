@@ -19,13 +19,13 @@ export function min<I>(): Fold<number, number, I> {
 
 export function maxWith<T, I>(cmp = cmp0<T>): Fold1<T, I> {
 	return {
-		fold: (t, acc) => (acc === undefined || cmp(t, acc) > 0 ? t : acc),
+		fold: (t, acc) => (cmp(t, acc) > 0 ? t : acc),
 	}
 }
 
 export function minWith<T, I>(cmp = cmp0<T>): Fold1<T, I> {
 	return {
-		fold: (t, acc) => (acc === undefined || cmp(t, acc) < 0 ? t : acc),
+		fold: (t, acc) => (cmp(t, acc) < 0 ? t : acc),
 	}
 }
 

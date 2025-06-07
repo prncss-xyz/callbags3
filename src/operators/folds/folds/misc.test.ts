@@ -2,31 +2,26 @@ import { flow } from '@constellar/core'
 
 import { iterable } from '../../../sources/pull'
 import { fold } from '../fold'
-import { extract } from '../../../observe/extract'
-import { value } from '../../../errables/value'
 import { fromEntries, join, joinLast, productFold, sumFold } from './misc'
+import { result } from '../../../observe/result'
 
 describe('sumFold', () => {
 	test('', () => {
-		const res = flow(iterable([2, 3, 4]), fold(sumFold()), extract(value()))
+		const res = flow(iterable([2, 3, 4]), fold(sumFold()), result())
 		expect(res).toBe(9)
 	})
 })
 
 describe('productFold', () => {
 	test('', () => {
-		const res = flow(iterable([2, 3, 4]), fold(productFold()), extract(value()))
+		const res = flow(iterable([2, 3, 4]), fold(productFold()), result())
 		expect(res).toBe(24)
 	})
 })
 
 describe('join', () => {
 	test('', () => {
-		const res = flow(
-			iterable(['a', 'b', 'c']),
-			fold(join(',')),
-			extract(value()),
-		)
+		const res = flow(iterable(['a', 'b', 'c']), fold(join(',')), result())
 		expect(res).toBe('a,b,c')
 	})
 })
@@ -36,7 +31,7 @@ describe('joinLast', () => {
 		const res = flow(
 			iterable(['a', 'b', 'c']),
 			fold(joinLast(',')),
-			extract(value()),
+			result()
 		)
 		expect(res).toBe('a,b,c,')
 	})
@@ -44,7 +39,7 @@ describe('joinLast', () => {
 
 describe('fromEntries', () => {
 	test('', () => {
-		const res = flow(iterable([1, 2, 3]), fold(fromEntries()), extract(value()))
+		const res = flow(iterable([1, 2, 3]), fold(fromEntries()), result())
 		expect(res).toEqual({
 			0: 1,
 			1: 2,

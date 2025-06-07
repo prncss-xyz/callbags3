@@ -56,7 +56,7 @@ const _union = Symbol('union')
 
 export function union<
 	Brand extends symbol,
-	Props extends Record<string, (v: any) => v is any>,
+	Props extends Record<string, (v: unknown) => v is unknown>,
 >(_brand: Brand, props: Props) {
 	const members: any = {}
 	for (const key of Object.keys(props)) {

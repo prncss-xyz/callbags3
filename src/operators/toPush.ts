@@ -18,7 +18,6 @@ export function toPush<
 		complete?.()
 		return {
 			pull: undefined,
-			result: noop,
 			unmount: noop,
 		}
 	}

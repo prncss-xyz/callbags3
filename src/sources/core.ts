@@ -31,14 +31,14 @@ export type MultiSource<Value, Index, Err, Pull extends AnyPull> = (
 	unmount: () => void
 }
 
-export interface Extractor<Value, Err> {
+export interface Extractor<Value, Index, Err> {
 	error: (fail: Err) => void
-	next: (value: Value) => void
-	complete: void
+	next: (value: Value, index: Index) => void
+	complete: undefined
 }
 
-export type SingleSource<Succ, Err, Pull extends AnyPull> = (
-	extractor: Extractor<Succ, Err>,
+export type SingleSource<Succ, Index, Err, Pull extends AnyPull> = (
+	extractor: Extractor<Succ, Index, Err>,
 ) => {
 	pull: Pull
 	unmount: () => void

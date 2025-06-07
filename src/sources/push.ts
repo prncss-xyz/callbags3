@@ -1,6 +1,5 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
 import type { MultiSource } from './core'
-import { noop } from '@constellar/core'
 
 export function onceAsync<Value, Index = void>(
 	init: Init<Promise<Value>>,
@@ -15,7 +14,6 @@ export function onceAsync<Value, Index = void>(
 		})
 		return {
 			pull: undefined,
-			result: noop,
 			unmount() {
 				closed = true
 			},
@@ -38,7 +36,6 @@ export function asyncIterable<Value>(
 		})()
 		return {
 			pull: undefined,
-			result: noop,
 			unmount() {
 				closed = true
 			},
