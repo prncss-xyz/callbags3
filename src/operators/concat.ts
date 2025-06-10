@@ -29,9 +29,7 @@ export function concat<V1, I1, E1, P extends AnyPull>(
 						ofS2.pull?.()
 					})
 				},
-				error(e) {
-					props.error(e)
-				},
+				error: props.error,
 				next: props.next,
 			})
 			async = Boolean(ofS1.pull)

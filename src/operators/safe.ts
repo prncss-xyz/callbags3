@@ -11,11 +11,11 @@ export function safe<
 	P extends AnyPull,
 	M extends AnyMulti,
 >({
-	onSuccess,
-	onError,
+	toSuccess,
+	toError,
 }: {
-	onSuccess: (s: Succ) => S
-	onError: (e: Err) => E
+	toSuccess: (s: Succ) => S
+	toError: (e: Err) => E
 }) {
 	return function (
 		source: Source<Succ, Index, Err, P, M>,
@@ -23,10 +23,10 @@ export function safe<
 		return function ({ next, complete }) {
 			return source({
 				next(succ) {
-					next(onSuccess(succ) as any)
+					next(toSuccess(succ) as any)
 				},
 				error(e) {
-					next(onError(e) as any)
+					next(toError(e) as any)
 				},
 				complete,
 			})

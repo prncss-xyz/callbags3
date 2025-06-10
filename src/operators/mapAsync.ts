@@ -1,4 +1,4 @@
-import type { MultiSource } from '../sources/core'
+import type { AnyMulti, Source } from '../sources/core'
 
 function pendingCounter(onDone: () => void) {
 	let completed = false
@@ -25,21 +25,29 @@ function pendingCounter(onDone: () => void) {
 	}
 }
 
-export function mapAsync<A, Index, B>(
+export function mapAsync<A, Index, B, M extends AnyMulti>(
 	cb: (value: A, index: Index) => Promise<B>,
 ) {
 	return function <Err>(
-		source: MultiSource<A, Index, Err, undefined>,
-	): MultiSource<B, Index, Err, undefined> {
+		source: Source<A, Index, Err, undefined, M>,
+	): Source<B, Index, Err, undefined, M> {
 		return function (props) {
-			const { complete, wrap } = pendingCounter(props.complete)
+			if (props.complete) {
+				const { complete, wrap } = pendingCounter(props.complete)
+				return source({
+					complete: complete as any,
+					error: props.error,
+					next(value, index) {
+						wrap(cb(value, index).then((v) => props.next(v, index)))
+					},
+				})
+			}
 			return source({
-				complete,
 				error: props.error,
-				next(value, index) {
-					wrap(cb(value, index).then((v) => props.next(v, index)))
+				next(value: A, index: Index) {
+					cb(value, index).then((v) => props.next(v, index))
 				},
-			})
+			} as any)
 		}
 	}
 }

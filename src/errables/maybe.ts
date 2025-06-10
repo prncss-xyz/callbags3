@@ -1,5 +1,6 @@
 import { DomainError } from '../errors'
 import { type Guarded, isUnknown, isVoid } from '../guards'
+import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../unions'
 
 const MAYBE = Symbol('MAYBE')
@@ -16,19 +17,30 @@ const nothingError = new NothingError()
 
 export function maybe<S>() {
 	return {
-		onError(_e: DomainError) {
+		toError(_e: DomainError) {
 			return nothing.void()
 		},
-		onSuccess(s: S) {
+		toSuccess(s: S) {
 			return just.of(s)
 		},
-		shift(
-			value: Maybe<S>,
-			onSuccess: (s: S) => void,
-			onError: (e: NothingError) => void,
-		) {
-			if (just.is(value)) onSuccess(just.get(value))
-			else onError(nothingError)
-		},
+	}
+}
+
+export function chainMaybe<A, B, Index, P extends AnyPull, M extends AnyMulti>(
+	cb: (value: A, index: Index) => Maybe<B>,
+) {
+	return function <Err>(
+		source: Source<A, Index, Err, P, M>,
+	): Source<B, Index, Err | NothingError, P, M> {
+		return function (props) {
+			return source({
+				...props,
+				next(value, index) {
+					const res = cb(value, index)
+					if (just.is(res)) props.next(just.get(res), index)
+					else props.error(nothingError)
+				},
+			})
+		}
 	}
 }
