@@ -1,2 +1,2 @@
 export * from './identity'
-export * from './take'
+export * from './filters'

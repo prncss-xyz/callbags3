@@ -5,14 +5,14 @@ import { empty, iterable } from '../../../sources/pull'
 import { fold } from '../fold'
 import { result } from '../../../observe/result'
 import { safe } from '../../safe'
-import { opt } from '../../../errables/opt'
+import { nullable } from '../../../errables/nullable'
 
 describe('maxWith', () => {
 	test('empty', () => {
 		const res = flow(
 			empty<number, void>(),
 			fold(maxWith((a, b) => a - b)),
-			safe(opt()),
+			safe(nullable()),
 			result(),
 		)
 		expect(res).toEqual(undefined)
@@ -21,7 +21,7 @@ describe('maxWith', () => {
 		const res = flow(
 			iterable([0, 2, 1]),
 			fold(maxWith((a, b) => a - b)),
-			safe(opt()),
+			safe(nullable()),
 			result(),
 		)
 		expect(res).toEqual(2)

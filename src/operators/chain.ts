@@ -1,4 +1,4 @@
-import { error, success, type Either } from '../errables'
+import { left, right, type Either } from '../errables'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 
 export function chainEither<
@@ -17,8 +17,8 @@ export function chainEither<
 				...props,
 				next(value, index) {
 					const res: Either<B, E> = cb(value, index)
-					if (success.is(res)) props.next(success.get(res) , index)
-					else props.error(error.get(res))
+					if (right.is(res)) props.next(right.get(res), index)
+					else props.error(left.get(res))
 				},
 			})
 		}

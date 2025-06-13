@@ -8,7 +8,7 @@ import { toArray } from './folds/folds/base'
 import { result } from '../observe'
 import { interval } from '../sources'
 import { map } from './map'
-import { take } from './take'
+import { take } from './filters/take'
 
 describe('flatten', () => {
 	test('sync', () => {

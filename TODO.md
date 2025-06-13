@@ -2,12 +2,14 @@
 
 - operators:
 
+  - tests
   - chain
-  - merge
   - debounce
   - debounceKey
   - throttle
   - zipCmp
+  - group
+  - ap (cf. ramda)
 
 - merge to utils
 

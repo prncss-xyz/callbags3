@@ -3,22 +3,22 @@ import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../unions'
 
 const EITHER = Symbol('EITHER')
-export const [isEither, { error, success }] = union(EITHER, {
-	error: isUnknown,
-	success: isUnknown,
+export const [isEither, { left, right }] = union(EITHER, {
+	left: isUnknown,
+	right: isUnknown,
 })
 
-export type Success<S> = Guarded<typeof success.is<S>>
-export type Err<E> = Guarded<typeof error.is<E>>
-export type Either<S, E> = Err<E> | Success<S>
+export type Right<S> = Guarded<typeof right.is<S>>
+export type Left<E> = Guarded<typeof left.is<E>>
+export type Either<S, E> = Left<E> | Right<S>
 
 export function either<S, E>() {
 	return {
 		toError(e: E) {
-			return error.of(e)
+			return left.of(e)
 		},
 		toSuccess(s: S) {
-			return success.of(s)
+			return right.of(s)
 		},
 	}
 }
@@ -39,8 +39,8 @@ export function chainEither<
 				...props,
 				next(value, index) {
 					const res: Either<B, E> = cb(value, index)
-					if (success.is(res)) props.next(success.get(res), index)
-					else props.error(error.get(res))
+					if (right.is(res)) props.next(right.get(res), index)
+					else props.error(left.get(res))
 				},
 			})
 		}
