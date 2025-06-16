@@ -4,23 +4,23 @@ import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../unions'
 
 const EITHER = Symbol('EITHER')
-export const [isEither, { left, right }] = union(EITHER, {
-	left: isUnknown,
-	right: isUnknown,
+export const [isEither, { err, succ }] = union(EITHER, {
+	err: isUnknown,
+	succ: isUnknown,
 })
 
-export type Right<S> = Guarded<typeof right.is<S>>
-export type Left<E> = Guarded<typeof left.is<E>>
-export type Either<S, E> = Left<E> | Right<S>
+export type Succ<S> = Guarded<typeof succ.is<S>>
+export type Err<E> = Guarded<typeof err.is<E>>
+export type Either<S, E> = Err<E> | Succ<S>
 
 export function safeEither<
-	Succ,
+	S,
 	Index,
-	Err,
+	E,
 	P extends AnyPull,
 	M extends AnyMulti,
 >() {
-	return safe<Succ, Index, Err, Right<Succ>, Left<Err>, P, M>(right.of, left.of)
+	return safe<S, Index, E, Succ<S>, Err<E>, P, M>(succ.of, err.of)
 }
 
 export function chainEither<
@@ -31,16 +31,16 @@ export function chainEither<
 	P extends AnyPull,
 	M extends AnyMulti,
 >(cb: (value: A, index: Index) => Either<B, E>) {
-	return function <Err>(
-		source: Source<A, Index, Err, P, M>,
-	): Source<B, Index, Err | E, P, M> {
+	return function <E2>(
+		source: Source<A, Index, E2, P, M>,
+	): Source<B, Index, E2 | E, P, M> {
 		return function (props) {
 			return source({
 				...props,
 				next(value, index) {
 					const res: Either<B, E> = cb(value, index)
-					if (right.is(res)) props.next(right.get(res), index)
-					else props.error(left.get(res))
+					if (succ.is(res)) props.next(succ.get(res), index)
+					else props.error(err.get(res))
 				},
 			})
 		}

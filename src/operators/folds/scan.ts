@@ -1,4 +1,3 @@
-import { EmptyError } from '../../errors'
 import type { AnyPull, MultiSource } from '../../sources/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
@@ -21,7 +20,7 @@ export function scan<Value, Index, Err, P extends AnyPull, S, Succ = Value>(
 	props: Scan1<Value, Index, Succ>,
 ): (
 	source: MultiSource<Value, Index, Err, P>,
-) => MultiSource<Value, Index, Err | EmptyError, P>
+) => MultiSource<Value, Index, Err, P>
 export function scan<Value, Index, Err, Succ, P extends AnyPull, Acc>(props: {
 	fold: (value: Value, acc: Acc, index: Index) => Acc
 	init?: Init<Acc>
@@ -29,7 +28,7 @@ export function scan<Value, Index, Err, Succ, P extends AnyPull, Acc>(props: {
 }) {
 	return function (
 		source: MultiSource<Value, Index, Err, P>,
-	): MultiSource<Value, Index, Err | EmptyError, P> {
+	): MultiSource<Value, Index, Err, P> {
 		const foldFn = props.fold
 		return function ({ error, next, complete }) {
 			let dirty = false

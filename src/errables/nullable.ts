@@ -1,14 +1,11 @@
 import { id } from '@constellar/core'
 import { always } from '@prncss-xyz/utils'
 
-import { DomainError } from '../errors'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { isNullish } from '../guards'
 import { safe } from '../operators/safe'
+import { nothingError, type NothingError } from './nothingError'
 export type Nullable<T> = T | null | undefined
-
-export class NullishError extends DomainError {}
-const nullishError = new NullishError()
 
 export function safeNullable<
 	Succ,
@@ -29,13 +26,13 @@ export function chainNullable<
 >(cb: (value: A, index: Index) => B | null | undefined) {
 	return function <Err>(
 		source: Source<A, Index, Err, P, M>,
-	): Source<B, Index, Err | NullishError, P, M> {
+	): Source<B, Index, Err | NothingError, P, M> {
 		return function (props) {
 			return source({
 				...props,
 				next(value, index) {
 					const res = cb(value, index)
-					if (isNullish(res)) props.error(nullishError)
+					if (isNullish(res)) props.error(nothingError)
 					else props.next(res, index)
 				},
 			})

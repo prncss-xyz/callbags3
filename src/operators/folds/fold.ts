@@ -1,6 +1,10 @@
-import { EmptyError, emptyErrorValue } from '../../errors'
 import type { AnyPull, MultiSource, SingleSource } from '../../sources/core'
 import { fromInit, isoAssert, type Init } from '@prncss-xyz/utils'
+import { singleton } from '../../tags'
+
+export const empty = singleton('empty')
+const emptyError = empty.void()
+type EmptyError = typeof emptyError
 
 export type Fold<Value, Acc, Index, R = Acc> =
 	| {
@@ -66,7 +70,7 @@ export function fold<Value, Index, Err, P extends AnyPull, Acc, Succ>(props: {
 					complete() {
 						if (dirty) {
 							next(props.result ? props.result(acc) : (acc as any))
-						} else error(emptyErrorValue)
+						} else error(emptyError)
 					},
 				}),
 			}

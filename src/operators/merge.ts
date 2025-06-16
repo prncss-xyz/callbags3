@@ -1,5 +1,15 @@
-import { left, right, type Left, type Right } from '../errables'
+import { isUnknown, type Guarded } from '../guards'
 import { type AnyPull, type MultiSource } from '../sources'
+import { union } from '../unions'
+
+const LR = Symbol('LR')
+export const [isEither, { left, right }] = union(LR, {
+	left: isUnknown,
+	right: isUnknown,
+})
+
+type Left<S> = Guarded<typeof left.is<S>>
+type Right<S> = Guarded<typeof right.is<S>>
 
 export function merge<VR, IR, ER, VL, P extends AnyPull>(
 	sourceRight: MultiSource<VR, IR, ER, P>,

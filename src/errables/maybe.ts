@@ -1,8 +1,8 @@
-import { DomainError } from '../errors'
 import { type Guarded, isUnknown, isVoid } from '../guards'
 import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../unions'
+import { nothingError, type NothingError } from './nothingError'
 
 const MAYBE = Symbol('MAYBE')
 export const [isMaybe, { just, nothing }] = union(MAYBE, {
@@ -12,9 +12,6 @@ export const [isMaybe, { just, nothing }] = union(MAYBE, {
 export type Just<S> = Guarded<typeof just.is<S>>
 export type Nothing = Guarded<typeof nothing.is>
 export type Maybe<S> = Just<S> | Nothing
-
-export class NothingError extends DomainError {}
-const nothingError = new NothingError()
 
 export function safeMaybe<
 	Succ,

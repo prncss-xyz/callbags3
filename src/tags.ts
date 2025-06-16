@@ -1,6 +1,8 @@
 import type { Prettify } from '@constellar/core'
+import { isUnknown, isVoid } from './guards'
 
-type Tagged<Type, Value> = { readonly type: Type; readonly value: Value }
+export type Tagged<Type, Value> = { readonly type: Type; readonly value: Value }
+export type Singleton<Type> = { readonly type: Type; readonly value: void }
 type Other<T, Type, V> = Tagged<T extends Type ? never : T, V>
 
 class Tag<Type, Value> {
@@ -50,9 +52,13 @@ class Tag<Type, Value> {
 
 export function tag<const Type, Value>(
 	type: Type,
-	isValue: (v: unknown) => v is Value,
+	isValue: (v: unknown) => v is Value = isUnknown as any,
 ) {
 	return new Tag(type, isValue)
+}
+
+export function singleton<const T>(type: T) {
+	return new Tag(type, isVoid)
 }
 
 /*

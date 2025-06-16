@@ -33,3 +33,4 @@
 ## Blocked
 
 - merge nothing.void() to nothing.of()
+- when scan is called with a fold having an init, it should immediately call next, but we cannot do that beacause of index
