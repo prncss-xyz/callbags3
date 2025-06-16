@@ -6,11 +6,6 @@
 
 - utils: make firstOf work with any monad
 
-- unions
-  - merge tag and union or remove both
-  - errables vs either
-- safeAssert
-
 - tests (improve coverage)
 
 - merge to utils
@@ -25,6 +20,8 @@
 ## Later
 
 - group et cie, add fold argument
+- unions
+  - merge tag and union or remove both
 
 ## Maybe
 
