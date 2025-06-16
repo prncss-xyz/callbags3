@@ -1,5 +1,5 @@
 import type { AnyPull, MultiSource } from '../../sources/core'
-import { defer } from '../../utils'
+import { defer } from '../../../utils'
 
 export function take<Value, Index, Err, P extends AnyPull>(n: number) {
 	return function (

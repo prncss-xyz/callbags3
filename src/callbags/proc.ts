@@ -1,9 +1,9 @@
-import { isAsyncIterable, isFunction, isIterable, isPromise } from './guards'
+import { isAsyncIterable, isFunction, isIterable, isPromise } from '../guards'
 import { result } from './observe/result'
 import type { AnyMulti, AnyPull, Multi, Pull, Source } from './sources/core'
 import { iterable, once } from './sources/pull'
 import { asyncIterable, onceAsync } from './sources/push'
-import type { NonFunction } from './types'
+import type { NonFunction } from '../types'
 
 type Res<P extends AnyPull, V> = P extends Pull ? V : Promise<V>
 

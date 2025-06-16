@@ -1,7 +1,7 @@
-import { isUnknown, type Guarded } from '../guards'
+import { isUnknown, type Guarded } from '../../guards'
 import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
-import { union } from '../unions'
+import { union } from '../../unions'
 
 const EITHER = Symbol('EITHER')
 export const [isEither, { err, succ }] = union(EITHER, {

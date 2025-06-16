@@ -4,7 +4,7 @@ import { max, maxWith, min, shuffle, sort } from './cmp'
 import { empty, iterable } from '../../../sources/pull'
 import { fold } from '../fold'
 import { result } from '../../../observe/result'
-import { safeNullable } from '../../../errables/nullable'
+import { safeNullable } from '../../../errors/nullable'
 
 describe('maxWith', () => {
 	test('empty', () => {

@@ -1,5 +1,5 @@
 import type { MultiSource, Pull } from './core'
-import { just, type Maybe } from '../errables/maybe'
+import { just, type Maybe } from '../errors/maybe'
 import { add, fromInit, gt, lt, type Init } from '@prncss-xyz/utils'
 
 export function unfold<Value>(

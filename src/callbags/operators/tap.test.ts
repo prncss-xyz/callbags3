@@ -4,7 +4,7 @@ import { tap } from './tap'
 import { iterable } from '../sources'
 import { fold, last } from './folds'
 import { result } from '../observe/result'
-import { safeNullable } from '../errables/nullable'
+import { safeNullable } from '../errors/nullable'
 
 describe('tap', () => {
 	test('', () => {

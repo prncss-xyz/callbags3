@@ -4,7 +4,7 @@ import { iterable } from '../sources/pull'
 import { map } from './map'
 import { fold } from './folds/fold'
 import { last } from './folds/folds/base'
-import { just, safeMaybe } from '../errables/maybe'
+import { just, safeMaybe } from '../errors/maybe'
 import { result } from '../observe'
 
 describe('map', () => {

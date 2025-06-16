@@ -2,7 +2,7 @@ import { id } from '@constellar/core'
 import { always } from '@prncss-xyz/utils'
 
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
-import { isNullish } from '../guards'
+import { isNullish } from '../../guards'
 import { safe } from '../operators/safe'
 import { nothingError, type NothingError } from './nothingError'
 export type Nullable<T> = T | null | undefined

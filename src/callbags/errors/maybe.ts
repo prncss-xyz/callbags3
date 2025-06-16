@@ -1,7 +1,7 @@
-import { type Guarded, isUnknown, isVoid } from '../guards'
+import { type Guarded, isUnknown, isVoid } from '../../guards'
 import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
-import { union } from '../unions'
+import { union } from '../../unions'
 import { nothingError, type NothingError } from './nothingError'
 
 const MAYBE = Symbol('MAYBE')

@@ -1,6 +1,6 @@
 import type { AnyPull, MultiSource, SingleSource } from '../../sources/core'
 import { fromInit, isoAssert, type Init } from '@prncss-xyz/utils'
-import { singleton } from '../../tags'
+import { singleton } from '../../../tags'
 
 export const empty = singleton('empty')
 const emptyError = empty.void()

@@ -1,4 +1,4 @@
-import { CNothingError, type NothingError } from '../errables/nothingError'
+import { CNothingError, type NothingError } from '../errors/nothingError'
 import type { AnyPull, MultiSource, SingleSource } from '../sources/core'
 
 const complete = CNothingError.void.bind(CNothingError)
