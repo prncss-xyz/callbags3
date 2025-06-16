@@ -1,4 +1,5 @@
 import { isUnknown, type Guarded } from '../guards'
+import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../unions'
 
@@ -12,15 +13,14 @@ export type Right<S> = Guarded<typeof right.is<S>>
 export type Left<E> = Guarded<typeof left.is<E>>
 export type Either<S, E> = Left<E> | Right<S>
 
-export function either<S, E>() {
-	return {
-		toError(e: E) {
-			return left.of(e)
-		},
-		toSuccess(s: S) {
-			return right.of(s)
-		},
-	}
+export function safeEither<
+	Succ,
+	Index,
+	Err,
+	P extends AnyPull,
+	M extends AnyMulti,
+>() {
+	return safe<Succ, Index, Err, Right<Succ>, Left<Err>, P, M>(right.of, left.of)
 }
 
 export function chainEither<

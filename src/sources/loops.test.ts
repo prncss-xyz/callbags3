@@ -1,7 +1,7 @@
 import { flow } from '@constellar/core'
 import { fold } from '../operators/folds/fold'
 import { result } from '../observe/result'
-import { loop, range, times } from './range'
+import { loop, range, times } from './loops'
 import { toArray } from '../operators/folds/folds/base'
 import { add, lt } from '@prncss-xyz/utils'
 

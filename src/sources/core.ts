@@ -1,45 +1,41 @@
-export interface Observer<Value, Index, Err> {
-	complete: () => void
-	error: (fail: Err) => void
-	next: (value: Value, index: Index) => void
-}
-
 export type Pull = () => void
 export type AnyPull = Pull | undefined
 export type Multi = () => void
 export type AnyMulti = Multi | undefined
 
+export interface Observer<Value, Index, Err, M extends AnyMulti> {
+	complete: M
+	error: (fail: Err) => void
+	next: (value: Value, index: Index) => void
+}
+
 export type Source<
 	Value,
 	Index,
 	Err,
-	Pull extends AnyPull,
-	Multi extends AnyMulti,
+	P extends AnyPull,
+	M extends AnyMulti,
 > = (observer: {
-	complete: Multi
+	complete: M
 	error: (fail: Err) => void
 	next: (value: Value, index: Index) => void
 }) => {
-	pull: Pull
+	pull: P
 	unmount: () => void
 }
 
-export type MultiSource<Value, Index, Err, Pull extends AnyPull> = (
-	observer: Observer<Value, Index, Err>,
-) => {
-	pull: Pull
-	unmount: () => void
-}
+export type MultiSource<Value, Index, Err, Pull extends AnyPull> = Source<
+	Value,
+	Index,
+	Err,
+	Pull,
+	Multi
+>
 
-export interface Extractor<Value, Index, Err> {
-	error: (fail: Err) => void
-	next: (value: Value, index: Index) => void
-	complete: undefined
-}
-
-export type SingleSource<Succ, Index, Err, Pull extends AnyPull> = (
-	extractor: Extractor<Succ, Index, Err>,
-) => {
-	pull: Pull
-	unmount: () => void
-}
+export type SingleSource<Value, Index, Err, Pull extends AnyPull> = Source<
+	Value,
+	Index,
+	Err,
+	Pull,
+	undefined
+>

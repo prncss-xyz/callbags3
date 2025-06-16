@@ -1,16 +1,15 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
-import type { MultiSource } from './core'
+import type { MultiSource, SingleSource } from './core'
 
 export function onceAsync<Value, Index = void>(
 	init: Init<Promise<Value>>,
 	index?: Index,
-): MultiSource<Value, Index, never, undefined> {
-	return function ({ complete, next }) {
+): SingleSource<Value, Index, never, undefined> {
+	return function ({ next }) {
 		let closed = false
 		fromInit(init).then((value) => {
 			if (closed) return
 			next(value, index!)
-			complete()
 		})
 		return {
 			pull: undefined,

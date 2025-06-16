@@ -2,7 +2,7 @@ import { flow } from '@constellar/core'
 import { take } from './take'
 import { fold } from '../folds/fold'
 import { toArray } from '../folds/folds'
-import { range } from '../../sources/range'
+import { range } from '../../sources/loops'
 import { result } from '../../observe/result'
 import { interval } from '../../sources'
 

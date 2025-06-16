@@ -1,9 +1,9 @@
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 
-export function map<A, B, Index, P extends AnyPull, M extends AnyMulti>(
+export function map<A, B, Index, P extends AnyPull, M extends AnyMulti, Err>(
 	cb: (value: A, index: Index) => B,
 ) {
-	return function <Err>(
+	return function (
 		source: Source<A, Index, Err, P, M>,
 	): Source<B, Index, Err, P, M> {
 		return function (props) {

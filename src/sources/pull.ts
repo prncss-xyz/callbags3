@@ -1,12 +1,10 @@
 import { noop } from '@constellar/core'
-import type { Pull, MultiSource } from './core'
+import type { Pull, MultiSource, SingleSource } from './core'
 
 export function empty<Value, Index>(): MultiSource<Value, Index, never, Pull> {
 	return function ({ complete }) {
 		return {
-			pull() {
-				complete()
-			},
+			pull: complete,
 			unmount: noop,
 		}
 	}
@@ -14,18 +12,13 @@ export function empty<Value, Index>(): MultiSource<Value, Index, never, Pull> {
 
 export function once<Value>(
 	value: Value,
-): MultiSource<Value, void, never, Pull> {
-	return function ({ next, complete }) {
-		let closed = false
+): SingleSource<Value, void, never, Pull> {
+	return function ({ next }) {
 		return {
 			pull() {
 				next(value)
-				if (closed) return
-				complete()
 			},
-			unmount() {
-				closed = true
-			},
+			unmount: noop,
 		}
 	}
 }

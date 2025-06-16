@@ -1,25 +1,9 @@
-import { isFunction, noop } from '@constellar/core'
-import type { AnyPull, MultiSource, Observer } from '../sources/core'
+import type { AnyMulti, AnyPull, Source } from '../sources/core'
 
-export type ProObserver<Value, Index, Err> =
-	| ((value: Value, index: Index) => void)
-	| Partial<Observer<Value, Index, Err>>
-
-export function resolveObserver<Value, Index, Err>(
-	observer: ProObserver<Value, Index, Err>,
-) {
-	if (isFunction(observer)) {
-		return {
-			complete: noop,
-			error: noop,
-			next: observer,
-		}
-	}
-	return {
-		complete: observer.complete ?? noop,
-		error: observer.error ?? noop,
-		next: observer.next ?? noop,
-	}
+export interface Obs<Value, Index, Err, M extends AnyMulti> {
+	complete: M
+	error: (fail: Err) => void
+	next: (value: Value, index: Index) => void
 }
 
 function deferCond(sync: unknown, cb: () => void) {
@@ -27,25 +11,26 @@ function deferCond(sync: unknown, cb: () => void) {
 	else setTimeout(cb, 0)
 }
 
-export function observe<Value, Index, Err>(
-	observer: ProObserver<Value, Index, Err>,
+export function observe<Value, Index, Err, M extends AnyMulti>(
+	props: Obs<Value, Index, Err, M>,
 ) {
-	return function (source: MultiSource<Value, Index, Err, AnyPull>) {
-		const { complete, error, next } = resolveObserver(observer)
+	return function (source: Source<Value, Index, Err, AnyPull, M>) {
 		const { pull, unmount } = source({
-			complete() {
-				deferCond(pull, () => {
-					unmount()
-					complete()
-				})
-			},
+			complete: props.complete
+				? () => {
+						deferCond(pull, () => {
+							unmount()
+							props.complete!()
+						})
+					}
+				: (undefined as any),
 			error(err) {
 				deferCond(pull, () => {
 					unmount()
-					error(err)
+					props.error(err)
 				})
 			},
-			next,
+			next: props.next,
 		})
 		pull?.()
 	}

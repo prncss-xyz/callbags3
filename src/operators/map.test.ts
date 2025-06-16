@@ -4,8 +4,7 @@ import { iterable } from '../sources/pull'
 import { map } from './map'
 import { fold } from './folds/fold'
 import { last } from './folds/folds/base'
-import { just, maybe } from '../errables/maybe'
-import { safe } from './safe'
+import { just, safeMaybe } from '../errables/maybe'
 import { result } from '../observe'
 
 describe('map', () => {
@@ -16,7 +15,7 @@ describe('map', () => {
 			map(String),
 			map((x, i) => x + i),
 			fold(last()),
-			safe(maybe()),
+			safeMaybe(),
 			result(),
 		)
 		expect(res).toEqual(just.of('83'))

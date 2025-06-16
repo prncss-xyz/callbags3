@@ -1,9 +1,9 @@
 import type { MultiSource, Pull } from './core'
 import { just, type Maybe } from '../errables/maybe'
-import { add, gt, lt } from '@prncss-xyz/utils'
+import { add, fromInit, gt, lt, type Init } from '@prncss-xyz/utils'
 
 export function unfold<Value>(
-	init: Value,
+	init: Init<Value>,
 	cb: (acc: Value, index: number) => Maybe<Value>,
 ): MultiSource<Value, number, never, Pull> {
 	return function ({ next, complete }) {
@@ -11,7 +11,7 @@ export function unfold<Value>(
 		return {
 			pull() {
 				let index = 0
-				let res = cb(init, index)
+				let res = cb(fromInit(init), index)
 				while (just.is(res)) {
 					next(just.get(res), index)
 					if (closed) return
@@ -29,14 +29,18 @@ export function unfold<Value>(
 export function loop<Value>(
 	cond: (value: Value, index: number) => unknown,
 	step: (value: Value, index: number) => Value,
-	init: Value,
+	init: Init<Value>,
 ): MultiSource<Value, number, never, Pull> {
 	return function ({ next, complete }) {
 		let closed = false
 		return {
 			pull() {
 				let index = 0
-				for (let acc = init; cond(acc, index); acc = step(acc, index)) {
+				for (
+					let acc = fromInit(init);
+					cond(acc, index);
+					acc = step(acc, index)
+				) {
 					next(acc, index++)
 					if (closed) return
 				}
@@ -60,7 +64,7 @@ export function times(n: number) {
 export function until<Value>(
 	cond: (value: Value, index: number) => unknown,
 	step: (value: Value, index: number) => Value,
-	init: Value,
+	init: Init<Value>,
 ): MultiSource<Value, number, never, Pull> {
 	return function ({ next, complete }) {
 		closed = false
@@ -69,9 +73,9 @@ export function until<Value>(
 				let index = 0
 				let acc = init
 				while (true) {
-					acc = step(acc, index++)
+					acc = step(fromInit(acc), index++)
 					next(acc, index)
-          if (closed) return
+					if (closed) return
 					if (cond(acc, index)) break
 				}
 				complete()

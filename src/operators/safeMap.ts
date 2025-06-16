@@ -1,26 +1,25 @@
+import { fromInit, type Init } from '@prncss-xyz/utils'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 
 type T<P, Q> = P extends unknown ? Q : never
 
-export function safe<
+export function safeMap<
 	Succ,
 	Index,
 	Err,
-	S,
 	E,
 	P extends AnyPull,
 	M extends AnyMulti,
->(toSuccess: (s: Succ) => S, toError: (e: Err) => E) {
+>(recover: Init<E, [Err]>) {
 	return function (
 		source: Source<Succ, Index, Err, P, M>,
-	): Source<T<Succ, S> | T<Err, E>, void, never, P, M> {
+	): Source<Succ | T<Err, E>, void, never, P, M> {
 		return function ({ next, complete }) {
 			return source({
-				next(succ) {
-					next(toSuccess(succ) as any)
-				},
+				// the second argument can be safely ignored
+				next: next as any,
 				error(e) {
-					next(toError(e) as any)
+					next(fromInit(recover, e))
 				},
 				complete,
 			})

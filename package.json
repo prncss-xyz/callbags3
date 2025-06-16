@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@constellar/core": "^2.4.2",
-    "@prncss-xyz/utils": "^0.29.2"
+    "@prncss-xyz/utils": "^0.29.2",
+    "@types/node": "^24.0.1"
   }
 }

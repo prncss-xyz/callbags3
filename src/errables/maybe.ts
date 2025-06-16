@@ -1,5 +1,6 @@
 import { DomainError } from '../errors'
 import { type Guarded, isUnknown, isVoid } from '../guards'
+import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../unions'
 
@@ -15,15 +16,17 @@ export type Maybe<S> = Just<S> | Nothing
 export class NothingError extends DomainError {}
 const nothingError = new NothingError()
 
-export function maybe<S>() {
-	return {
-		toError(_e: DomainError) {
-			return nothing.void()
-		},
-		toSuccess(s: S) {
-			return just.of(s)
-		},
-	}
+export function safeMaybe<
+	Succ,
+	Index,
+	Err,
+	P extends AnyPull,
+	M extends AnyMulti,
+>() {
+	return safe<Succ, Index, Err, Just<Succ>, Nothing, P, M>(
+		just.of.bind(just),
+		nothing.of.bind(nothing) as any,
+	)
 }
 
 export function chainMaybe<A, B, Index, P extends AnyPull, M extends AnyMulti>(

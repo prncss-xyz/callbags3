@@ -3,7 +3,7 @@ import { filter } from './filter'
 import { fold } from '../folds/fold'
 import { toArray } from '../folds/folds'
 import { result } from '../../observe'
-import { range } from '../../sources/range'
+import { range } from '../../sources/loops'
 import { modulo } from '@prncss-xyz/utils'
 
 describe('filter', () => {
