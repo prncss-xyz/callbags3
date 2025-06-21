@@ -1,4 +1,4 @@
-import { isUnknown, type Guarded } from '../../guards'
+import { isUnknown, type InferGuard } from '../../guards'
 import { type AnyPull, type MultiSource } from '../sources'
 import { union } from '../../unions'
 
@@ -8,8 +8,8 @@ export const [isEither, { left, right }] = union(LR, {
 	right: isUnknown,
 })
 
-type Left<S> = Guarded<typeof left.is<S>>
-type Right<S> = Guarded<typeof right.is<S>>
+type Left<S> = InferGuard<typeof left.is<S>>
+type Right<S> = InferGuard<typeof right.is<S>>
 
 export function merge<VR, IR, ER, VL, P extends AnyPull>(
 	sourceRight: MultiSource<VR, IR, ER, P>,

@@ -1,4 +1,4 @@
-import { type Guarded, isUnknown, isVoid } from '../../guards'
+import { type InferGuard, isUnknown, isVoid } from '../../guards'
 import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../../unions'
@@ -9,8 +9,8 @@ export const [isMaybe, { just, nothing }] = union(MAYBE, {
 	just: isUnknown,
 	nothing: isVoid,
 })
-export type Just<S> = Guarded<typeof just.is<S>>
-export type Nothing = Guarded<typeof nothing.is>
+export type Just<S> = InferGuard<typeof just.is<S>>
+export type Nothing = InferGuard<typeof nothing.is>
 export type Maybe<S> = Just<S> | Nothing
 
 export function safeMaybe<

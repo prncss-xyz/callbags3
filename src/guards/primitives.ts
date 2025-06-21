@@ -1,7 +1,20 @@
-export type Guarded<V> = V extends (v: any) => v is infer T ? T : never
-import type { Function } from './types'
+export type Guard<V> = (v: unknown) => v is V
+export type InferGuard<V> = V extends (v: any) => v is infer R ? R : never
+import type { Function } from '../types'
 
-export function isNullish(v: unknown): v is null | undefined {
+export function isArray(v: unknown) {
+	if (!Array.isArray(v)) return false
+}
+
+export function isObject(v: unknown) {
+	return v !== null && typeof v === 'object'
+}
+
+export function isFalsy(v: unknown) {
+	return v === false || v === 0 || v === '' || v === null || v === undefined
+}
+
+export function isNullish(v: unknown) {
 	return v === null || v === undefined
 }
 

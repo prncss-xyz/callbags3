@@ -1,20 +1,21 @@
 # TODO
 
-- operators:
-
-  - zipCmp (after state machine)
-
-- utils: make firstOf work with any monad
+- context
 
 - tests (improve coverage)
 
 - merge to utils
 
+- state machine exemples
+    - undo/redo
+    - games
+    - wordCOunt
+    - zipCmp
+
 - pick/multi
 
 ## Next
 
-- state machines
 - optics
 
 ## Later
@@ -25,7 +26,9 @@
 
 ## Maybe
 
+- value -> payload
 - async iterator
+- machine: default
 
 ## Blocked
 

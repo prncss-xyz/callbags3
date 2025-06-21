@@ -1,11 +1,13 @@
 import type { Prettify } from '@constellar/core'
 import { isUnknown, isVoid } from './guards'
+import type { Tagged } from './types'
 
-export type Tagged<Type, Value> = { readonly type: Type; readonly value: Value }
-export type Singleton<Type> = { readonly type: Type; readonly value: void }
-type Other<T, Type, V> = Tagged<T extends Type ? never : T, V>
+type Other<T extends PropertyKey, Type extends PropertyKey, V> = Tagged<
+	T extends Type ? never : T,
+	V
+>
 
-class Tag<Type, Value> {
+class Tag<Type extends PropertyKey, Value> {
 	private readonly type: Type
 	public readonly isValue: (v: unknown) => v is Value
 	constructor(type: Type, isValue: (v: unknown) => v is Value) {
@@ -15,7 +17,7 @@ class Tag<Type, Value> {
 	chain<A extends Value, B extends Value>(
 		f: (a: A) => Prettify<Tagged<Type, B>>,
 	) {
-		return <T, O>(
+		return <T extends PropertyKey, O>(
 			m: Other<T, Type, O> | Tagged<Type, A>,
 		): Other<T, Type, O> | Tagged<Type, B> => {
 			if (this.is(m)) return f(m.value)
@@ -25,13 +27,13 @@ class Tag<Type, Value> {
 	get<V extends Value>(m: Tagged<Type, V>) {
 		return m.value
 	}
-	is<V extends Value, T, O>(
+	is<V extends Value, T extends PropertyKey, O>(
 		m: Tagged<Type, V> | Other<T, Type, O>,
 	): m is Prettify<Tagged<Type, V>> {
 		return m.type === this.type
 	}
 	map<A extends Value, B extends Value>(f: (a: A) => B) {
-		return <T, O>(
+		return <T extends PropertyKey, O>(
 			m: Other<T, Type, O> | Tagged<Type, A>,
 		): Prettify<Other<T, Type, O>> | Tagged<Type, B> => {
 			if (this.is(m)) return this.of(f(m.value))
@@ -50,14 +52,14 @@ class Tag<Type, Value> {
 	}
 }
 
-export function tag<const Type, Value>(
+export function tag<const Type extends PropertyKey, Value>(
 	type: Type,
 	isValue: (v: unknown) => v is Value = isUnknown as any,
 ) {
 	return new Tag(type, isValue)
 }
 
-export function singleton<const T>(type: T) {
+export function singleton<const Type extends PropertyKey>(type: Type) {
 	return new Tag(type, isVoid)
 }
 

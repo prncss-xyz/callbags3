@@ -1,4 +1,4 @@
-import { type Guarded } from './guards'
+import { type InferGuard } from './guards'
 import { type Prettify } from './types'
 
 type Tagged<Type, Value> = { readonly type: Type; readonly value: Value }
@@ -63,7 +63,7 @@ export function union<
 		members[key] = new Tag(key)
 	}
 	type P = {
-		[K in keyof Props]: { type: K; value: Guarded<Props[K]> }
+		[K in keyof Props]: { type: K; value: InferGuard<Props[K]> }
 	}
 	const union = _union
 	type U = Prettify<P[keyof P] & { [union]: Brand }>

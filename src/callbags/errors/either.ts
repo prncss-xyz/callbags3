@@ -1,4 +1,4 @@
-import { isUnknown, type Guarded } from '../../guards'
+import { isUnknown, type InferGuard } from '../../guards'
 import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 import { union } from '../../unions'
@@ -9,8 +9,8 @@ export const [isEither, { err, succ }] = union(EITHER, {
 	succ: isUnknown,
 })
 
-export type Succ<S> = Guarded<typeof succ.is<S>>
-export type Err<E> = Guarded<typeof err.is<E>>
+export type Succ<S> = InferGuard<typeof succ.is<S>>
+export type Err<E> = InferGuard<typeof err.is<E>>
 export type Either<S, E> = Err<E> | Succ<S>
 
 export function safeEither<
