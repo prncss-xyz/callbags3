@@ -1,9 +1,9 @@
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
 
-export interface Obs<Value, Index, Err, M extends AnyMulti> {
+export interface Obs<Value, Err, M extends AnyMulti> {
 	complete: M
 	error: (fail: Err) => void
-	next: (value: Value, index: Index) => void
+	next: (value: Value) => void
 }
 
 function deferCond(sync: unknown, cb: () => void) {
@@ -11,11 +11,13 @@ function deferCond(sync: unknown, cb: () => void) {
 	else setTimeout(cb, 0)
 }
 
-export function observe<Value, Index, Err, M extends AnyMulti>(
-	props: Obs<Value, Index, Err, M>,
+export function observe<Value, Err, M extends AnyMulti, Context = void>(
+	props: Obs<Value, Err, M>,
+	context: Context,
 ) {
-	return function (source: Source<Value, Index, Err, AnyPull, M>) {
+	return function (source: Source<Value, Context, Err, AnyPull, M>) {
 		const { pull, unmount } = source({
+			context,
 			complete: props.complete
 				? () => {
 						deferCond(pull, () => {

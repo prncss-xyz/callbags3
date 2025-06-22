@@ -1,15 +1,14 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
 import type { MultiSource, SingleSource } from './core'
 
-export function onceAsync<Value, Index = void>(
+export function onceAsync<Value, Context = void>(
 	init: Init<Promise<Value>>,
-	index?: Index,
-): SingleSource<Value, Index, never, undefined> {
+): SingleSource<Value, Context, never, undefined> {
 	return function ({ next }) {
 		let closed = false
 		fromInit(init).then((value) => {
 			if (closed) return
-			next(value, index!)
+			next(value)
 		})
 		return {
 			pull: undefined,
@@ -20,16 +19,15 @@ export function onceAsync<Value, Index = void>(
 	}
 }
 
-export function asyncIterable<Value>(
+export function asyncIterable<Value, Context = void>(
 	values: AsyncIterable<Value>,
-): MultiSource<Value, number, never, undefined> {
+): MultiSource<Value, Context, never, undefined> {
 	return function ({ complete, next }) {
-		let index = 0
 		let closed = false
 		;(async () => {
 			for await (const value of values) {
 				if (closed) return
-				next(value, index++)
+				next(value)
 			}
 			complete()
 		})()
@@ -42,14 +40,13 @@ export function asyncIterable<Value>(
 	}
 }
 
-export function interval(
+export function interval<Context = void>(
 	period: number,
-): MultiSource<number, number, never, undefined> {
+): MultiSource<number, Context, never, undefined> {
 	return function ({ next }) {
 		let index = 0
 		let handler = setInterval(() => {
-			next(index, index)
-			index++
+			next(index++)
 		}, period)
 		return {
 			pull: undefined,

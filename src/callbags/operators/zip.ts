@@ -1,14 +1,13 @@
 import { type AnyPull, type MultiSource } from '../sources'
 
-function merger<VL, VR, V, IL>(
-	merge: (left: VL, right: VR, i: IL) => V,
-	push: (c: V, i: IL) => void,
+function merger<VL, VR, V>(
+	merge: (left: VL, right: VR) => V,
+	push: (c: V) => void,
 	complete: () => void,
 ) {
 	let openedLeft = true
 	let openedRight = true
 	const ls: VL[] = []
-	const is: IL[] = []
 	const rs: VR[] = []
 	return {
 		completeLeft() {
@@ -25,23 +24,21 @@ function merger<VL, VR, V, IL>(
 			}
 			complete()
 		},
-		nextLeft(l: VL, i: IL) {
+		nextLeft(l: VL) {
 			if (!openedLeft) return
 			if (rs.length) {
 				const r = rs.shift()!
-				push(merge(l, r, i), i)
+				push(merge(l, r))
 				if (!rs.length && !openedRight) complete()
 				return
 			}
 			ls.push(l)
-			is.push(i)
 		},
 		nextRight(r: VR) {
 			if (!openedRight) return
 			if (ls.length) {
 				const a = ls.shift()!
-				const i = is.shift()!
-				push(merge(a, r, i), i)
+				push(merge(a, r))
 				if (!ls.length && !openedLeft) complete()
 				return
 			}
@@ -50,21 +47,27 @@ function merger<VL, VR, V, IL>(
 	}
 }
 
-export function zip<VR, IR, ER, V, VL, P extends AnyPull>(
-	sourceRight: MultiSource<VR, IR, ER, P>,
+export function zip<VR, Context, ER, V, VL, P extends AnyPull>(
+	sourceRight: MultiSource<VR, Context, ER, P>,
 	merge: (a: VL, b: VR) => V,
 ) {
-	return function <IL, EL>(
-		sourceLeft: MultiSource<VL, IL, EL, P>,
-	): MultiSource<V, IL, EL | ER, P> {
-		return function ({ complete, error, next }) {
+	return function <EL>(
+		sourceLeft: MultiSource<VL, Context, EL, P>,
+	): MultiSource<V, Context, EL | ER, P> {
+		return function ({ complete, error, next, context }) {
 			const { completeLeft, completeRight, nextLeft, nextRight } = merger(
 				merge,
 				next,
 				complete,
 			)
-			const ofSL = sourceLeft({ complete: completeLeft, error, next: nextLeft })
+			const ofSL = sourceLeft({
+				complete: completeLeft,
+				error,
+				next: nextLeft,
+				context,
+			})
 			const ofSR = sourceRight({
+				context,
 				complete: completeRight,
 				error,
 				next: nextRight,

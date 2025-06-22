@@ -2,20 +2,19 @@ import type { MultiSource, Pull } from './core'
 import { just, type Maybe } from '../errors/maybe'
 import { add, fromInit, gt, lt, type Init } from '@prncss-xyz/utils'
 
-export function unfold<Value>(
+export function unfold<Value, Context = void>(
 	init: Init<Value>,
-	cb: (acc: Value, index: number) => Maybe<Value>,
-): MultiSource<Value, number, never, Pull> {
-	return function ({ next, complete }) {
+	cb: (acc: Value, context: Context) => Maybe<Value>,
+): MultiSource<Value, Context, never, Pull> {
+	return function ({ next, complete, context }) {
 		let closed = false
 		return {
 			pull() {
-				let index = 0
-				let res = cb(fromInit(init), index)
+				let res = cb(fromInit(init), context)
 				while (just.is(res)) {
-					next(just.get(res), index)
+					next(just.get(res))
 					if (closed) return
-					res = cb(just.get(res), ++index)
+					res = cb(just.get(res), context)
 				}
 				complete()
 			},
@@ -26,22 +25,17 @@ export function unfold<Value>(
 	}
 }
 
-export function loop<Value>(
-	cond: (value: Value, index: number) => unknown,
-	step: (value: Value, index: number) => Value,
-	init: Init<Value>,
-): MultiSource<Value, number, never, Pull> {
-	return function ({ next, complete }) {
+export function loop<Value, Context = void>(
+	cond: (value: Value, context: Context) => unknown,
+	step: (value: Value, context: Context) => Value,
+	init: Init<Value, [Context]>,
+): MultiSource<Value, Context, never, Pull> {
+	return function ({ next, complete, context }) {
 		let closed = false
 		return {
 			pull() {
-				let index = 0
-				for (
-					let acc = fromInit(init);
-					cond(acc, index);
-					acc = step(acc, index)
-				) {
-					next(acc, index++)
+				for (let acc = fromInit(init, context); cond(acc, context); acc = step(acc, context)) {
+					next(acc)
 					if (closed) return
 				}
 				complete()
@@ -53,30 +47,29 @@ export function loop<Value>(
 	}
 }
 
-export function range(start: number, end: number, step = 1) {
-	return loop(step > 0 ? lt(end) : gt(end), add(step), start)
+export function range<Context = void>(start: number, end: number, step = 1) {
+	return loop<number, Context>(step > 0 ? lt(end) : gt(end), add(step), start)
 }
 
-export function times(n: number) {
-	return range(0, n)
+export function times<Context = void>(n: number) {
+	return range<Context>(0, n)
 }
 
-export function until<Value>(
-	cond: (value: Value, index: number) => unknown,
-	step: (value: Value, index: number) => Value,
-	init: Init<Value>,
-): MultiSource<Value, number, never, Pull> {
-	return function ({ next, complete }) {
+export function until<Value, Context = void>(
+	cond: (value: Value, context: Context) => unknown,
+	step: (value: Value, context: Context) => Value,
+	init: Init<Value, [Context]>,
+): MultiSource<Value, Context, never, Pull> {
+	return function ({ next, complete, context }) {
 		closed = false
 		return {
 			pull() {
-				let index = 0
 				let acc = init
 				while (true) {
-					acc = step(fromInit(acc), index++)
-					next(acc, index)
+					acc = step(fromInit(acc, context), context)
+					next(acc)
 					if (closed) return
-					if (cond(acc, index)) break
+					if (cond(acc, context)) break
 				}
 				complete()
 			},

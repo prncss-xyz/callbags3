@@ -25,27 +25,28 @@ function pendingCounter(onDone: () => void) {
 	}
 }
 
-export function mapAsync<A, Index, B, M extends AnyMulti>(
-	cb: (value: A, index: Index) => Promise<B>,
+export function mapAsync<A, Context, B, M extends AnyMulti>(
+	cb: (value: A, context: Context) => Promise<B>,
 ) {
 	return function <Err>(
-		source: Source<A, Index, Err, undefined, M>,
-	): Source<B, Index, Err, undefined, M> {
+		source: Source<A, Context, Err, undefined, M>,
+	): Source<B, Context, Err, undefined, M> {
 		return function (props) {
 			if (props.complete) {
 				const { complete, wrap } = pendingCounter(props.complete)
 				return source({
+					context: props.context,
 					complete: complete as any,
 					error: props.error,
-					next(value, index) {
-						wrap(cb(value, index).then((v) => props.next(v, index)))
+					next(value) {
+						wrap(cb(value, props.context).then((v) => props.next(v)))
 					},
 				})
 			}
 			return source({
 				error: props.error,
-				next(value: A, index: Index) {
-					cb(value, index).then((v) => props.next(v, index))
+				next(value: A, context: Context) {
+					cb(value, context).then((v) => props.next(v))
 				},
 			} as any)
 		}

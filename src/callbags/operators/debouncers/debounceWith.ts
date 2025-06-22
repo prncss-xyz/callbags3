@@ -1,27 +1,25 @@
 import type { Multi, Source } from '../../sources/core'
 
-export function debounceWith<A, Index>(
+export function debounceWith<A, Context>(
 	delay: number,
-	eq: (next: A, last: A, index: Index) => unknown = Object.is,
+	eq: (next: A, last: A) => unknown = Object.is,
 ) {
 	return function <Err>(
-		source: Source<A, Index, Err, undefined, Multi>,
-	): Source<A, Index, Err, undefined, Multi> {
+		source: Source<A, Context, Err, undefined, Multi>,
+	): Source<A, Context, Err, undefined, Multi> {
 		return function (props) {
 			let handle: NodeJS.Timeout | number = 0
 			let arg_: A
-			let index_: Index
 			function eff() {
-				props.next(arg_, index_)
+				props.next(arg_)
 			}
 			return source({
 				...props,
-				next(value, index) {
+				next(value) {
 					clearTimeout(handle)
-					if (!eq(value, arg_, index)) props.next(arg_, index_)
+					if (!eq(value, arg_)) props.next(arg_)
 					else {
 						arg_ = value
-						index_ = index
 						handle = setTimeout(eff, delay)
 					}
 				},

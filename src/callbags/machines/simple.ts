@@ -15,7 +15,7 @@ type InferEvent<T> =
 			>
 		: never
 
-function simpleMachine<Context = void>() {
+export function simpleMachine<Context = void>() {
 	return function <
 		Value,
 		T extends Transitions<any, Value, Context>,
@@ -75,6 +75,7 @@ function simpleMachine<Context = void>() {
 	}
 }
 
+/*
 const m = simpleMachine()(0, {
 	transitions: {
 		a: (_: void, s) => s + 1,
@@ -89,3 +90,4 @@ type t = ReturnType<typeof m.send>
 const r = m.result()
 const p = r.selectSuccess
 const q = r.selectPending
+*/

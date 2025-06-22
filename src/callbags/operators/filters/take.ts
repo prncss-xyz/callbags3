@@ -5,13 +5,14 @@ export function take<Value, Index, Err, P extends AnyPull>(n: number) {
 	return function (
 		source: MultiSource<Value, Index, Err, P>,
 	): MultiSource<Value, Index, Err, P> {
-		return function ({ next, complete, error }) {
+		return function ({ next, complete, error, context }) {
 			let i = 0
 			const props = source({
-				next(value, index) {
+				context,
+				next(value) {
 					i++
 					if (i === n) complete()
-					next(value, index)
+					next(value)
 				},
 				complete,
 				error,

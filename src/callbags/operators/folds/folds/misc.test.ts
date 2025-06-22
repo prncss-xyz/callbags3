@@ -28,22 +28,26 @@ describe('join', () => {
 
 describe('joinLast', () => {
 	test('', () => {
-		const res = flow(
-			iterable(['a', 'b', 'c']),
-			fold(joinLast(',')),
-			result()
-		)
+		const res = flow(iterable(['a', 'b', 'c']), fold(joinLast(',')), result())
 		expect(res).toBe('a,b,c,')
 	})
 })
 
 describe('fromEntries', () => {
 	test('', () => {
-		const res = flow(iterable([1, 2, 3]), fold(fromEntries()), result())
+		const res = flow(
+			iterable<[string, number]>([
+				['a', 0],
+				['b', 1],
+				['c', 2],
+			]),
+			fold(fromEntries()),
+			result(),
+		)
 		expect(res).toEqual({
-			0: 1,
-			1: 2,
-			2: 3,
+			a: 0,
+			b: 1,
+			c: 2,
 		})
 	})
 })

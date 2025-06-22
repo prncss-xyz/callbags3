@@ -20,20 +20,20 @@ export function safeNullable<
 export function chainNullable<
 	A,
 	B,
-	Index,
+	Context,
 	P extends AnyPull,
 	M extends AnyMulti,
->(cb: (value: A, index: Index) => B | null | undefined) {
+>(cb: (value: A, context: Context) => B | null | undefined) {
 	return function <Err>(
-		source: Source<A, Index, Err, P, M>,
-	): Source<B, Index, Err | NothingError, P, M> {
+		source: Source<A, Context, Err, P, M>,
+	): Source<B, Context, Err | NothingError, P, M> {
 		return function (props) {
 			return source({
 				...props,
-				next(value, index) {
-					const res = cb(value, index)
+				next(value) {
+					const res = cb(value, props.context)
 					if (isNullish(res)) props.error(nothingError)
-					else props.next(res, index)
+					else props.next(res)
 				},
 			})
 		}

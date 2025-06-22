@@ -9,10 +9,10 @@ import { safeNullable } from '../errors/nullable'
 describe('tap', () => {
 	test('', () => {
 		const cb = vi.fn()
-		flow(iterable([1, 2, 3]), tap(cb), fold(last()), safeNullable(), result())
+		flow(iterable([1, 2, 3]), tap(cb), fold(last()), safeNullable(), result(2))
 		expect(cb.mock.calls).toEqual([
-			[1, 0],
-			[2, 1],
+			[1, 2],
+			[2, 2],
 			[3, 2],
 		])
 	})

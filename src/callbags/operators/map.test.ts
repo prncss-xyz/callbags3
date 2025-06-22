@@ -13,11 +13,11 @@ describe('map', () => {
 			iterable([1, 2, 3, 4]),
 			map(mul(2)),
 			map(String),
-			map((x, i) => x + i),
+			map((x) => x + 1),
 			fold(last()),
 			safeMaybe(),
 			result(),
 		)
-		expect(res).toEqual(just.of('83'))
+		expect(res).toEqual(just.of('81'))
 	})
 })

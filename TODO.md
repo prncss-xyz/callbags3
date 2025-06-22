@@ -12,6 +12,8 @@
     - wordCOunt
     - zipCmp
 
+- proc prototype ordering
+
 - pick/multi
 
 ## Next

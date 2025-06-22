@@ -1,17 +1,18 @@
 import type { AnyPull, MultiSource } from '../../sources/core'
 
-export function dropWhile<Value, Index, Err, P extends AnyPull>(
-	cond: (value: Value, index: Index) => unknown,
+export function dropWhile<Value, Context, Err, P extends AnyPull>(
+	cond: (value: Value, context: Context) => unknown,
 ) {
 	return function (
-		source: MultiSource<Value, Index, Err, P>,
-	): MultiSource<Value, Index, Err, P> {
-		return function ({ next, complete, error }) {
+		source: MultiSource<Value, Context, Err, P>,
+	): MultiSource<Value, Context, Err, P> {
+		return function ({ next, context, complete, error }) {
 			let closed: unknown = true
 			const props = source({
-				next(value, index) {
-					if (!closed) next(value, index)
-					closed = closed && cond(value, index)
+				context,
+				next(value) {
+					if (!closed) next(value)
+					closed = closed && cond(value, context)
 				},
 				complete,
 				error,

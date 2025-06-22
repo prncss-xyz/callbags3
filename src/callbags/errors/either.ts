@@ -15,31 +15,31 @@ export type Either<S, E> = Err<E> | Succ<S>
 
 export function safeEither<
 	S,
-	Index,
+	Context,
 	E,
 	P extends AnyPull,
 	M extends AnyMulti,
 >() {
-	return safe<S, Index, E, Succ<S>, Err<E>, P, M>(succ.of, err.of)
+	return safe<S, Context, E, Succ<S>, Err<E>, P, M>(succ.of, err.of)
 }
 
 export function chainEither<
 	A,
 	B,
 	E,
-	Index,
+	Context,
 	P extends AnyPull,
 	M extends AnyMulti,
->(cb: (value: A, index: Index) => Either<B, E>) {
+>(cb: (value: A, context: Context) => Either<B, E>) {
 	return function <E2>(
-		source: Source<A, Index, E2, P, M>,
-	): Source<B, Index, E2 | E, P, M> {
+		source: Source<A, Context, E2, P, M>,
+	): Source<B, Context, E2 | E, P, M> {
 		return function (props) {
 			return source({
 				...props,
-				next(value, index) {
-					const res: Either<B, E> = cb(value, index)
-					if (succ.is(res)) props.next(succ.get(res), index)
+				next(value) {
+					const res: Either<B, E> = cb(value, props.context)
+					if (succ.is(res)) props.next(succ.get(res))
 					else props.error(err.get(res))
 				},
 			})

@@ -35,3 +35,7 @@ export const { init, send, result } = baseMachine<State, Event>()(
 		},
 	},
 )
+
+describe('baseMachine', () => {
+  it.todo('send')
+})

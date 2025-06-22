@@ -1,20 +1,27 @@
 import { noop } from '@constellar/core'
 import type { Pull, MultiSource, SingleSource } from './core'
 
-export function empty<Value, Index>(): MultiSource<Value, Index, never, Pull> {
-	return function ({ complete }) {
+export function empty<Value, Context = void>(): MultiSource<
+	Value,
+	Context,
+	never,
+	Pull
+> {
+	return function ({ complete, context }) {
 		return {
+			context,
 			pull: complete,
 			unmount: noop,
 		}
 	}
 }
 
-export function once<Value>(
+export function once<Value, Context = void>(
 	value: Value,
-): SingleSource<Value, void, never, Pull> {
-	return function ({ next }) {
+): SingleSource<Value, Context, never, Pull> {
+	return function ({ next, context }) {
 		return {
+			context,
 			pull() {
 				next(value)
 			},
@@ -23,16 +30,16 @@ export function once<Value>(
 	}
 }
 
-export function iterable<Value>(
+export function iterable<Value, Context = void>(
 	values: Iterable<Value>,
-): MultiSource<Value, number, never, Pull> {
-	return function ({ next, complete }) {
+): MultiSource<Value, Context, never, Pull> {
+	return function ({ next, complete, context }) {
 		let closed = false
 		return {
+			context,
 			pull() {
-				let index = 0
 				for (const value of values) {
-					next(value, index++)
+					next(value)
 					if (closed) return
 				}
 				complete()

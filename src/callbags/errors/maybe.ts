@@ -26,18 +26,18 @@ export function safeMaybe<
 	)
 }
 
-export function chainMaybe<A, B, Index, P extends AnyPull, M extends AnyMulti>(
-	cb: (value: A, index: Index) => Maybe<B>,
+export function chainMaybe<A, B, Context, P extends AnyPull, M extends AnyMulti>(
+	cb: (value: A, context: Context) => Maybe<B>,
 ) {
 	return function <Err>(
-		source: Source<A, Index, Err, P, M>,
-	): Source<B, Index, Err | NothingError, P, M> {
+		source: Source<A, Context, Err, P, M>,
+	): Source<B, Context, Err | NothingError, P, M> {
 		return function (props) {
 			return source({
 				...props,
-				next(value, index) {
-					const res = cb(value, index)
-					if (just.is(res)) props.next(just.get(res), index)
+				next(value) {
+					const res = cb(value, props.context)
+					if (just.is(res)) props.next(just.get(res))
 					else props.error(nothingError)
 				},
 			})

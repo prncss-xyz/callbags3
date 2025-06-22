@@ -7,8 +7,9 @@ export function first<Value, Index, Err, P extends AnyPull>() {
 	return function (
 		source: MultiSource<Value, Index, Err, P>,
 	): SingleSource<Value, Index, Err | NothingError, P> {
-		return function ({ next, error }) {
+		return function ({ next, error, context }) {
 			return source({
+				context,
 				error,
 				next,
 				complete,

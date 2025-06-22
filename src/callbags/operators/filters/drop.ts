@@ -1,14 +1,15 @@
 import type { AnyPull, MultiSource } from '../../sources/core'
 
-export function drop<Value, Index, Err, P extends AnyPull>(n: number) {
+export function drop<Value, Context, Err, P extends AnyPull>(n: number) {
 	return function (
-		source: MultiSource<Value, Index, Err, P>,
-	): MultiSource<Value, Index, Err, P> {
-		return function ({ next, complete, error }) {
+		source: MultiSource<Value, Context, Err, P>,
+	): MultiSource<Value, Context, Err, P> {
+		return function ({ context, next, complete, error }) {
 			let i = 0
 			const props = source({
-				next(value, index) {
-					if (i >= n) next(value, index)
+				context,
+				next(value) {
+					if (i >= n) next(value)
 					i++
 				},
 				complete,
