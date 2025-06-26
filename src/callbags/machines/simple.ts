@@ -1,32 +1,17 @@
-import type {
-	ContraEmpty,
-	Empty,
-	Modify,
-	Prettify2,
-	Tagged,
-	Tags,
-} from '../../types'
+import type { ContraEmpty, Empty, Modify, Tagged, Tags } from '../../types'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 import { id, type Prettify } from '@constellar/core'
-import {
-	fromSend,
-	type AnyErrorState,
-	type AnyFinalState,
-	type Machine,
-	type Send,
-} from './core'
+import { fromSend, type AnyExtractState, type Machine, type Send } from './core'
 
-// TODO: merge
-// TODO: Prettify2
 // MAYBE: shorcut for single value state
 
 function merge<P extends Empty, Q extends Empty>(p: P, q: Q): P & Q {
 	return { ...p, ...q }
 }
 
-type AnyTransitions<State, Context> = Record<
+type AnyTransitions<Payload, Context> = Record<
 	string,
-	Init<Partial<State>, [any, State, Context]>
+	Init<Partial<Payload>, [any, Payload, Context]>
 >
 
 type InferInitArg<T> = T extends (e: infer E, ...args: any[]) => any ? E : void
@@ -37,57 +22,47 @@ type InferEvent<T extends AnyTransitions<any, any>> = Tags<{
 
 export function simpleMachine<Context = Empty>() {
 	return function <
-		Value extends ContraEmpty,
-		Transitions extends AnyTransitions<Value, Context>,
-		Select = Value,
-		Status extends Tagged<'pending' | 'success', void> | AnyErrorState = Tagged<
-			'pending',
-			void
-		>,
-		Extract extends AnyFinalState = Tagged<'success', 'void'>,
+		Payload extends ContraEmpty,
+		Transitions extends AnyTransitions<Payload, Context>,
+		Select = Payload,
+		Status extends 'final' | 'pending' = 'pending',
+		Extract extends AnyExtractState = Tagged<'success', 'void'>,
 		Param = void,
 	>(
-		init: Init<Value, [Param]>,
+		init: Init<Payload, [Param]>,
 		transitions: Transitions,
 		options?: Partial<{
-			select?: Init<Select, [Value]>
-			normalize: Modify<Value>
-			getStatus: (v: Value) => Send<Status>
+			select?: Init<Select, [Payload]>
+			normalize: Modify<Payload>
+			getStatus: (v: Payload) => Status
 		}>,
-		extract?: (state: {
-			type: Exclude<Status['type'], 'error'>
-			value: Value
-		}) => Send<Extract>,
+		extract?: (state: { type: Status; value: Payload }) => Send<Extract>,
 	): Machine<
 		Param,
 		InferEvent<Transitions>,
-		Prettify<Tagged<Exclude<Status['type'], 'error'>, Value>>,
-		Prettify<Status & AnyErrorState>,
+		Prettify<Tagged<Status, Payload>>,
 		Context,
 		{
-			type: { type: Exclude<Status['type'], 'error'>; value: Value }['type']
+			type: { type: Exclude<Status, 'error'>; value: Payload }['type']
 			value: Select
 		},
 		Extract
 	> {
-		type SafeState = Tagged<Exclude<Status['type'], 'error'>, Value>
-		type ErrState = Status & AnyErrorState
+		type SafeState = Tagged<Status, Payload>
 		const normalize = options?.normalize ?? id
-		function always(value: Value): SafeState | ErrState {
+		function always(value: Payload): SafeState {
 			value = normalize(value)
-			let status: Status
-			if (options?.getStatus) status = fromSend(options.getStatus(value))
-			else status = { type: 'pending', value: undefined } as any
-			const type = status.type as Status['type']
-			if (type === 'error') return status as Status & Tagged<'error', unknown>
-			return { type: type as Exclude<Status['type'], 'error'>, value }
+			const type = (
+				options?.getStatus ? options.getStatus(value) : 'pending'
+			) as Status
+			return { type, value }
 		}
 		return {
 			init(param) {
 				return always(fromInit(init, param))
 			},
 			send(event, s, c) {
-				if (s.type !== 'pending') return s
+				if (s.type === 'final') return s 
 				const value = s.value
 				const t = transitions[event.type]
 				if (t === undefined) return s
@@ -103,8 +78,8 @@ export function simpleMachine<Context = Empty>() {
 				}
 			},
 			extract(s) {
-				if (extract) return fromSend(extract(s as any)) as any
-				return { type: 'success', value: s.value }
+				if (extract) return fromSend(extract(s))
+				return { type: 'success', value: s.value } as Extract
 			},
 		}
 	}

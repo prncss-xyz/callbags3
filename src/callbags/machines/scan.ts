@@ -1,44 +1,41 @@
 import type { AnyTagged } from '../../types'
 import type { AnyPull, MultiSource } from '../sources'
 import { deferCond } from '../../utils'
-import type { Machine, AnyErrorState, AnyFinalState } from './core'
+import type {
+	Machine,
+	AnyExtractState,
+} from './core'
 
 export function scanMachine<
 	Param,
 	Event extends AnyTagged,
-	SafeState extends AnyTagged,
-	ErrState extends AnyErrorState,
+	State extends AnyTagged,
 	Context,
 	Result,
-	Extract extends AnyFinalState,
+	Extract extends AnyExtractState,
 >(
-	machine: Machine<Param, Event, SafeState, ErrState, Context, Result, Extract>,
+	machine: Machine<Param, Event, State, Context, Result, Extract>,
 	param: Param,
 ) {
 	return function <SourceErr, P extends AnyPull>(
 		source: MultiSource<Event, Context, SourceErr, P>,
-	): MultiSource<SafeState, Context, ErrState['value'] | SourceErr, P> {
+	): MultiSource<State, Context, SourceErr, P> {
 		return function ({ next, error, context, complete }) {
-			let safeState: SafeState
-			function handlerState(state: SafeState | ErrState) {
-				switch (state.type) {
-					case 'error':
-						error(state.value)
-						break
-					case 'success':
-						next(state)
-						complete()
-						break
-					default:
-						next(state as SafeState)
-						safeState = state as SafeState
+			let lastState: State
+			function handlerState(state: State) {
+				if (state.type === 'final') {
+					next(state)
+					complete()
+					return
 				}
+				next(state)
+				lastState = state
 			}
 			const res = source({
-				next: (event) => handlerState(machine.send(event, safeState, context)),
+				next: (event) => handlerState(machine.send(event, lastState, context)),
 				error,
 				context,
-				complete: () => next(safeState),
+				complete: () => next(lastState),
 			})
 			deferCond(res, () => handlerState(machine.init(param)))
 			return res

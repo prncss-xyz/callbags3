@@ -9,13 +9,10 @@ const m = simpleMachine()(
 	},
 	{
 		normalize: ({ value }) => ({ value: value + 1 }),
-		getStatus: ({ value }) =>
-			value % 2 === 0
-				? { type: 'success', value: undefined }
-				: { type: 'error', value: 'vava' },
+		getStatus: ({ value }) => (value % 2 === 0 ? 'pending' : 'final'),
 		select: ({ value }) => ({ double: value * 2 }),
 	},
-	(s) => ({ type: 'success', value: 'victoire' }),
+	() => ({ type: 'success', value: 'victoire' }),
 )
 
 export const { init, send, getResult } = m

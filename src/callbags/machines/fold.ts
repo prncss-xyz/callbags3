@@ -2,22 +2,21 @@ import type { AnyTagged } from '../../types'
 import type { AnyPull, MultiSource, SingleSource } from '../sources'
 import { deferCond } from '../../utils'
 import type {
-	AnyErrorState,
-	AnyFinalState,
 	Machine,
 	AnySuccessState,
+	AnyExtractState,
+	AnyErrorState,
 } from './core'
 
 export function foldMachine<
 	Param,
 	Event extends AnyTagged,
-	SafeState extends AnyTagged,
-	ErrState extends AnyErrorState,
+	State extends AnyTagged,
 	Context,
 	Result,
-	Extract extends AnyFinalState,
+	Extract extends AnyExtractState,
 >(
-	machine: Machine<Param, Event, SafeState, ErrState, Context, Result, Extract>,
+	machine: Machine<Param, Event, State, Context, Result, Extract>,
 	param: Param,
 ) {
 	return function <SourceErr, P extends AnyPull>(
@@ -25,12 +24,12 @@ export function foldMachine<
 	): SingleSource<
 		(Extract & AnySuccessState)['value'],
 		Context,
-		SourceErr | (ErrState | (Extract & AnyErrorState))['value'],
+		SourceErr | (Extract & AnyErrorState)['value'],
 		P
 	> {
 		return function ({ next, error, context }) {
-			let safeState: SafeState
-			function handleComplete(state: SafeState) {
+			let safeState: State
+			function handleComplete(state: State) {
 				const res = machine.extract(state)
 				if (res.type === 'error') {
 					error(res.value)
@@ -39,7 +38,7 @@ export function foldMachine<
 				next(res.value as any)
 				return
 			}
-			function handleState(state: SafeState | ErrState) {
+			function handleState(state: State) {
 				switch (state.type) {
 					case 'error':
 						error(state.value)

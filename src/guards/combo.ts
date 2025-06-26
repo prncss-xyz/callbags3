@@ -1,4 +1,4 @@
-import type { Prettify, Intersection, Tags } from '../types'
+import type { Prettify, ValueIntersection, Tags } from '../types'
 import { isNullish, isObject, type Guard } from './primitives'
 
 export function refine<T>(g: Guard<T>, ...fns: ((v: T) => unknown)[]) {
@@ -72,7 +72,7 @@ export function isSome<Args extends any[]>(...fns: IsObj<Args>) {
 }
 
 export function isAll<Args extends any[]>(...fns: IsObj<Args>) {
-	return function (v: unknown): v is Prettify<Intersection<Args>> {
+	return function (v: unknown): v is Prettify<ValueIntersection<Args>> {
 		for (const fn of fns) {
 			if (!fn(v)) return false
 		}

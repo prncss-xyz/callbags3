@@ -11,9 +11,7 @@ import { fromInit, type Init } from '@prncss-xyz/utils'
 import {
 	fromSend,
 	fromSender,
-	type AnyErrorState,
-	type AnyFinalState,
-	type Final,
+	type AnyExtractState,
 	type Machine,
 	type Send,
 	type Sender,
@@ -22,7 +20,7 @@ import {
 // MAYBE: prevent keys not belonging to State
 
 type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
-	[S in Exclude<State['type'], Final>]:
+	[S in Exclude<State['type'], 'final'>]:
 		| {
 				send:
 					| Partial<{
@@ -39,7 +37,7 @@ type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
 		  }
 		| { always: Sender<State, [(State & { type: S })['value']]> }
 } & {
-	[S in Exclude<State['type'], 'error'>]: {
+	[S in State['type']]: {
 		normalize?: Modify<(State & { type: S })['value']>
 		select?: Init<object, [(State & { type: S })['value']]>
 	}
@@ -69,18 +67,15 @@ export function baseMachine<
 	return function <
 		O extends Opts<Event, State, Context>,
 		Param = void,
-		const Extract extends AnyFinalState = Tagged<'success', 'void'>,
+		const Extract extends AnyExtractState = Tagged<'success', 'void'>,
 	>(
 		init: Sender<State, [Param]>,
 		opts: O,
-		extract?: (
-			state: Prettify<Exclude<State & NonTransitory<O>, AnyErrorState>>,
-		) => Send<Extract>,
+		extract?: (state: Prettify<State & NonTransitory<O>>) => Send<Extract>,
 	): Machine<
 		Param,
 		Event,
-		Prettify<Exclude<State & NonTransitory<O>, AnyErrorState>>,
-		Prettify<State & NonTransitory<O> & AnyErrorState>,
+		Prettify<State & NonTransitory<O>>,
 		Context,
 		Prettify2<InferResult<State & NonTransitory<O>, O>>,
 		Extract
