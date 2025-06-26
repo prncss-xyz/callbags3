@@ -1,41 +1,29 @@
-import type { AnyTagged, Empty, Modify, Tagged, Values } from '../../types'
+import type {
+	AnyTagged,
+	Empty,
+	Modify,
+	Tagged,
+	ValueUnion,
+	Prettify,
+	Prettify2,
+} from '../../types'
 import { fromInit, type Init } from '@prncss-xyz/utils'
-import { fromSender, type Final, type Machine, type Sender } from './core'
-import type { Prettify } from '@constellar/core'
+import {
+	fromSend,
+	fromSender,
+	type AnyErrorState,
+	type AnyFinalState,
+	type Final,
+	type Machine,
+	type Send,
+	type Sender,
+} from './core'
 
 // MAYBE: prevent keys not belonging to State
-// MAYBE: simpler inferance for select
 
-type Opts0<Event extends AnyTagged, State extends AnyTagged, Context> = {
+type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
 	[S in Exclude<State['type'], Final>]:
 		| {
-				normalize?: Modify<(State & { type: S })['value']>
-				send:
-					| Partial<{
-							[E in Event['type']]: Sender<
-								State,
-								[
-									(Event & { type: E })['value'],
-									(State & { type: S })['value'],
-									Context,
-								]
-							>
-					  }>
-					| Sender<State, [Event, (State & { type: S })['value'], Context]>
-		  }
-		| { always: Sender<State, [(State & { type: S })['value']]> }
-}
-
-type Opts1<
-	Event extends AnyTagged,
-	State extends AnyTagged,
-	Context,
-	Select,
-> = {
-	[S in Exclude<State['type'], Final>]:
-		| {
-				normalize?: Modify<(State & { type: S })['value']>
-				select: Init<Select, [(State & { type: S })['value']]>
 				send:
 					| Partial<{
 							[E in Event['type']]: Sender<
@@ -51,27 +39,25 @@ type Opts1<
 		  }
 		| { always: Sender<State, [(State & { type: S })['value']]> }
 } & {
-	[S in State['type'] & 'success']: {
-		select: Init<Select, [(State & { type: S })['value']]>
+	[S in Exclude<State['type'], 'error'>]: {
+		normalize?: Modify<(State & { type: S })['value']>
+		select?: Init<object, [(State & { type: S })['value']]>
 	}
 }
 
-type Opts<Event extends AnyTagged, State extends AnyTagged, Context, Select> =
-	| Opts1<Event, State, Context, Select>
-	| Opts0<Event, State, Context>
-
-type InferTransitory<O extends Opts<any, any, any, object>> = Prettify<
-	Values<{
-		[S in keyof O]: O[S] extends { always: any } ? Tagged<S, unknown> : never
+type NonTransitory<O extends Opts<any, any, any>> = {
+	type: ValueUnion<{
+		[S in keyof O]: O[S] extends { always: any } ? never : S
 	}>
->
+}
 
 type InferResult<
-	State,
-	O extends Opts<any, any, any, object>,
-> = 'select' extends keyof Values<O>
-	? Values<O>['select'] extends Init<infer R, any[]>
-		? { value: R } & State
+	State extends AnyTagged,
+	O extends Opts<any, any, any>,
+> = 'select' extends keyof ValueUnion<O>
+	? ValueUnion<O>['select'] extends Init<infer R, any[]>
+		? // FIXME: prettify not working here
+			State & { value: R }
 		: never
 	: State
 
@@ -81,19 +67,25 @@ export function baseMachine<
 	Context = Empty,
 >() {
 	return function <
-		O extends Opts<Event, State, Context, object>,
-		const Param = void,
+		O extends Opts<Event, State, Context>,
+		Param = void,
+		const Extract extends AnyFinalState = Tagged<'success', 'void'>,
 	>(
 		init: Sender<State, [Param]>,
-		opts: O extends Opts<Event, State, Context, Empty> ? O : never,
+		opts: O,
+		extract?: (
+			state: Prettify<Exclude<State & NonTransitory<O>, AnyErrorState>>,
+		) => Send<Extract>,
 	): Machine<
 		Param,
 		Event,
-		Exclude<State, InferTransitory<O>>,
+		Prettify<Exclude<State & NonTransitory<O>, AnyErrorState>>,
+		Prettify<State & NonTransitory<O> & AnyErrorState>,
 		Context,
-		Prettify<InferResult<Exclude<State, InferTransitory<O>>, O>>
+		Prettify2<InferResult<State & NonTransitory<O>, O>>,
+		Extract
 	> {
-		function always(next: State): Exclude<State, InferTransitory<O>> {
+		function always(next: State): State & NonTransitory<O> {
 			while (true) {
 				const always = (opts as any)[next.type].always
 				if (always) next = fromSender(always, next.value)
@@ -105,14 +97,14 @@ export function baseMachine<
 		}
 		return {
 			init(param) {
-				return always(fromSender(init, param))
+				return always(fromSender(init, param)) as any
 			},
 			send(event, state, context) {
-				const e = (opts as any)[state.type]?.send[event.type]
+				const e = (opts as any)[state.type as any]?.send[event.type]
 				if (!e) return state
-				return always(fromSender(e, event.value, state.value, context))
+				return always(fromSender(e, event.value, state.value, context)) as any
 			},
-			result(state) {
+			getResult(state) {
 				const s = (opts as any)[state.type].select
 				if (s) {
 					const value = state.value as any
@@ -122,6 +114,10 @@ export function baseMachine<
 					}
 				}
 				return state as any
+			},
+			extract(state) {
+				if (extract) return fromSend(extract(state as any))
+				return { type: 'success', value: undefined } as any
 			},
 		}
 	}

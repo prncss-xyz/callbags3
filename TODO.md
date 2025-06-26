@@ -1,10 +1,19 @@
 # TODO
 
-- context
-
 - tests (improve coverage)
 
+- fold remove init from inside def
+
+- id => identity
+
 - merge to utils
+
+- state machine
+    - base
+    - combo
+    - operators
+    - extract
+    - effects
 
 - state machine exemples
     - undo/redo
