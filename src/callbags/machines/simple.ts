@@ -26,13 +26,13 @@ export function simpleMachine<Context = Empty>() {
 		Transitions extends AnyTransitions<Payload, Context>,
 		Select = Payload,
 		Status extends 'final' | 'pending' = 'pending',
-		Extract extends AnyExtractState = Tagged<'success', 'void'>,
+		Extract extends AnyExtractState = Tagged<'success', Payload>, 
 		Param = void,
 	>(
 		init: Init<Payload, [Param]>,
 		transitions: Transitions,
 		options?: Partial<{
-			select?: Init<Select, [Payload]>
+			select: Init<Select, [Payload]>
 			normalize: Modify<Payload>
 			getStatus: (v: Payload) => Status
 		}>,
@@ -62,7 +62,7 @@ export function simpleMachine<Context = Empty>() {
 				return always(fromInit(init, param))
 			},
 			send(event, s, c) {
-				if (s.type === 'final') return s 
+				if (s.type === 'final') return s
 				const value = s.value
 				const t = transitions[event.type]
 				if (t === undefined) return s
@@ -71,11 +71,12 @@ export function simpleMachine<Context = Empty>() {
 				)
 			},
 			getResult(s) {
-				if (!options?.select) return s as any
-				return {
-					type: s.type,
-					value: fromInit(options.select, s.value),
-				}
+				if (options?.select)
+					return {
+						type: s.type,
+						value: fromInit(options.select, s.value),
+					}
+				return s as any
 			},
 			extract(s) {
 				if (extract) return fromSend(extract(s))

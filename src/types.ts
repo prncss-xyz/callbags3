@@ -2,10 +2,6 @@ export type Prettify<T> = {
 	[K in keyof T]: T[K]
 } & {}
 
-export type Prettify2<T> = {
-	[K in keyof T]: Prettify<T[K]>
-} & {}
-
 export type Modify<T> = (value: T) => T
 
 export type NonEmptyArray<T> = [T, ...T[]]

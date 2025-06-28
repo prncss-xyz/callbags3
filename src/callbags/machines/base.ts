@@ -5,7 +5,7 @@ import type {
 	Tagged,
 	ValueUnion,
 	Prettify,
-	Prettify2,
+	Tags,
 } from '../../types'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 import {
@@ -43,25 +43,20 @@ type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
 	}
 }
 
-type NonTransitory<O extends Opts<any, any, any>> = {
-	type: ValueUnion<{
-		[S in keyof O]: O[S] extends { always: any } ? never : S
-	}>
-}
+type InferNonTransitory<O extends Opts<any, any, any>> = ValueUnion<{
+	[S in keyof O]: O[S] extends { always: any } ? never : S
+}>
 
-type InferResult<
-	State extends AnyTagged,
-	O extends Opts<any, any, any>,
-> = 'select' extends keyof ValueUnion<O>
-	? ValueUnion<O>['select'] extends Init<infer R, any[]>
-		? // FIXME: prettify not working here
-			State & { value: R }
+type InferResult<O extends Opts<any, any, any>> = Tags<{
+	[K in InferNonTransitory<O>]: O[K] extends { select: Init<infer R, any[]> }
+		? R
 		: never
-	: State
+}>
 
 export function baseMachine<
-	State extends AnyTagged,
 	Event extends AnyTagged,
+	State extends AnyTagged,
+	// MAYBE: Common extends Empty = Empty,
 	Context = Empty,
 >() {
 	return function <
@@ -71,16 +66,18 @@ export function baseMachine<
 	>(
 		init: Sender<State, [Param]>,
 		opts: O,
-		extract?: (state: Prettify<State & NonTransitory<O>>) => Send<Extract>,
+		extract?: (
+			state: Prettify<State & { type: InferNonTransitory<O> }>,
+		) => Send<Extract>,
 	): Machine<
 		Param,
 		Event,
-		Prettify<State & NonTransitory<O>>,
+		Prettify<State & { type: InferNonTransitory<O> }>,
 		Context,
-		Prettify2<InferResult<State & NonTransitory<O>, O>>,
+		Prettify<InferResult<O>>,
 		Extract
 	> {
-		function always(next: State): State & NonTransitory<O> {
+		function always(next: State): State & { type: InferNonTransitory<O> } {
 			while (true) {
 				const always = (opts as any)[next.type].always
 				if (always) next = fromSender(always, next.value)
@@ -92,20 +89,19 @@ export function baseMachine<
 		}
 		return {
 			init(param) {
-				return always(fromSender(init, param)) as any
+				return always(fromSender(init, param))
 			},
 			send(event, state, context) {
 				const e = (opts as any)[state.type as any]?.send[event.type]
 				if (!e) return state
-				return always(fromSender(e, event.value, state.value, context)) as any
+				return always(fromSender(e, event.value, state.value, context))
 			},
 			getResult(state) {
 				const s = (opts as any)[state.type].select
 				if (s) {
-					const value = state.value as any
 					return {
 						type: state.type,
-						value: { ...value, ...fromInit(s, state.value) },
+						value: fromInit(s, state.value),
 					}
 				}
 				return state as any

@@ -1,5 +1,9 @@
 # TODO
 
+- machine
+    - serialization
+    - context: not from input?
+
 - tests (improve coverage)
 
 - fold remove init from inside def

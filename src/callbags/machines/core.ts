@@ -6,6 +6,8 @@ export type AnyFinalState = Tagged<'final', unknown>
 export type AnyErrorState = Tagged<'error', unknown>
 export type AnyExtractState = Tagged<'success' | 'error', unknown>
 
+export type AnyMachine = Machine<any, any, any, any, any, any>
+
 export type Machine<
 	Param,
 	Event extends AnyTagged,

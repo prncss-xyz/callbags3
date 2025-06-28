@@ -1,7 +1,8 @@
-import { isUnknown, type InferGuard } from '../../guards'
-import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
+
+import { type InferGuard, isUnknown } from '../../guards'
 import { union } from '../../unions'
+import { safe } from '../operators/safe'
 
 const EITHER = Symbol('EITHER')
 export const [isEither, { err, succ }] = union(EITHER, {
@@ -33,7 +34,7 @@ export function chainEither<
 >(cb: (value: A, context: Context) => Either<B, E>) {
 	return function <E2>(
 		source: Source<A, Context, E2, P, M>,
-	): Source<B, Context, E2 | E, P, M> {
+	): Source<B, Context, E | E2, P, M> {
 		return function (props) {
 			return source({
 				...props,
