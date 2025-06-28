@@ -12,21 +12,21 @@ export function debounce<A, Context>(delay: number) {
 			}
 			return source({
 				...props,
-				next(value) {
-					clearTimeout(handle)
-					arg_ = value
-					handle = setTimeout(eff, delay)
-				},
-				error(err) {
-					clearTimeout(handle)
-					props.error(err)
-				},
 				complete() {
 					if (handle) {
 						clearTimeout(handle)
 						eff()
 						props.complete()
 					}
+				},
+				error(err) {
+					clearTimeout(handle)
+					props.error(err)
+				},
+				next(value) {
+					clearTimeout(handle)
+					arg_ = value
+					handle = setTimeout(eff, delay)
 				},
 			})
 		}

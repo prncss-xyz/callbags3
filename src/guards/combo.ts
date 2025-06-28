@@ -1,5 +1,6 @@
-import type { Prettify, ValueIntersection, Tags } from '../types'
-import { isNullish, isObject, type Guard } from './primitives'
+import type { Prettify, Tags, ValueIntersection } from '../types'
+
+import { type Guard, isNullish, isObject } from './primitives'
 
 export function refine<T>(g: Guard<T>, ...fns: ((v: T) => unknown)[]) {
 	return function (v: unknown): v is T {
@@ -18,7 +19,7 @@ export function isOneOf<const T extends any[]>(...values: T) {
 }
 
 export function isOptional<T>(fn: Guard<T>) {
-	return function (v: unknown): v is T | undefined | null {
+	return function (v: unknown): v is null | T | undefined {
 		if (isNullish(v)) return true
 		return fn(v)
 	}

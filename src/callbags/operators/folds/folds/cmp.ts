@@ -1,7 +1,8 @@
 import { insert } from '@constellar/core'
 
-import { cmp0, sortedAdd } from './_internals'
 import type { Fold, Fold1 } from '../fold'
+
+import { cmp0, sortedAdd } from './_internals'
 
 export function max<I>(): Fold<number, number, I> {
 	return {

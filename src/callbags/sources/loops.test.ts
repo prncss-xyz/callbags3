@@ -1,9 +1,10 @@
 import { flow } from '@constellar/core'
-import { fold } from '../operators/folds/fold'
-import { result } from '../observe/result'
-import { loop, range, times } from './loops'
-import { toArray } from '../operators/folds/folds/base'
 import { add, lt } from '@prncss-xyz/utils'
+
+import { result } from '../observe/result'
+import { fold } from '../operators/folds/fold'
+import { toArray } from '../operators/folds/folds/base'
+import { loop, range, times } from './loops'
 
 describe('range', () => {
 	test('asc', () => {

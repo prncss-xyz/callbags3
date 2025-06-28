@@ -1,10 +1,10 @@
 import { flow, shallowEqual } from '@constellar/core'
 
-import { max, maxWith, min, shuffle, sort } from './cmp'
+import { safeNullable } from '../../../errors/nullable'
+import { result } from '../../../observe/result'
 import { empty, iterable } from '../../../sources/pull'
 import { fold } from '../fold'
-import { result } from '../../../observe/result'
-import { safeNullable } from '../../../errors/nullable'
+import { max, maxWith, min, shuffle, sort } from './cmp'
 
 describe('maxWith', () => {
 	test('empty', () => {

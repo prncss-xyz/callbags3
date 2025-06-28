@@ -6,18 +6,18 @@ export function dropWith<Value, Context, Err, P extends AnyPull>(
 	return function (
 		source: MultiSource<Value, Context, Err, P>,
 	): MultiSource<Value, Context, Err, P> {
-		return function ({ context, next, complete, error }) {
+		return function ({ complete, context, error, next }) {
 			let first = true
 			let last: Value
 			const props = source({
+				complete,
 				context,
+				error,
 				next(value) {
 					if (first || !eq(value, last!)) next(value)
 					first = false
 					last = value
 				},
-				complete,
-				error,
 			})
 			return props
 		}

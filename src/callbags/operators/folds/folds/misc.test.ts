@@ -1,9 +1,9 @@
 import { flow } from '@constellar/core'
 
+import { result } from '../../../observe/result'
 import { iterable } from '../../../sources/pull'
 import { fold } from '../fold'
 import { fromEntries, join, joinLast, productFold, sumFold } from './misc'
-import { result } from '../../../observe/result'
 
 describe('sumFold', () => {
 	test('', () => {

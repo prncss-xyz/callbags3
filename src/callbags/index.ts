@@ -1,6 +1,6 @@
 export * from './errors'
-export * from './observe'
 export * from './multi'
+export * from './observe'
 export * from './operators'
 export * from './proc'
 export * from './sources'

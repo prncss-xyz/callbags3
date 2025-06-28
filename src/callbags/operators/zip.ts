@@ -54,7 +54,7 @@ export function zip<VR, Context, ER, V, VL, P extends AnyPull>(
 	return function <EL>(
 		sourceLeft: MultiSource<VL, Context, EL, P>,
 	): MultiSource<V, Context, EL | ER, P> {
-		return function ({ complete, error, next, context }) {
+		return function ({ complete, context, error, next }) {
 			const { completeLeft, completeRight, nextLeft, nextRight } = merger(
 				merge,
 				next,
@@ -62,13 +62,13 @@ export function zip<VR, Context, ER, V, VL, P extends AnyPull>(
 			)
 			const ofSL = sourceLeft({
 				complete: completeLeft,
+				context,
 				error,
 				next: nextLeft,
-				context,
 			})
 			const ofSR = sourceRight({
-				context,
 				complete: completeRight,
+				context,
 				error,
 				next: nextRight,
 			})

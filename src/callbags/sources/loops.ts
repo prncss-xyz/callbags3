@@ -1,12 +1,14 @@
+import { add, fromInit, gt, type Init, lt } from '@prncss-xyz/utils'
+
 import type { MultiSource, Pull } from './core'
+
 import { just, type Maybe } from '../errors/maybe'
-import { add, fromInit, gt, lt, type Init } from '@prncss-xyz/utils'
 
 export function unfold<Value, Context = void>(
 	init: Init<Value>,
 	cb: (acc: Value, context: Context) => Maybe<Value>,
 ): MultiSource<Value, Context, never, Pull> {
-	return function ({ next, complete, context }) {
+	return function ({ complete, context, next }) {
 		let closed = false
 		return {
 			pull() {
@@ -30,11 +32,15 @@ export function loop<Value, Context = void>(
 	step: (value: Value, context: Context) => Value,
 	init: Init<Value, [Context]>,
 ): MultiSource<Value, Context, never, Pull> {
-	return function ({ next, complete, context }) {
+	return function ({ complete, context, next }) {
 		let closed = false
 		return {
 			pull() {
-				for (let acc = fromInit(init, context); cond(acc, context); acc = step(acc, context)) {
+				for (
+					let acc = fromInit(init, context);
+					cond(acc, context);
+					acc = step(acc, context)
+				) {
 					next(acc)
 					if (closed) return
 				}
@@ -60,7 +66,7 @@ export function until<Value, Context = void>(
 	step: (value: Value, context: Context) => Value,
 	init: Init<Value, [Context]>,
 ): MultiSource<Value, Context, never, Pull> {
-	return function ({ next, complete, context }) {
+	return function ({ complete, context, next }) {
 		closed = false
 		return {
 			pull() {

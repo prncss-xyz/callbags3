@@ -1,10 +1,11 @@
 import { isoAssert } from '@prncss-xyz/utils'
+
 import { simpleMachine } from './simple'
 
 const list0 = {
-	nextId: 1,
 	currentId: 0,
-	items: [{ id: 0, duration: 0 }],
+	items: [{ duration: 0, id: 0 }],
+	nextId: 1,
 }
 type State = typeof list0
 
@@ -17,7 +18,7 @@ function move(offset: number) {
 	}
 }
 
-function getItem<Id, Item>(id: Id, items: ({ id: Id } & Item)[]) {
+function getItem<Id, Item>(id: Id, items: (Item & { id: Id })[]) {
 	const item = items.find((t) => t.id === id)
 	isoAssert(item, 'current item should always exist')
 	return item
@@ -26,35 +27,35 @@ function getItem<Id, Item>(id: Id, items: ({ id: Id } & Item)[]) {
 export const playlist = simpleMachine()(
 	list0,
 	{
-		resetPlaylist: () => list0,
-		select: ({ id }: { id: number }) => ({ currentId: id }),
+		duplicate: ({ id }: { id: number }, { items, nextId }) => ({
+			items: [...items, { ...getItem(id, items), id: nextId }],
+			nextId: nextId + 1,
+		}),
 		next: move(1),
 		previous: move(-1),
+		remove: ({ id }: { id: number }, { items }) => ({
+			items: items.filter((t) => t.id !== id),
+		}),
+		resetPlaylist: () => list0,
+		select: ({ id }: { id: number }) => ({ currentId: id }),
 		update: (
-			{ id, duration }: { id: number; duration: number },
+			{ duration, id }: { duration: number; id: number; },
 			{ items },
 		) => ({
 			items: items.map((t) => (t.id === id ? { ...t, duration } : t)),
 		}),
-		remove: ({ id }: { id: number }, { items }) => ({
-			items: items.filter((t) => t.id !== id),
-		}),
-		duplicate: ({ id }: { id: number }, { items, nextId }) => ({
-			nextId: nextId + 1,
-			items: [...items, { ...getItem(id, items), id: nextId }],
-		}),
 	},
 	{
-		select: ({ items, currentId }) => {
+		select: ({ currentId, items }) => {
 			const item = items.find((t) => t.id === currentId)
 			isoAssert(item, 'current item should always exist')
 			return {
-				items,
 				currentDuration: item.duration,
 				currentId,
+				items,
 			}
 		},
 	},
 )
 
-export const { init, send, getResult } = playlist
+export const { getResult, init, send } = playlist

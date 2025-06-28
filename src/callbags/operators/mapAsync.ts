@@ -35,8 +35,8 @@ export function mapAsync<A, Context, B, M extends AnyMulti>(
 			if (props.complete) {
 				const { complete, wrap } = pendingCounter(props.complete)
 				return source({
-					context: props.context,
 					complete: complete as any,
+					context: props.context,
 					error: props.error,
 					next(value) {
 						wrap(cb(value, props.context).then((v) => props.next(v)))

@@ -1,8 +1,9 @@
 import { flow } from '@constellar/core'
-import { iterable, once } from '../sources/pull'
+
 import { safeNullable } from '../errors/nullable'
-import { first } from './first'
 import { result } from '../observe/result'
+import { iterable, once } from '../sources/pull'
+import { first } from './first'
 
 describe('first', () => {
 	test('defined', () => {

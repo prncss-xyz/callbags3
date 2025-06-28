@@ -1,7 +1,9 @@
-import type { ContraEmpty, Empty, Modify, Tagged, Tags } from '../../types'
-import { fromInit, type Init } from '@prncss-xyz/utils'
 import { id, type Prettify } from '@constellar/core'
-import { fromSend, type AnyExtractState, type Machine, type Send } from './core'
+import { fromInit, type Init } from '@prncss-xyz/utils'
+
+import type { ContraEmpty, Empty, Modify, Tagged, Tags } from '../../types'
+
+import { type AnyExtractState, fromSend, type Machine, type Send } from './core'
 
 // MAYBE: shorcut for single value state
 
@@ -26,15 +28,15 @@ export function simpleMachine<Context = Empty>() {
 		Transitions extends AnyTransitions<Payload, Context>,
 		Select = Payload,
 		Status extends 'final' | 'pending' = 'pending',
-		Extract extends AnyExtractState = Tagged<'success', Payload>, 
+		Extract extends AnyExtractState = Tagged<'success', Payload>,
 		Param = void,
 	>(
 		init: Init<Payload, [Param]>,
 		transitions: Transitions,
 		options?: Partial<{
-			select: Init<Select, [Payload]>
-			normalize: Modify<Payload>
 			getStatus: (v: Payload) => Status
+			normalize: Modify<Payload>
+			select: Init<Select, [Payload]>
 		}>,
 		extract?: (state: { type: Status; value: Payload }) => Send<Extract>,
 	): Machine<
@@ -58,6 +60,18 @@ export function simpleMachine<Context = Empty>() {
 			return { type, value }
 		}
 		return {
+			extract(s) {
+				if (extract) return fromSend(extract(s))
+				return { type: 'success', value: s.value } as Extract
+			},
+			getResult(s) {
+				if (options?.select)
+					return {
+						type: s.type,
+						value: fromInit(options.select, s.value),
+					}
+				return s as any
+			},
 			init(param) {
 				return always(fromInit(init, param))
 			},
@@ -69,18 +83,6 @@ export function simpleMachine<Context = Empty>() {
 				return always(
 					merge(s as any, fromInit(t as any, event.value, value, c)),
 				)
-			},
-			getResult(s) {
-				if (options?.select)
-					return {
-						type: s.type,
-						value: fromInit(options.select, s.value),
-					}
-				return s as any
-			},
-			extract(s) {
-				if (extract) return fromSend(extract(s))
-				return { type: 'success', value: s.value } as Extract
 			},
 		}
 	}

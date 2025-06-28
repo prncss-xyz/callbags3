@@ -13,17 +13,17 @@ export function safe<
 >(toSuccess: (s: Succ) => S, toError: (e: Err) => E) {
 	return function (
 		source: Source<Succ, Context, Err, P, M>,
-	): Source<T<Succ, S> | T<Err, E>, Context, never, P, M> {
-		return function ({ next, complete, context }) {
+	): Source<T<Err, E> | T<Succ, S>, Context, never, P, M> {
+		return function ({ complete, context, next }) {
 			return source({
+				complete,
 				context,
-				next(succ) {
-					next(toSuccess(succ) as any)
-				},
 				error(e) {
 					next(toError(e) as any)
 				},
-				complete,
+				next(succ) {
+					next(toSuccess(succ) as any)
+				},
 			})
 		}
 	}

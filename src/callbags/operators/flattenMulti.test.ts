@@ -1,18 +1,18 @@
 import { flow } from '@constellar/core'
+import { pipe } from '@constellar/core'
 import { describe, expect, test } from 'vitest'
 
-import { iterable } from '../sources/pull'
-import { fold } from './folds/fold'
-import { toArray } from './folds/folds/base'
 import { result } from '../observe'
+import { proc } from '../proc'
 import { interval } from '../sources'
-import { map } from './map'
+import { range } from '../sources'
+import { iterable } from '../sources/pull'
 import { take } from './filters/take'
 import { flattenMulti } from './flattenMulti'
-import { pipe } from '@constellar/core'
-import { proc } from '../proc'
-import { range } from '../sources'
 import { chainMulti } from './flattenMulti'
+import { fold } from './folds/fold'
+import { toArray } from './folds/folds/base'
+import { map } from './map'
 
 describe('flatten', () => {
 	test('sync', () => {

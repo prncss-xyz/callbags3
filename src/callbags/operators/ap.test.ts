@@ -1,8 +1,9 @@
 import { flow } from '@constellar/core'
+
+import { result } from '../observe'
 import { range } from '../sources/loops'
 import { ap } from './ap'
 import { fold, toArray } from './folds'
-import { result } from '../observe'
 
 describe('ap', () => {
 	test('', () => {

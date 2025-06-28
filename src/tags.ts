@@ -1,6 +1,8 @@
 import type { Prettify } from '@constellar/core'
-import { isUnknown, isVoid } from './guards'
+
 import type { Tagged } from './types'
+
+import { isUnknown, isVoid } from './guards'
 
 type Other<T extends PropertyKey, Type extends PropertyKey, V> = Tagged<
 	T extends Type ? never : T,
@@ -8,8 +10,8 @@ type Other<T extends PropertyKey, Type extends PropertyKey, V> = Tagged<
 >
 
 class Tag<Type extends PropertyKey, Value> {
-	private readonly type: Type
 	public readonly isValue: (v: unknown) => v is Value
+	private readonly type: Type
 	constructor(type: Type, isValue: (v: unknown) => v is Value) {
 		this.type = type
 		this.isValue = isValue
@@ -28,9 +30,13 @@ class Tag<Type extends PropertyKey, Value> {
 		return m.value
 	}
 	is<V extends Value, T extends PropertyKey, O>(
-		m: Tagged<Type, V> | Other<T, Type, O>,
+		m: Other<T, Type, O> | Tagged<Type, V>,
 	): m is Prettify<Tagged<Type, V>> {
 		return m.type === this.type
+	}
+	isTag(m: unknown): m is Tagged<Type, Value> {
+		if (m === null || typeof m !== 'object') return false
+		return (m as any).type === this.type && this.isValue((m as any).value)
 	}
 	map<A extends Value, B extends Value>(f: (a: A) => B) {
 		return <T extends PropertyKey, O>(
@@ -45,10 +51,6 @@ class Tag<Type extends PropertyKey, Value> {
 	}
 	void(_v: Value extends void ? void : never) {
 		return this.of(_v as any)
-	}
-	isTag(m: unknown): m is Tagged<Type, Value> {
-		if (m === null || typeof m !== 'object') return false
-		return (m as any).type === this.type && this.isValue((m as any).value)
 	}
 }
 

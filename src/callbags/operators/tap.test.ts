@@ -1,10 +1,10 @@
 import { flow } from '@constellar/core'
 
-import { tap } from './tap'
+import { safeNullable } from '../errors/nullable'
+import { result } from '../observe/result'
 import { iterable } from '../sources'
 import { fold, last } from './folds'
-import { result } from '../observe/result'
-import { safeNullable } from '../errors/nullable'
+import { tap } from './tap'
 
 describe('tap', () => {
 	test('', () => {

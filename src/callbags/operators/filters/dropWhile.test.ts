@@ -1,9 +1,10 @@
 import { flow } from '@constellar/core'
-import { fold } from '../folds/fold'
-import { toArray } from '../folds/folds'
+import { lt } from '@prncss-xyz/utils'
+
 import { result } from '../../observe'
 import { range } from '../../sources/loops'
-import { lt } from '@prncss-xyz/utils'
+import { fold } from '../folds/fold'
+import { toArray } from '../folds/folds'
 import { dropWhile } from './dropWhile'
 
 describe('dropWhile', () => {

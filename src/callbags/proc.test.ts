@@ -1,8 +1,9 @@
 import { id, pipe } from '@constellar/core'
-import { proc } from './proc'
-import { fold, toArray } from './operators/folds'
-import { interval, range } from './sources'
+
 import { take } from './operators/filters'
+import { fold, toArray } from './operators/folds'
+import { proc } from './proc'
+import { interval, range } from './sources'
 
 async function* asyncRange(start: number, end: number) {
 	for (let i = start; i < end; i++) {

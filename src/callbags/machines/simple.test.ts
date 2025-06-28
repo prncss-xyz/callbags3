@@ -8,11 +8,11 @@ const m = simpleMachine()(
 		c: { value: 8 },
 	},
 	{
-		normalize: ({ value }) => ({ value: value + 1 }),
 		getStatus: ({ value }) => (value % 2 === 0 ? 'pending' : 'final'),
+		normalize: ({ value }) => ({ value: value + 1 }),
 		select: ({ value }) => ({ double: value * 2 }),
 	},
 	() => ({ type: 'success', value: 'victoire' }),
 )
 
-export const { init, send, getResult } = m
+export const { getResult, init, send } = m

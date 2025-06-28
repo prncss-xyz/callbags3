@@ -1,17 +1,19 @@
+import { fromInit, type Init } from '@prncss-xyz/utils'
+
 import type {
 	AnyTagged,
 	Empty,
 	Modify,
-	Tagged,
-	ValueUnion,
 	Prettify,
+	Tagged,
 	Tags,
+	ValueUnion,
 } from '../../types'
-import { fromInit, type Init } from '@prncss-xyz/utils'
+
 import {
+	type AnyExtractState,
 	fromSend,
 	fromSender,
-	type AnyExtractState,
 	type Machine,
 	type Send,
 	type Sender,
@@ -21,6 +23,7 @@ import {
 
 type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
 	[S in Exclude<State['type'], 'final'>]:
+		| { always: Sender<State, [(State & { type: S })['value']]> }
 		| {
 				send:
 					| Partial<{
@@ -35,7 +38,6 @@ type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
 					  }>
 					| Sender<State, [Event, (State & { type: S })['value'], Context]>
 		  }
-		| { always: Sender<State, [(State & { type: S })['value']]> }
 } & {
 	[S in State['type']]: {
 		normalize?: Modify<(State & { type: S })['value']>
@@ -88,13 +90,9 @@ export function baseMachine<
 			return next as any
 		}
 		return {
-			init(param) {
-				return always(fromSender(init, param))
-			},
-			send(event, state, context) {
-				const e = (opts as any)[state.type as any]?.send[event.type]
-				if (!e) return state
-				return always(fromSender(e, event.value, state.value, context))
+			extract(state) {
+				if (extract) return fromSend(extract(state as any))
+				return { type: 'success', value: undefined } as any
 			},
 			getResult(state) {
 				const s = (opts as any)[state.type].select
@@ -106,9 +104,13 @@ export function baseMachine<
 				}
 				return state as any
 			},
-			extract(state) {
-				if (extract) return fromSend(extract(state as any))
-				return { type: 'success', value: undefined } as any
+			init(param) {
+				return always(fromSender(init, param))
+			},
+			send(event, state, context) {
+				const e = (opts as any)[state.type as any]?.send[event.type]
+				if (!e) return state
+				return always(fromSender(e, event.value, state.value, context))
 			},
 		}
 	}

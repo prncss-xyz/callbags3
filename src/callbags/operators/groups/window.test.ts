@@ -1,8 +1,9 @@
 import { flow } from '@constellar/core'
-import { range } from '../../sources'
-import { window } from './window'
-import { fold, toArray } from '../folds'
+
 import { result } from '../../observe/result'
+import { range } from '../../sources'
+import { fold, toArray } from '../folds'
+import { window } from './window'
 
 describe('window', () => {
 	test('', () => {

@@ -1,12 +1,12 @@
 import { flow } from '@constellar/core'
 
-import { zip } from './zip'
-import { iterable } from '../sources/pull'
-import { fold } from './folds/fold'
-import { toArray } from './folds'
-import { interval } from '../sources/push'
-import { toPush } from './toPush'
 import { result } from '../observe'
+import { iterable } from '../sources/pull'
+import { interval } from '../sources/push'
+import { toArray } from './folds'
+import { fold } from './folds/fold'
+import { toPush } from './toPush'
+import { zip } from './zip'
 
 describe('zip', () => {
 	test('right shorter', () => {
@@ -44,7 +44,7 @@ describe('zip', () => {
 			toPush(iterable(['a', 'b'])),
 			zip(interval(10), (a, b) => a + b),
 			fold(toArray()),
-			result()
+			result(),
 		)
 		expect(res).toEqual(['a0', 'b1'])
 		expectTypeOf(res).toEqualTypeOf<string[]>()

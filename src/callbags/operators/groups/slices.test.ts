@@ -1,7 +1,8 @@
 import { flow } from '@constellar/core'
+
+import { result } from '../../observe/result'
 import { range } from '../../sources'
 import { fold, toArray } from '../folds'
-import { result } from '../../observe/result'
 import { slices } from './slices'
 
 describe('slices', () => {

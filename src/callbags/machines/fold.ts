@@ -1,12 +1,13 @@
 import type { AnyTagged } from '../../types'
 import type { AnyPull, MultiSource, SingleSource } from '../sources'
-import { deferCond } from '../../utils'
 import type {
-	Machine,
-	AnySuccessState,
-	AnyExtractState,
 	AnyErrorState,
+	AnyExtractState,
+	AnySuccessState,
+	Machine,
 } from './core'
+
+import { deferCond } from '../../utils'
 
 export function foldMachine<
 	Param,
@@ -22,12 +23,12 @@ export function foldMachine<
 	return function <SourceErr, P extends AnyPull>(
 		source: MultiSource<Event, Context, SourceErr, P>,
 	): SingleSource<
-		(Extract & AnySuccessState)['value'],
+		(AnySuccessState & Extract)['value'],
 		Context,
-		SourceErr | (Extract & AnyErrorState)['value'],
+		(AnyErrorState & Extract)['value'] | SourceErr,
 		P
 	> {
-		return function ({ next, error, context }) {
+		return function ({ context, error, next }) {
 			let safeState: State
 			function handleComplete(state: State) {
 				const res = machine.extract(state)
@@ -51,10 +52,10 @@ export function foldMachine<
 				}
 			}
 			const res = source({
-				next: (event) => handleState(machine.send(event, safeState, context)),
-				error,
-				context,
 				complete: () => handleComplete(safeState),
+				context,
+				error,
+				next: (event) => handleState(machine.send(event, safeState, context)),
 			})
 			deferCond(res, () => handleState(machine.init(param)))
 			return res

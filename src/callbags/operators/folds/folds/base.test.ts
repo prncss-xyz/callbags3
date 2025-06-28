@@ -1,9 +1,10 @@
 import { flow } from '@constellar/core'
+
+import { safeNullable } from '../../../errors/nullable'
+import { result } from '../../../observe'
 import { iterable } from '../../../sources/pull'
 import { fold } from '../fold'
 import { last } from './base'
-import { result } from '../../../observe'
-import { safeNullable } from '../../../errors/nullable'
 
 describe('last', () => {
 	test('defined', () => {

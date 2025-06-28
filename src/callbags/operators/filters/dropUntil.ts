@@ -6,16 +6,16 @@ export function dropUntil<Value, Context, Err, P extends AnyPull>(
 	return function (
 		source: MultiSource<Value, Context, Err, P>,
 	): MultiSource<Value, Context, Err, P> {
-		return function ({ next, complete, context, error }) {
+		return function ({ complete, context, error, next }) {
 			let fulfilled: unknown = false
 			const props = source({
+				complete,
 				context,
+				error,
 				next(value) {
 					if (fulfilled) next(value)
 					fulfilled = fulfilled || cond(value, context)
 				},
-				complete,
-				error,
 			})
 			return props
 		}

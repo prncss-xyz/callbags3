@@ -17,7 +17,6 @@ export function observe<Value, Err, M extends AnyMulti, Context = void>(
 ) {
 	return function (source: Source<Value, Context, Err, AnyPull, M>) {
 		const { pull, unmount } = source({
-			context,
 			complete: props.complete
 				? () => {
 						deferCond(pull, () => {
@@ -26,6 +25,7 @@ export function observe<Value, Err, M extends AnyMulti, Context = void>(
 						})
 					}
 				: (undefined as any),
+			context,
 			error(err) {
 				deferCond(pull, () => {
 					unmount()

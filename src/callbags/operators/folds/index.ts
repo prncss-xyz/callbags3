@@ -1,3 +1,3 @@
-export * from './scan'
-export * from './folds'
 export * from './fold'
+export * from './folds'
+export * from './scan'

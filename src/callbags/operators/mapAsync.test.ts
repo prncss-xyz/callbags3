@@ -2,13 +2,13 @@ import { flow, id } from '@constellar/core'
 import { timed } from '@prncss-xyz/utils'
 import { describe, expect, test } from 'vitest'
 
-import { map } from './map'
-import { mapAsync } from './mapAsync'
+import { result } from '../observe'
 import { iterable } from '../sources/pull'
-import { toPush } from './toPush'
 import { fold } from './folds/fold'
 import { toArray } from './folds/folds/base'
-import { result } from '../observe'
+import { map } from './map'
+import { mapAsync } from './mapAsync'
+import { toPush } from './toPush'
 
 describe('mapAsync', () => {
 	test('', async () => {

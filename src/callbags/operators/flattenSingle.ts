@@ -1,5 +1,7 @@
-import type { AnyMulti, AnyPull, SingleSource, Source } from '../sources/core'
 import { pipe } from '@constellar/core'
+
+import type { AnyMulti, AnyPull, SingleSource, Source } from '../sources/core'
+
 import { map } from './map'
 
 export function flattenSingle<
@@ -16,13 +18,13 @@ export function flattenSingle<
 		return function (props) {
 			let u: () => void
 			const { pull, unmount } = source({
-				context: props.context,
 				complete: undefined,
+				context: props.context,
 				error: props.error,
 				next(s) {
 					const { pull, unmount } = s({
-						context: props.context,
 						complete: props.complete,
+						context: props.context,
 						error(err) {
 							props.error(err)
 						},

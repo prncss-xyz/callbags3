@@ -1,10 +1,11 @@
-import type { AnyTagged, SingletonKeys, Tagged } from '../../types'
 import { fromInit, type Init } from '@prncss-xyz/utils'
+
+import type { AnyTagged, SingletonKeys, Tagged } from '../../types'
 
 export type AnySuccessState = Tagged<'success', unknown>
 export type AnyFinalState = Tagged<'final', unknown>
 export type AnyErrorState = Tagged<'error', unknown>
-export type AnyExtractState = Tagged<'success' | 'error', unknown>
+export type AnyExtractState = Tagged<'error' | 'success', unknown>
 
 export type AnyMachine = Machine<any, any, any, any, any, any>
 
@@ -16,10 +17,10 @@ export type Machine<
 	Result,
 	Extract extends AnyExtractState,
 > = {
+	extract: (state: State) => Extract
+	getResult: (state: State) => Result
 	init: (param: Param) => State
 	send: (event: Event, state: State, context: Context) => State
-	getResult: (state: State) => Result
-	extract: (state: State) => Extract
 }
 
 export type Send<Res extends AnyTagged> = Res | SingletonKeys<Res>

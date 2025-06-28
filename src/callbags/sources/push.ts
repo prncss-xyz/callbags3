@@ -1,4 +1,5 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
+
 import type { MultiSource, SingleSource } from './core'
 
 export function onceAsync<Value, Context = void>(

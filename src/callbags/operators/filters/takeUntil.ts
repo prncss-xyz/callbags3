@@ -6,15 +6,15 @@ export function takeUntil<Value, Context, Err, P extends AnyPull>(
 	return function (
 		source: MultiSource<Value, Context, Err, P>,
 	): MultiSource<Value, Context, Err, P> {
-		return function ({ context, next, complete, error }) {
+		return function ({ complete, context, error, next }) {
 			const props = source({
+				complete,
 				context,
+				error,
 				next(value) {
 					next(value)
 					if (cond(value, context)) complete()
 				},
-				complete,
-				error,
 			})
 			return props
 		}

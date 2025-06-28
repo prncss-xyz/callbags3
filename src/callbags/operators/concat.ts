@@ -1,5 +1,5 @@
-import { type AnyPull, type MultiSource, type Pull } from '../sources'
 import { deferCond } from '../../utils'
+import { type AnyPull, type MultiSource, type Pull } from '../sources'
 
 export function concat<V1, Context, E1>(
 	s2: MultiSource<V1, Context, E1, undefined>,

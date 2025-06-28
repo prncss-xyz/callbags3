@@ -1,10 +1,11 @@
 import { flow } from '@constellar/core'
-import { take } from './take'
-import { fold } from '../folds/fold'
-import { toArray } from '../folds/folds'
-import { range } from '../../sources/loops'
+
 import { result } from '../../observe/result'
 import { interval } from '../../sources'
+import { range } from '../../sources/loops'
+import { fold } from '../folds/fold'
+import { toArray } from '../folds/folds'
+import { take } from './take'
 
 describe('take', () => {
 	describe('sync', () => {

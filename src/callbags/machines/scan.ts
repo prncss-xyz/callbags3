@@ -1,10 +1,8 @@
 import type { AnyTagged } from '../../types'
 import type { AnyPull, MultiSource } from '../sources'
+import type { AnyExtractState, Machine } from './core'
+
 import { deferCond } from '../../utils'
-import type {
-	Machine,
-	AnyExtractState,
-} from './core'
 
 export function scanMachine<
 	Param,
@@ -20,7 +18,7 @@ export function scanMachine<
 	return function <SourceErr, P extends AnyPull>(
 		source: MultiSource<Event, Context, SourceErr, P>,
 	): MultiSource<State, Context, SourceErr, P> {
-		return function ({ next, error, context, complete }) {
+		return function ({ complete, context, error, next }) {
 			let lastState: State
 			function handlerState(state: State) {
 				if (state.type === 'final') {
@@ -32,10 +30,10 @@ export function scanMachine<
 				lastState = state
 			}
 			const res = source({
-				next: (event) => handlerState(machine.send(event, lastState, context)),
-				error,
-				context,
 				complete: () => next(lastState),
+				context,
+				error,
+				next: (event) => handlerState(machine.send(event, lastState, context)),
 			})
 			deferCond(res, () => handlerState(machine.init(param)))
 			return res

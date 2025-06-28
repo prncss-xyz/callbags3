@@ -15,23 +15,23 @@ export function debounceWith<A, Context>(
 			}
 			return source({
 				...props,
-				next(value) {
-					clearTimeout(handle)
-					if (!eq(value, arg_)) props.next(arg_)
-					else {
-						arg_ = value
-						handle = setTimeout(eff, delay)
+				complete() {
+					if (handle) {
+						clearTimeout(handle)
+						eff()
+						props.complete()
 					}
 				},
 				error(err) {
 					clearTimeout(handle)
 					props.error(err)
 				},
-				complete() {
-					if (handle) {
-						clearTimeout(handle)
-						eff()
-						props.complete()
+				next(value) {
+					clearTimeout(handle)
+					if (!eq(value, arg_)) props.next(arg_)
+					else {
+						arg_ = value
+						handle = setTimeout(eff, delay)
 					}
 				},
 			})

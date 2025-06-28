@@ -4,8 +4,8 @@ import { type Prettify } from './types'
 type Tagged<Type, Value> = { readonly type: Type; readonly value: Value }
 type AnyTagged = Tagged<unknown, unknown>
 type UU<Type, Value> =
-	| Tagged<Type, Value>
 	| Tagged<Exclude<unknown, Type>, unknown>
+	| Tagged<Type, Value>
 
 type AnyValue<Type, U> = (Tagged<Type, unknown> & U)['value']
 type Self<Type, U, Value extends AnyValue<Type, U>> = Prettify<
@@ -14,8 +14,8 @@ type Self<Type, U, Value extends AnyValue<Type, U>> = Prettify<
 type Other<Type, U, T, V> = Exclude<U, Tagged<Type, unknown>> & Tagged<T, V>
 
 class Tag<U extends AnyTagged, Type extends U['type']> {
-	private readonly type: Type
 	public readonly isValue: (v: unknown) => v is U['value']
+	private readonly type: Type
 	constructor(type: Type, isValue: (v: unknown) => v is U['value']) {
 		this.type = type
 		this.isValue = isValue
@@ -36,6 +36,15 @@ class Tag<U extends AnyTagged, Type extends U['type']> {
 	is<Value extends AnyValue<Type, U>>(m: U): m is Self<Type, U, Value> {
 		return m.type === this.type
 	}
+	isTag(m: unknown): m is AnyValue<Type, U> {
+		return (
+			typeof m === 'object' &&
+			m !== null &&
+			(m as any).type === this.type &&
+			// this means an absent value key is equivale to a value of undefined
+			this.isValue((m as any).value)
+		)
+	}
 	map<A extends AnyValue<Type, U>, B extends AnyValue<Type, U>>(
 		f: (a: A) => B,
 	) {
@@ -51,15 +60,6 @@ class Tag<U extends AnyTagged, Type extends U['type']> {
 	}
 	void(_v: (U & { type: Type })['value'] extends void ? void : never) {
 		return this.of(_v)
-	}
-	isTag(m: unknown): m is AnyValue<Type, U> {
-		return (
-			typeof m === 'object' &&
-			m !== null &&
-			(m as any).type === this.type &&
-			// this means an absent value key is equivale to a value of undefined
-			this.isValue((m as any).value)
-		)
 	}
 }
 

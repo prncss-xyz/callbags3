@@ -10,14 +10,14 @@ export function safeAssert<
 	return function (
 		source: Source<Succ, Context, Err, P, M>,
 	): Source<Succ, Context, never, P, M> {
-		return function ({ next, complete, context }) {
+		return function ({ complete, context, next }) {
 			return source({
+				complete,
 				context,
-				next,
 				error(e) {
 					throw new Error(`unexpected error: ${e}`)
 				},
-				complete,
+				next,
 			})
 		}
 	}

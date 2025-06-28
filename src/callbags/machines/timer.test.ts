@@ -1,74 +1,75 @@
 import type { Tagged, Tags } from '../../types'
+
 import { baseMachine } from './base'
 
 type State = Tags<
 	{
-		running: { since: number }
 		idle: { ellapsed: number }
+		running: { since: number }
 	},
 	{ now: number }
 >
 
 type Event = Tags<{
+	resetTimer: void
 	tick: number
 	toggle: void
-	resetTimer: void
 }>
 
 type SD<Result, State, S, E = never> = {
-	validate?: (s: unknown) => Tagged<'success', S> | Tagged<'error', E>
-	serialize: (s: Result) => S
 	deserialize: (s: S, last: State) => State
+	serialize: (s: Result) => S
+	validate?: (s: unknown) => Tagged<'error', E> | Tagged<'success', S>
 }
 
 const sd: SD<{ count: number }, State, number> = {
-	serialize: ({ count }) => count,
 	deserialize: (count, { value: { now } }) => ({
 		type: 'idle',
-		value: { now, ellapsed: count },
+		value: { ellapsed: count, now },
 	}),
+	serialize: ({ count }) => count,
 }
 
 export const timer = baseMachine<Event, State>()(
 	(now: number) => ({ type: 'idle', value: { ellapsed: 0, now } }),
 	{
 		idle: {
+			select: ({ ellapsed }) => ({
+				count: ellapsed,
+			}),
 			send: {
-				tick: (now, props) => ({
-					type: 'idle',
-					value: { ...props, now },
-				}),
 				resetTimer: (_, props) => ({
 					type: 'idle',
 					value: { ...props, ellapsed: 0 },
 				}),
-				toggle: (_, { now, ellapsed }) => ({
+				tick: (now, props) => ({
+					type: 'idle',
+					value: { ...props, now },
+				}),
+				toggle: (_, { ellapsed, now }) => ({
 					type: 'running',
-					value: { since: now - ellapsed, now },
+					value: { now, since: now - ellapsed },
 				}),
 			},
-			select: ({ ellapsed }) => ({
-				count: ellapsed,
-			}),
 		},
 		running: {
+			select: ({ now, since }) => ({
+				count: now - since,
+			}),
 			send: {
+				resetTimer: (_, { now }) => ({
+					type: 'running',
+					value: { now, since: now },
+				}),
 				tick: (now, props) => ({
 					type: 'running',
 					value: { ...props, now },
-				}),
-				resetTimer: (_, { now }) => ({
-					type: 'running',
-					value: { since: now, now },
 				}),
 				toggle: (_, { now, since }) => ({
 					type: 'idle',
 					value: { ellapsed: now - since, now },
 				}),
 			},
-			select: ({ since, now }) => ({
-				count: now - since,
-			}),
 		},
 	},
 )

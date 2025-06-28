@@ -1,7 +1,8 @@
+import { pipe } from '@constellar/core'
+
 import { playlist } from './playlist.test'
 import { productMachine } from './product'
 import { timer } from './timer.test'
-import { pipe } from '@constellar/core'
 
 const app = productMachine()(
 	{
@@ -17,30 +18,30 @@ const app = productMachine()(
 			pipe(
 				chain([
 					{
-						machine: 'timer',
 						event: 'tick',
+						machine: 'timer',
 						value: now,
 					},
 				]),
 				chain(
 					({
-						timer: {
-							value: { count },
-						},
 						playlist: {
 							value: { currentDuration },
+						},
+						timer: {
+							value: { count },
 						},
 					}) => {
 						if (count >= currentDuration) {
 							// TODO: ring
 							return [
 								{
-									machine: 'timer',
 									event: 'resetTimer',
+									machine: 'timer',
 								},
 								{
-									machine: 'playlist',
 									event: 'next',
+									machine: 'playlist',
 								},
 							]
 						}
@@ -49,5 +50,5 @@ const app = productMachine()(
 				),
 			),
 	}),
-	{ passtrough: true },
+	{ passthrough: true },
 )

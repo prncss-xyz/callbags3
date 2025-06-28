@@ -1,6 +1,8 @@
-import { deferCond } from '../../../utils'
-import type { AnyPull, MultiSource } from '../../sources/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
+
+import type { AnyPull, MultiSource } from '../../sources/core'
+
+import { deferCond } from '../../../utils'
 
 type Scan<Value, Acc, Context, R = Acc> = {
 	fold: (value: Value, acc: Acc, context: Context) => Acc
@@ -31,12 +33,12 @@ export function scan<Value, Context, Err, Succ, P extends AnyPull, Acc>(props: {
 		source: MultiSource<Value, Context, Err, P>,
 	): MultiSource<Value, Context, Err, P> {
 		const foldFn = props.fold
-		return function ({ error, next, complete, context }) {
+		return function ({ complete, context, error, next }) {
 			let dirty = false
 			let acc: Acc
 			const res = source({
-				context,
 				complete,
+				context,
 				error,
 				next(value) {
 					if (dirty) {

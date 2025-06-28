@@ -27,7 +27,7 @@ export type Tagged<Type extends PropertyKey, Value> = {
 	value: Value
 }
 export type Tags<T, S = unknown> = Prettify<
-	ValueUnion<{ [K in keyof T]: Tagged<K, Prettify<T[K] & S>> }>
+	ValueUnion<{ [K in keyof T]: Tagged<K, Prettify<S & T[K]>> }>
 >
 export type UnTags<T extends AnyTagged> = {
 	[K in T['type']]: (T & { type: K })['value']

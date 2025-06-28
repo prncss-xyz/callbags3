@@ -1,7 +1,8 @@
-import { type InferGuard, isUnknown, isVoid } from '../../guards'
-import { safe } from '../operators/safe'
 import type { AnyMulti, AnyPull, Source } from '../sources/core'
+
+import { type InferGuard, isUnknown, isVoid } from '../../guards'
 import { union } from '../../unions'
+import { safe } from '../operators/safe'
 import { nothingError, type NothingError } from './nothingError'
 
 const MAYBE = Symbol('MAYBE')
@@ -26,9 +27,13 @@ export function safeMaybe<
 	)
 }
 
-export function chainMaybe<A, B, Context, P extends AnyPull, M extends AnyMulti>(
-	cb: (value: A, context: Context) => Maybe<B>,
-) {
+export function chainMaybe<
+	A,
+	B,
+	Context,
+	P extends AnyPull,
+	M extends AnyMulti,
+>(cb: (value: A, context: Context) => Maybe<B>) {
 	return function <Err>(
 		source: Source<A, Context, Err, P, M>,
 	): Source<B, Context, Err | NothingError, P, M> {

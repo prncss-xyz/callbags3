@@ -1,4 +1,5 @@
 import { id } from '@constellar/core'
+
 import type { Fold } from '../fold'
 
 export function last<Value>() {

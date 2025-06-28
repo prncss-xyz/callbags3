@@ -1,5 +1,7 @@
+import { fromInit, type Init, isoAssert } from '@prncss-xyz/utils'
+
 import type { AnyPull, MultiSource, SingleSource } from '../../sources/core'
-import { fromInit, isoAssert, type Init } from '@prncss-xyz/utils'
+
 import { singleton } from '../../../tags'
 
 export const empty = singleton('empty')
@@ -28,7 +30,15 @@ export type Fold1<Acc, Context, R = Acc> =
 			result?: (acc: Acc) => R
 	  }
 
-export function fold<Value, Context, Err, P extends AnyPull, Acc, S, Succ = Acc>(
+export function fold<
+	Value,
+	Context,
+	Err,
+	P extends AnyPull,
+	Acc,
+	S,
+	Succ = Acc,
+>(
 	props: Fold<Value, Acc, Context, Succ>,
 ): (
 	source: MultiSource<Value, Context, Err, P>,
@@ -37,7 +47,7 @@ export function fold<Value, Context, Err, P extends AnyPull, S, Succ = Value>(
 	props: Fold1<Value, Context, Succ>,
 ): (
 	source: MultiSource<Value, Context, Err, any>,
-) => SingleSource<Value, any, Err | EmptyError, any>
+) => SingleSource<Value, any, EmptyError | Err, any>
 export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
 	fold?: (value: Value, acc: Acc, context: Context) => Acc
 	foldDest?: (value: Value, acc: Acc, context: Context) => Acc
@@ -46,10 +56,10 @@ export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
 }) {
 	return function (
 		source: MultiSource<Value, Context, Err, P>,
-	): SingleSource<Value, Context, Err | EmptyError, P> {
+	): SingleSource<Value, Context, EmptyError | Err, P> {
 		const foldFn = props.foldDest ?? props.fold
 		isoAssert(foldFn)
-		return function ({ next, error, context }) {
+		return function ({ context, error, next }) {
 			let dirty = false
 			let acc: Acc
 			if ('init' in props) {
@@ -58,8 +68,13 @@ export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
 			}
 			return {
 				...source({
-					error,
+					complete() {
+						if (dirty) {
+							next(props.result ? props.result(acc) : (acc as any))
+						} else error(emptyError)
+					},
 					context,
+					error,
 					next(value) {
 						if (dirty) {
 							acc = foldFn(value, acc, context)
@@ -67,11 +82,6 @@ export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
 							acc = value as any
 							dirty = true
 						}
-					},
-					complete() {
-						if (dirty) {
-							next(props.result ? props.result(acc) : (acc as any))
-						} else error(emptyError)
 					},
 				}),
 			}

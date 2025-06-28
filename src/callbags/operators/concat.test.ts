@@ -1,11 +1,11 @@
 import { flow } from '@constellar/core'
 
-import { concat } from './concat'
+import { result } from '../observe'
 import { iterable } from '../sources/pull'
+import { concat } from './concat'
 import { fold } from './folds/fold'
 import { toArray } from './folds/folds/base'
 import { toPush } from './toPush'
-import { result } from '../observe'
 
 describe('concat', () => {
 	test('sync', () => {

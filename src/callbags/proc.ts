@@ -1,9 +1,10 @@
+import type { NonFunction } from '../types'
+import type { AnyMulti, AnyPull, Pull, Source } from './sources/core'
+
 import { isAsyncIterable, isFunction, isIterable, isPromise } from '../guards'
 import { result } from './observe/result'
-import type { AnyMulti, AnyPull, Pull, Source } from './sources/core'
 import { iterable, once } from './sources/pull'
 import { asyncIterable, onceAsync } from './sources/push'
-import type { NonFunction } from '../types'
 
 type Res<P extends AnyPull, V> = P extends Pull ? V : Promise<V>
 
@@ -14,8 +15,8 @@ export type ProSource<
 	P extends AnyPull,
 	M extends AnyMulti,
 > =
-	| Iterable<Value>
 	| AsyncIterable<Value>
+	| Iterable<Value>
 	| NonFunction<Value>
 	| Promise<Value>
 	| Source<Value, Index, Err, P, M>
@@ -46,7 +47,13 @@ export function proc<Value, VR, M extends AnyMulti>(
 		source: Source<Value, void, never, undefined, M>,
 	) => Source<VR, void, never, undefined, undefined>,
 ): Promise<VR>
-export function proc<Value, VR, Context, PR extends AnyPull, M extends AnyMulti>(
+export function proc<
+	Value,
+	VR,
+	Context,
+	PR extends AnyPull,
+	M extends AnyMulti,
+>(
 	proSource: Iterable<Value>,
 	transform: (
 		source: Source<Value, Context, never, Pull, M>,

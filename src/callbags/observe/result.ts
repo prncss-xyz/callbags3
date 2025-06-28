@@ -20,15 +20,15 @@ export function result<Succ, P extends AnyPull, Context = void>(
 			res = v
 		}
 		const props = sink({
+			complete: undefined,
 			context,
+			error(e) {
+				throw new Error(`unexpected error ${e}`)
+			},
 			next(s) {
 				props.unmount()
 				cp(s)
 			},
-			error(e) {
-				throw new Error(`unexpected error ${e}`)
-			},
-			complete: undefined,
 		})
 		if (props.pull) {
 			props.pull()

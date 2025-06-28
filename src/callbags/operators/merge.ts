@@ -1,6 +1,6 @@
-import { isUnknown, type InferGuard } from '../../guards'
-import { type AnyPull, type MultiSource } from '../sources'
+import { type InferGuard, isUnknown } from '../../guards'
 import { union } from '../../unions'
+import { type AnyPull, type MultiSource } from '../sources'
 
 const LR = Symbol('LR')
 export const [isEither, { left, right }] = union(LR, {
@@ -17,11 +17,10 @@ export function merge<VR, Context, ER, VL, P extends AnyPull>(
 	return function <EL>(
 		sourceLeft: MultiSource<VL, Context, EL, P>,
 	): MultiSource<Left<VL> | Right<VR>, Context | Context, EL | ER, P> {
-		return function ({ context, complete, error, next }) {
+		return function ({ complete, context, error, next }) {
 			let openedLeft = true
 			let openedRight = true
 			const ofSL = sourceLeft({
-				context,
 				complete() {
 					if (openedRight) {
 						openedLeft = false
@@ -29,13 +28,13 @@ export function merge<VR, Context, ER, VL, P extends AnyPull>(
 					}
 					complete()
 				},
+				context,
 				error,
 				next(v) {
 					next(left.of(v))
 				},
 			})
 			const ofSR = sourceRight({
-				context,
 				complete() {
 					if (openedLeft) {
 						openedRight = false
@@ -43,6 +42,7 @@ export function merge<VR, Context, ER, VL, P extends AnyPull>(
 					}
 					complete()
 				},
+				context,
 				error,
 				next(v) {
 					next(right.of(v))

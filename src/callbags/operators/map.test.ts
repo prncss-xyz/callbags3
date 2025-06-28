@@ -1,11 +1,12 @@
 import { flow } from '@constellar/core'
 import { mul } from '@prncss-xyz/utils'
-import { iterable } from '../sources/pull'
-import { map } from './map'
-import { fold } from './folds/fold'
-import { last } from './folds/folds/base'
+
 import { just, safeMaybe } from '../errors/maybe'
 import { result } from '../observe'
+import { iterable } from '../sources/pull'
+import { fold } from './folds/fold'
+import { last } from './folds/folds/base'
+import { map } from './map'
 
 describe('map', () => {
 	test('changes type', () => {
