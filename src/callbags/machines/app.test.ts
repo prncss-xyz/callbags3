@@ -1,8 +1,12 @@
 import { pipe } from '@constellar/core'
 
+import type { Tagged } from '../../types'
+
 import { playlist } from './playlist.test'
 import { productMachine } from './product'
 import { timer } from './timer.test'
+
+type Message = Tagged<'alert', void>
 
 const app = productMachine()(
 	{

@@ -1,10 +1,10 @@
 import type { Tagged, Tags } from '../../types'
 
-import { baseMachine } from './base'
+import { modalMachine } from './modal'
 
 type State = Tags<
 	{
-		idle: { ellapsed: number }
+		idle: { elapsed: number }
 		running: { since: number }
 	},
 	{ now: number }
@@ -25,30 +25,30 @@ type SD<Result, State, S, E = never> = {
 const sd: SD<{ count: number }, State, number> = {
 	deserialize: (count, { value: { now } }) => ({
 		type: 'idle',
-		value: { ellapsed: count, now },
+		value: { elapsed: count, now },
 	}),
 	serialize: ({ count }) => count,
 }
 
-export const timer = baseMachine<Event, State>()(
-	(now: number) => ({ type: 'idle', value: { ellapsed: 0, now } }),
+export const timer = modalMachine<Event, State>()(
+	(now: number) => ({ type: 'idle', value: { elapsed: 0, now } }),
 	{
 		idle: {
-			select: ({ ellapsed }) => ({
-				count: ellapsed,
+			select: ({ elapsed }) => ({
+				count: elapsed,
 			}),
 			send: {
 				resetTimer: (_, props) => ({
 					type: 'idle',
-					value: { ...props, ellapsed: 0 },
+					value: { ...props, elapsed: 0 },
 				}),
 				tick: (now, props) => ({
 					type: 'idle',
 					value: { ...props, now },
 				}),
-				toggle: (_, { ellapsed, now }) => ({
+				toggle: (_, { elapsed, now }) => ({
 					type: 'running',
-					value: { now, since: now - ellapsed },
+					value: { now, since: now - elapsed },
 				}),
 			},
 		},
@@ -67,7 +67,7 @@ export const timer = baseMachine<Event, State>()(
 				}),
 				toggle: (_, { now, since }) => ({
 					type: 'idle',
-					value: { ellapsed: now - since, now },
+					value: { elapsed: now - since, now },
 				}),
 			},
 		},

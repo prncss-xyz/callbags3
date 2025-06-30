@@ -2,7 +2,6 @@ import { fromInit, type Init } from '@prncss-xyz/utils'
 
 import type {
 	AnyTagged,
-	Empty,
 	Modify,
 	Prettify,
 	Tagged,
@@ -12,6 +11,7 @@ import type {
 
 import {
 	type AnyExtractState,
+	type Emit,
 	fromSend,
 	fromSender,
 	type Machine,
@@ -20,8 +20,13 @@ import {
 } from './core'
 
 // MAYBE: prevent keys not belonging to State
+// TODO: always can emit message if init cannot reach always
 
-type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
+type Opts<
+	Event extends AnyTagged,
+	State extends AnyTagged,
+	Message extends AnyTagged,
+> = {
 	[S in Exclude<State['type'], 'final'>]:
 		| { always: Sender<State, [(State & { type: S })['value']]> }
 		| {
@@ -32,11 +37,14 @@ type Opts<Event extends AnyTagged, State extends AnyTagged, Context> = {
 								[
 									(Event & { type: E })['value'],
 									(State & { type: S })['value'],
-									Context,
+									Emit<Message>,
 								]
 							>
 					  }>
-					| Sender<State, [Event, (State & { type: S })['value'], Context]>
+					| Sender<
+							State,
+							[Event, (State & { type: S })['value'], Emit<Message>]
+					  >
 		  }
 } & {
 	[S in State['type']]: {
@@ -55,14 +63,14 @@ type InferResult<O extends Opts<any, any, any>> = Tags<{
 		: never
 }>
 
-export function baseMachine<
+export function modalMachine<
 	Event extends AnyTagged,
 	State extends AnyTagged,
 	// MAYBE: Common extends Empty = Empty,
-	Context = Empty,
+	Message extends AnyTagged = Tagged<never, unknown>,
 >() {
 	return function <
-		O extends Opts<Event, State, Context>,
+		O extends Opts<Event, State, Message>,
 		Param = void,
 		const Extract extends AnyExtractState = Tagged<'success', 'void'>,
 	>(
@@ -75,7 +83,7 @@ export function baseMachine<
 		Param,
 		Event,
 		Prettify<State & { type: InferNonTransitory<O> }>,
-		Context,
+		Message,
 		Prettify<InferResult<O>>,
 		Extract
 	> {
@@ -107,10 +115,10 @@ export function baseMachine<
 			init(param) {
 				return always(fromSender(init, param))
 			},
-			send(event, state, context) {
+			send(event, state, emit) {
 				const e = (opts as any)[state.type as any]?.send[event.type]
 				if (!e) return state
-				return always(fromSender(e, event.value, state.value, context))
+				return always(fromSender(e, event.value, state.value, emit))
 			},
 		}
 	}

@@ -1,6 +1,6 @@
-import { simpleMachine } from './simple'
+import { directMachine } from './direct'
 
-const m = simpleMachine()(
+const m = directMachine()(
 	{ value: 0 },
 	{
 		a: (_: void, { value }) => ({ value: value + 1 }),

@@ -1,6 +1,6 @@
 import { isoAssert } from '@prncss-xyz/utils'
 
-import { simpleMachine } from './simple'
+import { directMachine } from './direct'
 
 const list0 = {
 	currentId: 0,
@@ -24,7 +24,7 @@ function getItem<Id, Item>(id: Id, items: (Item & { id: Id })[]) {
 	return item
 }
 
-export const playlist = simpleMachine()(
+export const playlist = directMachine()(
 	list0,
 	{
 		duplicate: ({ id }: { id: number }, { items, nextId }) => ({
@@ -39,7 +39,7 @@ export const playlist = simpleMachine()(
 		resetPlaylist: () => list0,
 		select: ({ id }: { id: number }) => ({ currentId: id }),
 		update: (
-			{ duration, id }: { duration: number; id: number; },
+			{ duration, id }: { duration: number; id: number },
 			{ items },
 		) => ({
 			items: items.map((t) => (t.id === id ? { ...t, duration } : t)),

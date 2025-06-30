@@ -1,19 +1,34 @@
 import { id, type Prettify } from '@constellar/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
-import type { ContraEmpty, Empty, Modify, Tagged, Tags } from '../../types'
+import type {
+	AnyTagged,
+	BottomRecord,
+	BottomTag,
+	Modify,
+	Tagged,
+	Tags,
+	TopRecord,
+} from '../../types'
 
-import { type AnyExtractState, fromSend, type Machine, type Send } from './core'
+import {
+	type AnyExtractState,
+	type Emit,
+	fromSend,
+	type Machine,
+	type Send,
+} from './core'
 
-// MAYBE: shorcut for single value state
-
-function merge<P extends Empty, Q extends Empty>(p: P, q: Q): P & Q {
+function merge<P extends BottomRecord, Q extends BottomRecord>(
+	p: P,
+	q: Q,
+): P & Q {
 	return { ...p, ...q }
 }
 
-type AnyTransitions<Payload, Context> = Record<
+type AnyTransitions<Payload, Message extends AnyTagged> = Record<
 	string,
-	Init<Partial<Payload>, [any, Payload, Context]>
+	Init<Partial<Payload>, [any, Payload, Emit<Message>]>
 >
 
 type InferInitArg<T> = T extends (e: infer E, ...args: any[]) => any ? E : void
@@ -22,10 +37,10 @@ type InferEvent<T extends AnyTransitions<any, any>> = Tags<{
 	[K in keyof T]: InferInitArg<T[K]>
 }>
 
-export function simpleMachine<Context = Empty>() {
+export function directMachine<Message extends AnyTagged = BottomTag>() {
 	return function <
-		Payload extends ContraEmpty,
-		Transitions extends AnyTransitions<Payload, Context>,
+		Payload extends TopRecord,
+		Transitions extends AnyTransitions<Payload, Message>,
 		Select = Payload,
 		Status extends 'final' | 'pending' = 'pending',
 		Extract extends AnyExtractState = Tagged<'success', Payload>,
@@ -43,7 +58,7 @@ export function simpleMachine<Context = Empty>() {
 		Param,
 		InferEvent<Transitions>,
 		Prettify<Tagged<Status, Payload>>,
-		Context,
+		Message,
 		{
 			type: { type: Exclude<Status, 'error'>; value: Payload }['type']
 			value: Select

@@ -4,6 +4,7 @@ import type {
 	AnyErrorState,
 	AnyExtractState,
 	AnySuccessState,
+	Emit,
 	Machine,
 } from './core'
 
@@ -13,7 +14,7 @@ export function foldMachine<
 	Param,
 	Event extends AnyTagged,
 	State extends AnyTagged,
-	Context,
+	Context extends AnyTagged,
 	Result,
 	Extract extends AnyExtractState,
 >(
@@ -21,10 +22,10 @@ export function foldMachine<
 	param: Param,
 ) {
 	return function <SourceErr, P extends AnyPull>(
-		source: MultiSource<Event, Context, SourceErr, P>,
+		source: MultiSource<Event, Emit<Context>, SourceErr, P>,
 	): SingleSource<
 		(AnySuccessState & Extract)['value'],
-		Context,
+		Emit<Context>,
 		(AnyErrorState & Extract)['value'] | SourceErr,
 		P
 	> {

@@ -35,9 +35,10 @@ export type UnTags<T extends AnyTagged> = {
 
 export type Singleton<Type extends PropertyKey> = { type: Type; value: void }
 export type AnyTagged = Tagged<PropertyKey, unknown>
+export type BottomTag = Tagged<never, unknown>
 
 export type SingletonKeys<T extends AnyTagged> =
 	T extends Tagged<infer K, void> ? K : never
 
-export type Empty = Record<PropertyKey, never>
-export type ContraEmpty = Record<PropertyKey, unknown>
+export type TopRecord = Record<PropertyKey, unknown>
+export type BottomRecord = Record<never, never>

@@ -9,18 +9,20 @@ export type AnyExtractState = Tagged<'error' | 'success', unknown>
 
 export type AnyMachine = Machine<any, any, any, any, any, any>
 
+export type Emit<M extends AnyTagged> = (m: M) => void
+
 export type Machine<
 	Param,
 	Event extends AnyTagged,
 	State extends AnyTagged,
-	Context,
+	Message extends AnyTagged,
 	Result,
 	Extract extends AnyExtractState,
 > = {
 	extract: (state: State) => Extract
 	getResult: (state: State) => Result
 	init: (param: Param) => State
-	send: (event: Event, state: State, context: Context) => State
+	send: (event: Event, state: State, emit: Emit<Message>) => State
 }
 
 export type Send<Res extends AnyTagged> = Res | SingletonKeys<Res>

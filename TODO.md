@@ -1,8 +1,12 @@
 # TODO
 
 - machine
+    - move emit out of send param
+    - make always access emit
     - serialization
-    - context: not from input?
+    - slice
+    - sub
+    - messages: void
 
 - tests (improve coverage)
 

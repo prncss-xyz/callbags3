@@ -1,6 +1,6 @@
 import type { AnyTagged } from '../../types'
 import type { AnyPull, MultiSource } from '../sources'
-import type { AnyExtractState, Machine } from './core'
+import type { AnyExtractState, Emit, Machine } from './core'
 
 import { deferCond } from '../../utils'
 
@@ -8,7 +8,7 @@ export function scanMachine<
 	Param,
 	Event extends AnyTagged,
 	State extends AnyTagged,
-	Context,
+	Context extends AnyTagged,
 	Result,
 	Extract extends AnyExtractState,
 >(
@@ -16,8 +16,8 @@ export function scanMachine<
 	param: Param,
 ) {
 	return function <SourceErr, P extends AnyPull>(
-		source: MultiSource<Event, Context, SourceErr, P>,
-	): MultiSource<State, Context, SourceErr, P> {
+		source: MultiSource<Event, Emit<Context>, SourceErr, P>,
+	): MultiSource<State, Emit<Context>, SourceErr, P> {
 		return function ({ complete, context, error, next }) {
 			let lastState: State
 			function handlerState(state: State) {
