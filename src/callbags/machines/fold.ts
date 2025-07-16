@@ -1,14 +1,13 @@
-import type { AnyTagged } from '../../types'
+import type { InferGuard } from '../../guards'
 import type { AnyPull, MultiSource, SingleSource } from '../sources'
-import type {
-	AnyErrorState,
-	AnyExtractState,
-	AnySuccessState,
-	Emit,
-	Machine,
-} from './core'
+import type { Emit, Machine } from './core'
 
+import { just, type Just, type Maybe } from '../../errors/maybe/core'
+import { type AnyTagged, singleton } from '../../tags'
 import { deferCond } from '../../utils'
+
+const unfinished = singleton('unfinished')
+type UnFinished = InferGuard<typeof unfinished.is>
 
 export function foldMachine<
 	Param,
@@ -16,47 +15,28 @@ export function foldMachine<
 	State extends AnyTagged,
 	Context extends AnyTagged,
 	Result,
-	Extract extends AnyExtractState,
->(
-	machine: Machine<Param, Event, State, Context, Result, Extract>,
-	param: Param,
-) {
+	Exit extends Maybe<unknown>,
+>(machine: Machine<Param, Event, State, Context, Result, Exit>, param: Param) {
 	return function <SourceErr, P extends AnyPull>(
 		source: MultiSource<Event, Emit<Context>, SourceErr, P>,
 	): SingleSource<
-		(AnySuccessState & Extract)['value'],
+		Exit extends Just<infer J> ? J : never,
 		Emit<Context>,
-		(AnyErrorState & Extract)['value'] | SourceErr,
+		SourceErr | UnFinished,
 		P
 	> {
 		return function ({ context, error, next }) {
-			let safeState: State
-			function handleComplete(state: State) {
-				const res = machine.extract(state)
-				if (res.type === 'error') {
-					error(res.value)
-					return
-				}
-				next(res.value as any)
-				return
-			}
+			let lastState: State
 			function handleState(state: State) {
-				switch (state.type) {
-					case 'error':
-						error(state.value)
-						break
-					case 'success':
-						handleComplete(state)
-						break
-					default:
-						safeState = state as any
-				}
+				const res = machine.exit(state)
+				if (just.is(res)) next(just.get(res) as never)
+				else lastState = state
 			}
 			const res = source({
-				complete: () => handleComplete(safeState),
+				complete: () => error(unfinished.void()),
 				context,
 				error,
-				next: (event) => handleState(machine.send(event, safeState, context)),
+				next: (event) => handleState(machine.send(event, lastState, context)),
 			})
 			deferCond(res, () => handleState(machine.init(param)))
 			return res

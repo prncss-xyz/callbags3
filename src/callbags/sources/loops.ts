@@ -2,7 +2,7 @@ import { add, fromInit, gt, type Init, lt } from '@prncss-xyz/utils'
 
 import type { MultiSource, Pull } from './core'
 
-import { just, type Maybe } from '../errors/maybe'
+import { just, type Maybe } from '../../errors'
 
 export function unfold<Value, Context = void>(
 	init: Init<Value>,
@@ -67,7 +67,7 @@ export function until<Value, Context = void>(
 	init: Init<Value, [Context]>,
 ): MultiSource<Value, Context, never, Pull> {
 	return function ({ complete, context, next }) {
-		closed = false
+		let closed = false
 		return {
 			pull() {
 				let acc = init

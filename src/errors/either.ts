@@ -1,11 +1,10 @@
-import type { AnyMulti, AnyPull, Source } from '../sources/core'
+import type { AnyMulti, AnyPull, Source } from '../callbags/sources/core'
 
-import { type InferGuard, isUnknown } from '../../guards'
-import { union } from '../../unions'
-import { safe } from '../operators/safe'
+import { safe } from '../callbags/operators/safe'
+import { type InferGuard, isUnknown } from '../guards'
+import { union } from '../tags'
 
-const EITHER = Symbol('EITHER')
-export const [isEither, { err, succ }] = union(EITHER, {
+export const [isEither, { err, succ }] = union({
 	err: isUnknown,
 	succ: isUnknown,
 })

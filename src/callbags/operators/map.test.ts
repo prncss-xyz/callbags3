@@ -1,7 +1,7 @@
 import { flow } from '@constellar/core'
 import { mul } from '@prncss-xyz/utils'
 
-import { just, safeMaybe } from '../errors/maybe'
+import { just, safeMaybe } from '../../errors/maybe'
 import { result } from '../observe'
 import { iterable } from '../sources/pull'
 import { fold } from './folds/fold'

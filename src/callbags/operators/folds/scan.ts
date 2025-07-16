@@ -14,12 +14,12 @@ type Scan1<Acc, Context, R = Acc> = {
 	result?: (acc: Acc) => R
 }
 
-export function scan<Value, Index, Err, P extends AnyPull, Acc, S, Succ = Acc>(
+export function scan<Value, Index, Err, P extends AnyPull, Acc, Succ = Acc>(
 	props: Scan<Value, Acc, Index, Succ>,
 ): (
 	source: MultiSource<Value, Index, Err, P>,
 ) => MultiSource<Value, Index, Err, P>
-export function scan<Value, Index, Err, P extends AnyPull, S, Succ = Value>(
+export function scan<Value, Index, Err, P extends AnyPull, Succ = Value>(
 	props: Scan1<Value, Index, Succ>,
 ): (
 	source: MultiSource<Value, Index, Err, P>,

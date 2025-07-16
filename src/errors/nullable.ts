@@ -1,11 +1,11 @@
 import { id } from '@constellar/core'
 import { always } from '@prncss-xyz/utils'
 
-import type { AnyMulti, AnyPull, Source } from '../sources/core'
+import type { AnyMulti, AnyPull, Source } from '../callbags/sources/core'
 
-import { isNullish } from '../../guards'
-import { safe } from '../operators/safe'
-import { nothingError, type NothingError } from './nothingError'
+import { safe } from '../callbags/operators/safe'
+import { isNullish } from '../guards'
+import { type Nothing, nothing } from './maybe'
 export type Nullable<T> = null | T | undefined
 
 export function safeNullable<
@@ -27,13 +27,13 @@ export function chainNullable<
 >(cb: (value: A, context: Context) => B | null | undefined) {
 	return function <Err>(
 		source: Source<A, Context, Err, P, M>,
-	): Source<B, Context, Err | NothingError, P, M> {
+	): Source<B, Context, Err | Nothing, P, M> {
 		return function (props) {
 			return source({
 				...props,
 				next(value) {
 					const res = cb(value, props.context)
-					if (isNullish(res)) props.error(nothingError)
+					if (isNullish(res)) props.error(nothing.void())
 					else props.next(res)
 				},
 			})

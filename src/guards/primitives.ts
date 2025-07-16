@@ -1,5 +1,7 @@
 export type Guard<V> = (v: unknown) => v is V
 export type InferGuard<V> = V extends (v: any) => v is infer R ? R : never
+import { isNumber, isString } from '@prncss-xyz/utils'
+
 import type { Function } from '../types'
 
 export function isArray(v: unknown) {
@@ -10,12 +12,20 @@ export function isObject(v: unknown) {
 	return v !== null && typeof v === 'object'
 }
 
-export function isFalsy(v: unknown) {
-	return v === false || v === 0 || v === '' || v === null || v === undefined
-}
-
 export function isNullish(v: unknown) {
 	return v === null || v === undefined
+}
+
+export function isNonNullish(v: unknown) {
+	return !isNullish(v)
+}
+
+export function isSymbol(v: unknown) {
+	return typeof v === 'symbol'
+}
+
+export function isPropertyKey(v: unknown) {
+	return isNumber(v) || isString(v) || isSymbol(v)
 }
 
 export function isVoid(v: unknown): v is void {

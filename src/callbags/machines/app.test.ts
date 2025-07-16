@@ -1,20 +1,19 @@
 import { pipe } from '@constellar/core'
 
-import type { Tagged } from '../../types'
+import type { Tagged } from '../../tags'
 
 import { playlist } from './playlist.test'
 import { productMachine } from './product'
 import { timer } from './timer.test'
 
-type Message = Tagged<'alert', void>
+export type Message = Tagged<'alert', void>
 
-const app = productMachine()(
+export const app = productMachine()(
 	{
 		playlist,
 		timer,
 	},
 	(now: number) => ({
-		playlist: undefined,
 		timer: now,
 	}),
 	(chain) => ({
@@ -29,9 +28,7 @@ const app = productMachine()(
 				]),
 				chain(
 					({
-						playlist: {
-							value: { currentDuration },
-						},
+						playlist: { currentDuration },
 						timer: {
 							value: { count },
 						},
@@ -40,12 +37,12 @@ const app = productMachine()(
 							// TODO: ring
 							return [
 								{
-									event: 'resetTimer',
-									machine: 'timer',
+									event: 'resetPlaylist',
+									machine: 'playlist',
 								},
 								{
-									event: 'next',
-									machine: 'playlist',
+									event: 'resetTimer',
+									machine: 'timer',
 								},
 							]
 						}

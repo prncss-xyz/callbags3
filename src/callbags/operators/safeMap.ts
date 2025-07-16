@@ -22,8 +22,7 @@ export function safeMap<
 				error(e) {
 					next(fromInit(recover, e))
 				},
-				// the second argument can be safely ignored
-				next: next as any,
+				next,
 			})
 		}
 	}

@@ -1,23 +1,11 @@
-import { id, type Prettify } from '@constellar/core'
+import { id } from '@constellar/core'
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
-import type {
-	AnyTagged,
-	BottomRecord,
-	BottomTag,
-	Modify,
-	Tagged,
-	Tags,
-	TopRecord,
-} from '../../types'
+import type { AnyTagged, BottomTag, Tags } from '../../tags'
+import type { BottomRecord, Modify, TopRecord } from '../../types'
 
-import {
-	type AnyExtractState,
-	type Emit,
-	fromSend,
-	type Machine,
-	type Send,
-} from './core'
+import { type Maybe, nothing, type Nothing } from '../../errors'
+import { type Emit, type Machine } from './core'
 
 function merge<P extends BottomRecord, Q extends BottomRecord>(
 	p: P,
@@ -41,61 +29,35 @@ export function directMachine<Message extends AnyTagged = BottomTag>() {
 	return function <
 		Payload extends TopRecord,
 		Transitions extends AnyTransitions<Payload, Message>,
-		Select = Payload,
-		Status extends 'final' | 'pending' = 'pending',
-		Extract extends AnyExtractState = Tagged<'success', Payload>,
+		Result = Payload,
+		Exit extends Maybe<unknown> = Nothing,
 		Param = void,
 	>(
 		init: Init<Payload, [Param]>,
 		transitions: Transitions,
 		options?: Partial<{
-			getStatus: (v: Payload) => Status
+			exit: (v: Payload) => Exit
 			normalize: Modify<Payload>
-			select: Init<Select, [Payload]>
+			result: Init<Result, [Payload]>
 		}>,
-		extract?: (state: { type: Status; value: Payload }) => Send<Extract>,
-	): Machine<
-		Param,
-		InferEvent<Transitions>,
-		Prettify<Tagged<Status, Payload>>,
-		Message,
-		{
-			type: { type: Exclude<Status, 'error'>; value: Payload }['type']
-			value: Select
-		},
-		Extract
-	> {
-		type SafeState = Tagged<Status, Payload>
+	): Machine<Param, InferEvent<Transitions>, Payload, Message, Result, Exit> {
 		const normalize = options?.normalize ?? id
-		function always(value: Payload): SafeState {
-			value = normalize(value)
-			const type = (
-				options?.getStatus ? options.getStatus(value) : 'pending'
-			) as Status
-			return { type, value }
-		}
+		const exit = options?.exit ?? (nothing.void.bind(nothing) as never)
+		const getResult = options?.result
+			? (s: any) => fromInit(options.result!, s)
+			: (id as never)
 		return {
-			extract(s) {
-				if (extract) return fromSend(extract(s))
-				return { type: 'success', value: s.value } as Extract
-			},
-			getResult(s) {
-				if (options?.select)
-					return {
-						type: s.type,
-						value: fromInit(options.select, s.value),
-					}
-				return s as any
-			},
+			exit,
+			getResult,
 			init(param) {
-				return always(fromInit(init, param))
+				return normalize(fromInit(init, param))
 			},
 			send(event, s, c) {
 				if (s.type === 'final') return s
 				const value = s.value
 				const t = transitions[event.type]
 				if (t === undefined) return s
-				return always(
+				return normalize(
 					merge(s as any, fromInit(t as any, event.value, value, c)),
 				)
 			},

@@ -1,35 +1,33 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
-import type { AnyTagged, SingletonKeys, Tagged } from '../../types'
+import type { Err, Maybe, Nothing, Succ } from '../../errors'
 
-export type AnySuccessState = Tagged<'success', unknown>
+import { type AnyTagged, fromSend, type Send, type Tagged } from '../../tags'
+
 export type AnyFinalState = Tagged<'final', unknown>
-export type AnyErrorState = Tagged<'error', unknown>
-export type AnyExtractState = Tagged<'error' | 'success', unknown>
 
 export type AnyMachine = Machine<any, any, any, any, any, any>
 
 export type Emit<M extends AnyTagged> = (m: M) => void
 
+export interface ISR<State, Serialized, E> {
+	deserialize: (serialized: Serialized, state: State) => State
+	serialize: (state: State) => Serialized
+	validate?: (serialized: unknown) => Err<E> | Succ<State>
+}
+
 export type Machine<
 	Param,
 	Event extends AnyTagged,
-	State extends AnyTagged,
+	State,
 	Message extends AnyTagged,
 	Result,
-	Extract extends AnyExtractState,
+	Exit extends Maybe<unknown> = Nothing,
 > = {
-	extract: (state: State) => Extract
+	exit: (state: State) => Exit
 	getResult: (state: State) => Result
 	init: (param: Param) => State
 	send: (event: Event, state: State, emit: Emit<Message>) => State
-}
-
-export type Send<Res extends AnyTagged> = Res | SingletonKeys<Res>
-
-export function fromSend<Res extends AnyTagged>(v: Send<Res>): Res {
-	if (typeof v === 'object') return v
-	return { type: v, value: undefined } as Res
 }
 
 export type Sender<Res extends AnyTagged, Args extends any[]> = Init<

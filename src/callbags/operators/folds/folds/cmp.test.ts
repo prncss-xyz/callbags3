@@ -1,6 +1,6 @@
 import { flow, shallowEqual } from '@constellar/core'
 
-import { safeNullable } from '../../../errors/nullable'
+import { safeNullable } from '../../../../errors/nullable'
 import { result } from '../../../observe/result'
 import { empty, iterable } from '../../../sources/pull'
 import { fold } from '../fold'

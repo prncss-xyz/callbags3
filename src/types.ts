@@ -22,23 +22,8 @@ export type Init<Res, Args extends any[] = []> =
 	| ((...args: Args) => Res)
 	| NonFunction<Res>
 
-export type Tagged<Type extends PropertyKey, Value> = {
-	type: Type
-	value: Value
-}
-export type Tags<T, S = unknown> = Prettify<
-	ValueUnion<{ [K in keyof T]: Tagged<K, Prettify<S & T[K]>> }>
->
-export type UnTags<T extends AnyTagged> = {
-	[K in T['type']]: (T & { type: K })['value']
-}
-
-export type Singleton<Type extends PropertyKey> = { type: Type; value: void }
-export type AnyTagged = Tagged<PropertyKey, unknown>
-export type BottomTag = Tagged<never, unknown>
-
-export type SingletonKeys<T extends AnyTagged> =
-	T extends Tagged<infer K, void> ? K : never
-
 export type TopRecord = Record<PropertyKey, unknown>
 export type BottomRecord = Record<never, never>
+
+type NonVoidKeys<T> = { [K in keyof T]: T[K] extends void ? never : K }[keyof T]
+export type NonVoidObject<T> = { [K in NonVoidKeys<T>]: T[K] }

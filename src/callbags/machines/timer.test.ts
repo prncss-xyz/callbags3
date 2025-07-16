@@ -1,4 +1,4 @@
-import type { Tagged, Tags } from '../../types'
+import type { Tagged, Tags } from '../../tags'
 
 import { modalMachine } from './modal'
 
@@ -22,7 +22,7 @@ type SD<Result, State, S, E = never> = {
 	validate?: (s: unknown) => Tagged<'error', E> | Tagged<'success', S>
 }
 
-const sd: SD<{ count: number }, State, number> = {
+export const sd: SD<{ count: number }, State, number> = {
 	deserialize: (count, { value: { now } }) => ({
 		type: 'idle',
 		value: { elapsed: count, now },
@@ -74,7 +74,6 @@ export const timer = modalMachine<Event, State>()(
 	},
 )
 
-type T = ReturnType<typeof timer.getResult>
 
 describe('baseMachine', () => {
 	it.todo('send')

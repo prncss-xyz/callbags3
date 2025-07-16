@@ -2,11 +2,7 @@ import { fromInit, type Init, isoAssert } from '@prncss-xyz/utils'
 
 import type { AnyPull, MultiSource, SingleSource } from '../../sources/core'
 
-import { singleton } from '../../../tags'
-
-export const empty = singleton('empty')
-const emptyError = empty.void()
-type EmptyError = typeof emptyError
+import { emptyError, type EmptyError } from '../../../errors/empty'
 
 export type Fold<Value, Acc, Context, R = Acc> =
 	| {
@@ -30,24 +26,16 @@ export type Fold1<Acc, Context, R = Acc> =
 			result?: (acc: Acc) => R
 	  }
 
-export function fold<
-	Value,
-	Context,
-	Err,
-	P extends AnyPull,
-	Acc,
-	S,
-	Succ = Acc,
->(
+export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ = Acc>(
 	props: Fold<Value, Acc, Context, Succ>,
 ): (
 	source: MultiSource<Value, Context, Err, P>,
 ) => SingleSource<Succ, Context, Err, P>
-export function fold<Value, Context, Err, P extends AnyPull, S, Succ = Value>(
+export function fold<Value, Context, Err, P extends AnyPull, Succ = Value>(
 	props: Fold1<Value, Context, Succ>,
 ): (
-	source: MultiSource<Value, Context, Err, any>,
-) => SingleSource<Value, any, EmptyError | Err, any>
+	source: MultiSource<Value, Context, Err, P>,
+) => SingleSource<Value, any, EmptyError | Err, P>
 export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
 	fold?: (value: Value, acc: Acc, context: Context) => Acc
 	foldDest?: (value: Value, acc: Acc, context: Context) => Acc

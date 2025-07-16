@@ -1,37 +1,54 @@
 # TODO
 
+- either
+  - rename err, succ to error, success
 - machine
-    - move emit out of send param
-    - make always access emit
-    - serialization
-    - slice
-    - sub
-    - messages: void
+
+  - direct:
+    - improve inference: use init, event optional
+  - sub
+  - slice
+  - make always access emit
+  - forbid init to access always
+  - move emit out of send param (maybe)
+  - serialization
 
 - tests (improve coverage)
 
 - fold remove init from inside def
 
-- id => identity
+- id `=>` identity
 
 - merge to utils
 
 - state machine
-    - base
-    - combo
-    - operators
-    - extract
-    - effects
+
+  - base
+  - combo
+  - operators
+  - extract
+  - effects
 
 - state machine exemples
-    - undo/redo
-    - games
-    - wordCOunt
-    - zipCmp
+
+  - undo/redo
+  - games
+  - wordCOunt
+  - zipCmp
 
 - proc prototype ordering
 
 - pick/multi
+
+- match
+
+- operators
+  - fallback
+  - dedupe
+  - mapErr
+  - flipErr
+  - race
+  - all
 
 ## Next
 
@@ -45,7 +62,7 @@
 
 ## Maybe
 
-- value -> payload
+- value `->` payload
 - async iterator
 - machine: default
 

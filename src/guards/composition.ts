@@ -1,4 +1,4 @@
-import type { Prettify, Tags, ValueIntersection } from '../types'
+import type { Prettify, ValueIntersection } from '../types'
 
 import { type Guard, isNullish, isObject } from './primitives'
 
@@ -49,17 +49,6 @@ export function isObjectOf<T>(o: IsObj<T>) {
 			return false
 		}
 		return true
-	}
-}
-
-export function isTag<T>(o: IsObj<T>) {
-	return function (v: unknown): v is Tags<T> {
-		if (!isObject(v)) return false
-		const type = (v as any).type
-		if (type === undefined) return false
-		const val = (o as any)[type]
-		if (val === undefined) return false
-		return val((v as any).value)
 	}
 }
 

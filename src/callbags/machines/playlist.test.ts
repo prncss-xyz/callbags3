@@ -36,7 +36,7 @@ export const playlist = directMachine()(
 		remove: ({ id }: { id: number }, { items }) => ({
 			items: items.filter((t) => t.id !== id),
 		}),
-		resetPlaylist: () => list0,
+		resetPlaylist: (_: void) => list0,
 		select: ({ id }: { id: number }) => ({ currentId: id }),
 		update: (
 			{ duration, id }: { duration: number; id: number },
@@ -46,7 +46,7 @@ export const playlist = directMachine()(
 		}),
 	},
 	{
-		select: ({ currentId, items }) => {
+		result: ({ currentId, items }) => {
 			const item = items.find((t) => t.id === currentId)
 			isoAssert(item, 'current item should always exist')
 			return {

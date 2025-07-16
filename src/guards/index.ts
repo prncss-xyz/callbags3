@@ -1,2 +1,2 @@
-export * from './combo'
+export * from './composition'
 export * from './primitives'

@@ -1,9 +1,8 @@
 import { type InferGuard, isUnknown } from '../../guards'
-import { union } from '../../unions'
+import { union } from '../../tags/unions'
 import { type AnyPull, type MultiSource } from '../sources'
 
-const LR = Symbol('LR')
-export const [isEither, { left, right }] = union(LR, {
+export const [isEither, { left, right }] = union({
 	left: isUnknown,
 	right: isUnknown,
 })
