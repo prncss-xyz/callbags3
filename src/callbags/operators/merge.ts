@@ -10,13 +10,13 @@ export const [isEither, { left, right }] = union({
 type Left<S> = InferGuard<typeof left.is<S>>
 type Right<S> = InferGuard<typeof right.is<S>>
 
-export function merge<VR, Context, ER, VL, P extends AnyPull>(
-	sourceRight: MultiSource<VR, Context, ER, P>,
+export function merge<VR, ER, VL, P extends AnyPull>(
+	sourceRight: MultiSource<VR, ER, P>,
 ) {
 	return function <EL>(
-		sourceLeft: MultiSource<VL, Context, EL, P>,
-	): MultiSource<Left<VL> | Right<VR>, Context | Context, EL | ER, P> {
-		return function ({ complete, context, error, next }) {
+		sourceLeft: MultiSource<VL, EL, P>,
+	): MultiSource<Left<VL> | Right<VR>, EL | ER, P> {
+		return function ({ complete, error, next }) {
 			let openedLeft = true
 			let openedRight = true
 			const ofSL = sourceLeft({
@@ -27,7 +27,6 @@ export function merge<VR, Context, ER, VL, P extends AnyPull>(
 					}
 					complete()
 				},
-				context,
 				error,
 				next(v) {
 					next(left.of(v))
@@ -41,7 +40,6 @@ export function merge<VR, Context, ER, VL, P extends AnyPull>(
 					}
 					complete()
 				},
-				context,
 				error,
 				next(v) {
 					next(right.of(v))

@@ -2,15 +2,14 @@ import type { AnyPull, MultiSource } from '../../sources/core'
 
 import { defer } from '../../../utils'
 
-export function take<Value, Index, Err, P extends AnyPull>(n: number) {
+export function take<Value, Err, P extends AnyPull>(n: number) {
 	return function (
-		source: MultiSource<Value, Index, Err, P>,
-	): MultiSource<Value, Index, Err, P> {
-		return function ({ complete, context, error, next }) {
+		source: MultiSource<Value, Err, P>,
+	): MultiSource<Value, Err, P> {
+		return function ({ complete, error, next }) {
 			let i = 0
 			const props = source({
 				complete,
-				context,
 				error,
 				next(value) {
 					i++

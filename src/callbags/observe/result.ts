@@ -1,18 +1,14 @@
 import type { AnyPull, Pull, SingleSource } from '../sources/core'
 
-export function result<Succ, P extends AnyPull, Context>(
-	context: Context,
-): (
-	sink: SingleSource<Succ, Context, never, P>,
+export function result<Succ, P extends AnyPull>(): (
+	sink: SingleSource<Succ, never, P>,
 ) => P extends Pull ? Succ : Promise<Succ>
 export function result<Succ, P extends AnyPull>(): (
-	sink: SingleSource<Succ, void, never, P>,
+	sink: SingleSource<Succ, never, P>,
 ) => P extends Pull ? Succ : Promise<Succ>
-export function result<Succ, P extends AnyPull, Context = void>(
-	context: Context = undefined as any,
-) {
+export function result<Succ, P extends AnyPull>() {
 	return function (
-		sink: SingleSource<Succ, Context, never, P>,
+		sink: SingleSource<Succ, never, P>,
 	): P extends Pull ? Succ : Promise<Succ> {
 		let res: Succ
 		let cp = function (v: Succ) {
@@ -21,7 +17,6 @@ export function result<Succ, P extends AnyPull, Context = void>(
 		}
 		const props = sink({
 			complete: undefined,
-			context,
 			error(e) {
 				throw new Error(`unexpected error ${e}`)
 			},

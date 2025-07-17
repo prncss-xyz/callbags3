@@ -1,11 +1,11 @@
 import type { AnyPull, Multi, Source } from '../../sources/core'
 
-export function groupWith<Value, Context, P extends AnyPull>(
+export function groupWith<Value, P extends AnyPull>(
 	eq: (next: Value, last: Value) => unknown,
 ) {
 	return function <Err>(
-		source: Source<Value, Context, Err, P, Multi>,
-	): Source<Value[], Context, Err, P, Multi> {
+		source: Source<Value, Err, P, Multi>,
+	): Source<Value[], Err, P, Multi> {
 		return function (props) {
 			let last: Value
 			let acc: Value[] = []

@@ -11,13 +11,11 @@ export interface Observer<Value, Err, M extends AnyMulti> {
 
 export type Source<
 	Value,
-	Context,
 	Err,
 	P extends AnyPull,
 	M extends AnyMulti,
 > = (observer: {
 	complete: M
-	context: Context
 	error: (fail: Err) => void
 	next: (value: Value) => void
 }) => {
@@ -25,17 +23,15 @@ export type Source<
 	unmount: () => void
 }
 
-export type MultiSource<Value, Context, Err, Pull extends AnyPull> = Source<
+export type MultiSource<Value, Err, Pull extends AnyPull> = Source<
 	Value,
-	Context,
 	Err,
 	Pull,
 	Multi
 >
 
-export type SingleSource<Value, Context, Err, Pull extends AnyPull> = Source<
+export type SingleSource<Value, Err, Pull extends AnyPull> = Source<
 	Value,
-	Context,
 	Err,
 	Pull,
 	undefined

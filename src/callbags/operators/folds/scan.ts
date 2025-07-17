@@ -4,45 +4,40 @@ import type { AnyPull, MultiSource } from '../../sources/core'
 
 import { deferCond } from '../../../utils'
 
-type Scan<Value, Acc, Context, R = Acc> = {
-	fold: (value: Value, acc: Acc, context: Context) => Acc
+type Scan<Value, Acc, R = Acc> = {
+	fold: (value: Value, acc: Acc) => Acc
 	init: Init<Acc>
 	result?: (acc: Acc) => R
 }
-type Scan1<Acc, Context, R = Acc> = {
-	fold: (value: Acc, acc: Acc, context: Context) => Acc
+type Scan1<Acc, R = Acc> = {
+	fold: (value: Acc, acc: Acc) => Acc
 	result?: (acc: Acc) => R
 }
 
-export function scan<Value, Index, Err, P extends AnyPull, Acc, Succ = Acc>(
-	props: Scan<Value, Acc, Index, Succ>,
-): (
-	source: MultiSource<Value, Index, Err, P>,
-) => MultiSource<Value, Index, Err, P>
-export function scan<Value, Index, Err, P extends AnyPull, Succ = Value>(
-	props: Scan1<Value, Index, Succ>,
-): (
-	source: MultiSource<Value, Index, Err, P>,
-) => MultiSource<Value, Index, Err, P>
-export function scan<Value, Context, Err, Succ, P extends AnyPull, Acc>(props: {
-	fold: (value: Value, acc: Acc, context: Context) => Acc
+export function scan<Value, Err, P extends AnyPull, Acc, Succ = Acc>(
+	props: Scan<Value, Acc, Succ>,
+): (source: MultiSource<Value, Err, P>) => MultiSource<Value, Err, P>
+export function scan<Value, Err, P extends AnyPull, Succ = Value>(
+	props: Scan1<Value, Succ>,
+): (source: MultiSource<Value, Err, P>) => MultiSource<Value, Err, P>
+export function scan<Value, Err, Succ, P extends AnyPull, Acc>(props: {
+	fold: (value: Value, acc: Acc) => Acc
 	init?: Init<Acc>
 	result?: (acc: Acc) => Succ
 }) {
 	return function (
-		source: MultiSource<Value, Context, Err, P>,
-	): MultiSource<Value, Context, Err, P> {
+		source: MultiSource<Value, Err, P>,
+	): MultiSource<Value, Err, P> {
 		const foldFn = props.fold
-		return function ({ complete, context, error, next }) {
+		return function ({ complete, error, next }) {
 			let dirty = false
 			let acc: Acc
 			const res = source({
 				complete,
-				context,
 				error,
 				next(value) {
 					if (dirty) {
-						acc = foldFn(value, acc, context)
+						acc = foldFn(value, acc)
 					} else {
 						acc = value as any
 						dirty = true

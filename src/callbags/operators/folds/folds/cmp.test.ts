@@ -9,7 +9,7 @@ import { max, maxWith, min, shuffle, sort } from './cmp'
 describe('maxWith', () => {
 	test('empty', () => {
 		const res = flow(
-			empty<number, void>(),
+			empty<number>(),
 			fold(maxWith((a, b) => a - b)),
 			safeNullable(),
 			result(),
@@ -29,7 +29,7 @@ describe('maxWith', () => {
 
 describe('max', () => {
 	test('empty', () => {
-		const res = flow(empty<number, void>(), fold(max()), result())
+		const res = flow(empty<number>(), fold(max()), result())
 		expect(res).toEqual(-Infinity)
 	})
 	test('defined', () => {
@@ -40,7 +40,7 @@ describe('max', () => {
 
 describe('min', () => {
 	test('empty', () => {
-		const res = flow(empty<number, void>(), fold(min()), result())
+		const res = flow(empty<number>(), fold(min()), result())
 		expect(res).toEqual(+Infinity)
 	})
 	test('defined', () => {

@@ -14,11 +14,15 @@ export function scanMachine<
 	Context extends AnyTagged,
 	Result,
 	Exit extends Maybe<unknown>,
->(machine: Machine<Param, Event, State, Context, Result, Exit>, param: Param) {
+>(
+	machine: Machine<Param, Event, State, Context, Result, Exit>,
+	param: Param,
+	context: Emit<Context>,
+) {
 	return function <SourceErr, P extends AnyPull>(
-		source: MultiSource<Event, Emit<Context>, SourceErr, P>,
-	): MultiSource<State, Emit<Context>, SourceErr, P> {
-		return function ({ complete, context, error, next }) {
+		source: MultiSource<Event, SourceErr, P>,
+	): MultiSource<State, SourceErr, P> {
+		return function ({ complete, error, next }) {
 			let lastState: State
 			function handlerState(state: State) {
 				lastState = state
@@ -27,7 +31,6 @@ export function scanMachine<
 			}
 			const res = source({
 				complete: () => next(lastState),
-				context,
 				error,
 				next: (event) => handlerState(machine.send(event, lastState, context)),
 			})

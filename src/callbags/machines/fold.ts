@@ -16,16 +16,19 @@ export function foldMachine<
 	Context extends AnyTagged,
 	Result,
 	Exit extends Maybe<unknown>,
->(machine: Machine<Param, Event, State, Context, Result, Exit>, param: Param) {
+>(
+	machine: Machine<Param, Event, State, Context, Result, Exit>,
+	param: Param,
+	context: Emit<Context>,
+) {
 	return function <SourceErr, P extends AnyPull>(
-		source: MultiSource<Event, Emit<Context>, SourceErr, P>,
+		source: MultiSource<Event, SourceErr, P>,
 	): SingleSource<
 		Exit extends Just<infer J> ? J : never,
-		Emit<Context>,
 		SourceErr | UnFinished,
 		P
 	> {
-		return function ({ context, error, next }) {
+		return function ({ error, next }) {
 			let lastState: State
 			function handleState(state: State) {
 				const res = machine.exit(state)
@@ -34,7 +37,6 @@ export function foldMachine<
 			}
 			const res = source({
 				complete: () => error(unfinished.void()),
-				context,
 				error,
 				next: (event) => handleState(machine.send(event, lastState, context)),
 			})

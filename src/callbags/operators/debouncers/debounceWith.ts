@@ -1,12 +1,12 @@
 import type { Multi, Source } from '../../sources/core'
 
-export function debounceWith<A, Context>(
+export function debounceWith<A>(
 	delay: number,
 	eq: (next: A, last: A) => unknown = Object.is,
 ) {
 	return function <Err>(
-		source: Source<A, Context, Err, undefined, Multi>,
-	): Source<A, Context, Err, undefined, Multi> {
+		source: Source<A, Err, undefined, Multi>,
+	): Source<A, Err, undefined, Multi> {
 		return function (props) {
 			let handle: NodeJS.Timeout | number = 0
 			let arg_: A

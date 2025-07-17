@@ -2,9 +2,9 @@ import { fromInit, type Init } from '@prncss-xyz/utils'
 
 import type { MultiSource, SingleSource } from './core'
 
-export function onceAsync<Value, Context = void>(
+export function onceAsync<Value>(
 	init: Init<Promise<Value>>,
-): SingleSource<Value, Context, never, undefined> {
+): SingleSource<Value, never, undefined> {
 	return function ({ next }) {
 		let closed = false
 		fromInit(init).then((value) => {
@@ -20,9 +20,9 @@ export function onceAsync<Value, Context = void>(
 	}
 }
 
-export function asyncIterable<Value, Context = void>(
+export function asyncIterable<Value>(
 	values: AsyncIterable<Value>,
-): MultiSource<Value, Context, never, undefined> {
+): MultiSource<Value, never, undefined> {
 	return function ({ complete, next }) {
 		let closed = false
 		;(async () => {
@@ -41,9 +41,9 @@ export function asyncIterable<Value, Context = void>(
 	}
 }
 
-export function interval<Context = void>(
+export function interval(
 	period: number,
-): MultiSource<number, Context, never, undefined> {
+): MultiSource<number, never, undefined> {
 	return function ({ next }) {
 		let index = 0
 		let handler = setInterval(() => {

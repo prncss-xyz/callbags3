@@ -4,14 +4,13 @@ import { emptyError, type EmptyError } from '../../errors/empty'
 
 const complete = emptyError.void.bind(emptyError)
 
-export function first<Value, Index, Err, P extends AnyPull>() {
+export function first<Value, Err, P extends AnyPull>() {
 	return function (
-		source: MultiSource<Value, Index, Err, P>,
-	): SingleSource<Value, Index, EmptyError | Err, P> {
-		return function ({ context, error, next }) {
+		source: MultiSource<Value, Err, P>,
+	): SingleSource<Value, EmptyError | Err, P> {
+		return function ({ error, next }) {
 			return source({
 				complete,
-				context,
 				error,
 				next,
 			})

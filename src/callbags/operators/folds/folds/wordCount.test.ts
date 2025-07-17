@@ -7,7 +7,7 @@ import { wordCount } from './wordCount'
 
 describe('isWordLike', () => {
 	test('empty', () => {
-		const res = flow(empty<string, void>(), fold(wordCount()), result())
+		const res = flow(empty<string>(), fold(wordCount()), result())
 		expect(res).toBe(0)
 	})
 	test('defined', () => {

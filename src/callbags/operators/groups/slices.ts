@@ -1,9 +1,9 @@
 import type { AnyPull, Multi, Source } from '../../sources/core'
 
-export function slices<Value, Context, P extends AnyPull>(n: number) {
+export function slices<Value, P extends AnyPull>(n: number) {
 	return function <Err>(
-		source: Source<Value, Context, Err, P, Multi>,
-	): Source<Value[], Context, Err, P, Multi> {
+		source: Source<Value, Err, P, Multi>,
+	): Source<Value[], Err, P, Multi> {
 		return function (props) {
 			let acc: Value[] = []
 			return source({

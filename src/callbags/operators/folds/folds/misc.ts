@@ -1,9 +1,8 @@
 import type { Fold } from '../fold'
 
-export function fromEntries<K extends PropertyKey, V, Context = void>(): Fold<
+export function fromEntries<K extends PropertyKey, V>(): Fold<
 	[K, V],
-	Record<K, V>,
-	Context
+	Record<K, V>
 > {
 	return {
 		fold: ([k, v], acc) => ({ ...acc, [k]: v }),

@@ -1,4 +1,5 @@
 # TODO
+- result
 
 - either
   - rename err, succ to error, success

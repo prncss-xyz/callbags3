@@ -6,11 +6,11 @@ import { map } from './map'
 
 // TODO: not just MultiSource
 
-export function flattenMulti<Value, Context, EO, EI, P extends AnyPull>() {
+export function flattenMulti<Value, EO, EI, P extends AnyPull>() {
 	return function (
-		sources: MultiSource<MultiSource<Value, Context, EI, P>, Context, EO, P>,
-	): MultiSource<Value, Context, EI | EO, P> {
-		return function ({ complete, context, error, next }) {
+		sources: MultiSource<MultiSource<Value, EI, P>, EO, P>,
+	): MultiSource<Value, EI | EO, P> {
+		return function ({ complete, error, next }) {
 			const unmounts = new Set<() => void>()
 			// whether the source of sources is done
 			let done = false
@@ -19,7 +19,6 @@ export function flattenMulti<Value, Context, EO, EI, P extends AnyPull>() {
 					done = true
 					if (unmounts.size === 0) complete()
 				},
-				context,
 				error,
 				next(source) {
 					const { pull, unmount } = source({
@@ -28,7 +27,6 @@ export function flattenMulti<Value, Context, EO, EI, P extends AnyPull>() {
 							unmounts.delete(unmount)
 							if (unmounts.size === 0 && done) complete()
 						},
-						context,
 						error,
 						next(value) {
 							// this is for lazy resolution
@@ -50,11 +48,8 @@ export function flattenMulti<Value, Context, EO, EI, P extends AnyPull>() {
 	}
 }
 
-export function chainMulti<VS, VT, Context, ET, P extends AnyPull>(
-	cb: (A: VS, context: Context) => MultiSource<VT, Context, ET, P>,
+export function chainMulti<VS, VT, ET, P extends AnyPull>(
+	cb: (A: VS) => MultiSource<VT, ET, P>,
 ) {
-	return pipe(
-		map<VS, MultiSource<VT, Context, ET, P>, Context, P, Multi, ET>(cb),
-		flattenMulti(),
-	)
+	return pipe(map<VS, MultiSource<VT, ET, P>, P, Multi, ET>(cb), flattenMulti())
 }

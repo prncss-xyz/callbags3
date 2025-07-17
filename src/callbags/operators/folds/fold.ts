@@ -4,50 +4,48 @@ import type { AnyPull, MultiSource, SingleSource } from '../../sources/core'
 
 import { emptyError, type EmptyError } from '../../../errors/empty'
 
-export type Fold<Value, Acc, Context, R = Acc> =
+export type Fold<Value, Acc = Value, R = Acc> =
 	| {
-			fold: (value: Value, acc: Acc, context: Context) => Acc
+			fold: (value: Value, acc: Acc) => Acc
 			init: Init<Acc>
 			result?: (acc: Acc) => R
 	  }
 	| {
-			foldDest: (value: Value, acc: Acc, context: Context) => Acc
+			foldDest: (value: Value, acc: Acc) => Acc
 			init: Init<Acc>
 			result?: (acc: Acc) => R
 	  }
 
-export type Fold1<Acc, Context, R = Acc> =
+export type Fold1<Acc, R = Acc> =
 	| {
-			fold: (value: Acc, acc: Acc, context: Context) => Acc
+			fold: (value: Acc, acc: Acc) => Acc
 			result?: (acc: Acc) => R
 	  }
 	| {
-			foldDest: (value: Acc, acc: Acc, context: Context) => Acc
+			foldDest: (value: Acc, acc: Acc) => Acc
 			result?: (acc: Acc) => R
 	  }
 
-export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ = Acc>(
-	props: Fold<Value, Acc, Context, Succ>,
+export function fold<Value, Err, P extends AnyPull, Acc, Succ = Acc>(
+	props: Fold<Value, Acc, Succ>,
+): (source: MultiSource<Value, Err, P>) => SingleSource<Succ, Err, P>
+export function fold<Value, Err, P extends AnyPull, Succ = Value>(
+	props: Fold1<Value, Succ>,
 ): (
-	source: MultiSource<Value, Context, Err, P>,
-) => SingleSource<Succ, Context, Err, P>
-export function fold<Value, Context, Err, P extends AnyPull, Succ = Value>(
-	props: Fold1<Value, Context, Succ>,
-): (
-	source: MultiSource<Value, Context, Err, P>,
-) => SingleSource<Value, any, EmptyError | Err, P>
-export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
-	fold?: (value: Value, acc: Acc, context: Context) => Acc
-	foldDest?: (value: Value, acc: Acc, context: Context) => Acc
+	source: MultiSource<Value, Err, P>,
+) => SingleSource<Value, EmptyError | Err, P>
+export function fold<Value, Err, P extends AnyPull, Acc, Succ>(props: {
+	fold?: (value: Value, acc: Acc) => Acc
+	foldDest?: (value: Value, acc: Acc) => Acc
 	init?: Init<Acc>
 	result?: (acc: Acc) => Succ
 }) {
 	return function (
-		source: MultiSource<Value, Context, Err, P>,
-	): SingleSource<Value, Context, EmptyError | Err, P> {
+		source: MultiSource<Value, Err, P>,
+	): SingleSource<Value, EmptyError | Err, P> {
 		const foldFn = props.foldDest ?? props.fold
 		isoAssert(foldFn)
-		return function ({ context, error, next }) {
+		return function ({ error, next }) {
 			let dirty = false
 			let acc: Acc
 			if ('init' in props) {
@@ -61,11 +59,10 @@ export function fold<Value, Context, Err, P extends AnyPull, Acc, Succ>(props: {
 							next(props.result ? props.result(acc) : (acc as any))
 						} else error(emptyError)
 					},
-					context,
 					error,
 					next(value) {
 						if (dirty) {
-							acc = foldFn(value, acc, context)
+							acc = foldFn(value, acc)
 						} else {
 							acc = value as any
 							dirty = true

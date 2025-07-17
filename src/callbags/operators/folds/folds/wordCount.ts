@@ -4,13 +4,12 @@ function isWordLike(t: string) {
 	return /\w/.test(t)
 }
 
-export function wordCount<Index>(): Fold<
+export function wordCount(): Fold<
 	string,
 	{
 		count: number
 		last: boolean
 	},
-	Index,
 	number
 > {
 	return {

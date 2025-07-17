@@ -1,19 +1,18 @@
 import type { AnyPull, MultiSource } from '../../sources/core'
 
-export function takeUntil<Value, Context, Err, P extends AnyPull>(
-	cond: (value: Value, context: Context) => unknown,
+export function takeUntil<Value, Err, P extends AnyPull>(
+	cond: (value: Value) => unknown,
 ) {
 	return function (
-		source: MultiSource<Value, Context, Err, P>,
-	): MultiSource<Value, Context, Err, P> {
-		return function ({ complete, context, error, next }) {
+		source: MultiSource<Value, Err, P>,
+	): MultiSource<Value, Err, P> {
+		return function ({ complete, error, next }) {
 			const props = source({
 				complete,
-				context,
 				error,
 				next(value) {
 					next(value)
-					if (cond(value, context)) complete()
+					if (cond(value)) complete()
 				},
 			})
 			return props

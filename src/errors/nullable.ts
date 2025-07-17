@@ -10,29 +10,24 @@ export type Nullable<T> = null | T | undefined
 
 export function safeNullable<
 	Succ,
-	Index,
 	Err,
 	P extends AnyPull,
 	M extends AnyMulti,
 >() {
-	return safe<Succ, Index, Err, Succ, undefined, P, M>(id, always(undefined))
+	return safe<Succ, Err, Succ, undefined, P, M>(id, always(undefined))
 }
 
-export function chainNullable<
-	A,
-	B,
-	Context,
-	P extends AnyPull,
-	M extends AnyMulti,
->(cb: (value: A, context: Context) => B | null | undefined) {
+export function chainNullable<A, B, P extends AnyPull, M extends AnyMulti>(
+	cb: (value: A) => B | null | undefined,
+) {
 	return function <Err>(
-		source: Source<A, Context, Err, P, M>,
-	): Source<B, Context, Err | Nothing, P, M> {
+		source: Source<A, Err, P, M>,
+	): Source<B, Err | Nothing, P, M> {
 		return function (props) {
 			return source({
 				...props,
 				next(value) {
-					const res = cb(value, props.context)
+					const res = cb(value)
 					if (isNullish(res)) props.error(nothing.void())
 					else props.next(res)
 				},

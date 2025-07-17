@@ -8,25 +8,18 @@ import { asyncIterable, onceAsync } from './sources/push'
 
 type Res<P extends AnyPull, V> = P extends Pull ? V : Promise<V>
 
-export type ProSource<
-	Value,
-	Index,
-	Err,
-	P extends AnyPull,
-	M extends AnyMulti,
-> =
+export type ProSource<Value, Err, P extends AnyPull, M extends AnyMulti> =
 	| AsyncIterable<Value>
 	| Iterable<Value>
 	| NonFunction<Value>
 	| Promise<Value>
-	| Source<Value, Index, Err, P, M>
+	| Source<Value, Err, P, M>
 
-export function proc<Value, VR, Context, M extends AnyMulti>(
+export function proc<Value, VR, M extends AnyMulti>(
 	proSource: AsyncIterable<Value>,
 	transform: (
-		source: Source<Value, Context, never, undefined, M>,
-	) => Source<VR, Context, never, undefined, undefined>,
-	context: Context,
+		source: Source<Value, never, undefined, M>,
+	) => Source<VR, never, undefined, undefined>,
 ): Promise<VR>
 export function proc<
 	Value,
@@ -36,76 +29,65 @@ export function proc<
 	P extends AnyPull,
 	M extends AnyMulti,
 >(
-	proSource: Source<Value, void, Err, P, M>,
+	proSource: Source<Value, Err, P, M>,
 	transform: (
-		source: Source<Value, void, Err, P, M>,
-	) => Source<VR, void, never, PR, undefined>,
+		source: Source<Value, Err, P, M>,
+	) => Source<VR, never, PR, undefined>,
 ): Res<PR, VR>
 export function proc<Value, VR, M extends AnyMulti>(
 	proSource: AsyncIterable<Value>,
 	transform: (
-		source: Source<Value, void, never, undefined, M>,
-	) => Source<VR, void, never, undefined, undefined>,
+		source: Source<Value, never, undefined, M>,
+	) => Source<VR, never, undefined, undefined>,
 ): Promise<VR>
-export function proc<
-	Value,
-	VR,
-	Context,
-	PR extends AnyPull,
-	M extends AnyMulti,
->(
+export function proc<Value, VR, PR extends AnyPull, M extends AnyMulti>(
 	proSource: Iterable<Value>,
 	transform: (
-		source: Source<Value, Context, never, Pull, M>,
-	) => Source<VR, Context, never, PR, undefined>,
-	context: Context,
+		source: Source<Value, never, Pull, M>,
+	) => Source<VR, never, PR, undefined>,
 ): Res<PR, VR>
 export function proc<Value, VR, PR extends AnyPull, M extends AnyMulti>(
 	proSource: Iterable<Value>,
 	transform: (
-		source: Source<Value, void, never, Pull, M>,
-	) => Source<VR, void, never, PR, undefined>,
+		source: Source<Value, never, Pull, M>,
+	) => Source<VR, never, PR, undefined>,
 ): Res<PR, VR>
 export function proc<
 	Value,
 	VR,
-	Context,
 	PR extends AnyPull,
 	Err,
 	P extends AnyPull,
 	M extends AnyMulti,
 >(
-	proSource: Source<Value, Context, Err, P, M>,
+	proSource: Source<Value, Err, P, M>,
 	transform: (
-		source: Source<Value, Context, Err, P, M>,
-	) => Source<VR, Context, never, PR, undefined>,
-	context: Context,
+		source: Source<Value, Err, P, M>,
+	) => Source<VR, never, PR, undefined>,
 ): Res<PR, VR>
-export function proc<Value, VR, Context>(
+export function proc<Value, VR>(
 	proSource: Promise<Value>,
 	transform: (
-		source: Source<Value, Context, never, Pull, undefined>,
-	) => Source<VR, Context, never, undefined, undefined>,
-	context: Context,
+		source: Source<Value, never, Pull, undefined>,
+	) => Source<VR, never, undefined, undefined>,
 ): Promise<VR>
 export function proc<Value, VR>(
 	proSource: Promise<Value>,
 	transform: (
-		source: Source<Value, void, never, Pull, undefined>,
-	) => Source<VR, void, never, undefined, undefined>,
+		source: Source<Value, never, Pull, undefined>,
+	) => Source<VR, never, undefined, undefined>,
 ): Promise<VR>
-export function proc<Value, VR, Context, PR extends AnyPull>(
+export function proc<Value, VR, PR extends AnyPull>(
 	proSource: NonFunction<Value>,
 	transform: (
-		source: Source<Value, Context, never, Pull, undefined>,
-	) => Source<VR, Context, never, PR, undefined>,
-	context: Context,
+		source: Source<Value, never, Pull, undefined>,
+	) => Source<VR, never, PR, undefined>,
 ): Res<PR, VR>
 export function proc<Value, VR, PR extends AnyPull>(
 	proSource: NonFunction<Value>,
 	transform: (
-		source: Source<Value, void, never, Pull, undefined>,
-	) => Source<VR, void, never, PR, undefined>,
+		source: Source<Value, never, Pull, undefined>,
+	) => Source<VR, never, PR, undefined>,
 ): Res<PR, VR>
 
 export function proc<
@@ -114,13 +96,11 @@ export function proc<
 	PR extends AnyPull,
 	P extends AnyPull,
 	M extends AnyMulti,
-	Context,
 >(
-	proSource: ProSource<Value, Context, never, P, M>,
+	proSource: ProSource<Value, never, P, M>,
 	transform: (
-		source: Source<Value, Context, never, P, M>,
-	) => Source<VR, Context, never, PR, undefined>,
-	context: Context = undefined as any,
+		source: Source<Value, never, P, M>,
+	) => Source<VR, never, PR, undefined>,
 ): any {
 	let source: any
 	if (isFunction(proSource)) source = proSource
@@ -128,5 +108,5 @@ export function proc<
 	else if (isIterable(proSource)) source = iterable(proSource)
 	else if (isPromise(proSource)) source = onceAsync(proSource)
 	else source = once(proSource)
-	return result(context)(transform(source))
+	return result()(transform(source))
 }

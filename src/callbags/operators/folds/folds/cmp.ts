@@ -4,40 +4,40 @@ import type { Fold, Fold1 } from '../fold'
 
 import { cmp0, sortedAdd } from './_internals'
 
-export function max<I>(): Fold<number, number, I> {
+export function max(): Fold<number> {
 	return {
 		fold: (t, acc) => (t > acc ? t : acc),
 		init: -Infinity,
 	}
 }
 
-export function min<I>(): Fold<number, number, I> {
+export function min(): Fold<number> {
 	return {
 		fold: (t, acc) => (t < acc ? t : acc),
 		init: Infinity,
 	}
 }
 
-export function maxWith<T, I>(cmp = cmp0<T>): Fold1<T, I> {
+export function maxWith<T>(cmp = cmp0<T>): Fold1<T> {
 	return {
 		fold: (t, acc) => (cmp(t, acc) > 0 ? t : acc),
 	}
 }
 
-export function minWith<T, I>(cmp = cmp0<T>): Fold1<T, I> {
+export function minWith<T>(cmp = cmp0<T>): Fold1<T> {
 	return {
 		fold: (t, acc) => (cmp(t, acc) < 0 ? t : acc),
 	}
 }
 
-export function sort<T, I>(cmp = cmp0<T>): Fold<T, T[], I> {
+export function sort<T>(cmp = cmp0<T>): Fold<T, T[]> {
 	return {
 		fold: sortedAdd(cmp),
 		init: () => [],
 	}
 }
 
-export function shuffle<T, I>(): Fold<T, T[], I> {
+export function shuffle<T>(): Fold<T, T[]> {
 	return {
 		fold(t, acc) {
 			const i = Math.floor(Math.random() * (acc.length + 1))

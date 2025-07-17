@@ -11,11 +11,10 @@ function deferCond(sync: unknown, cb: () => void) {
 	else setTimeout(cb, 0)
 }
 
-export function observe<Value, Err, M extends AnyMulti, Context = void>(
+export function observe<Value, Err, M extends AnyMulti, >(
 	props: Obs<Value, Err, M>,
-	context: Context,
 ) {
-	return function (source: Source<Value, Context, Err, AnyPull, M>) {
+	return function (source: Source<Value, Err, AnyPull, M>) {
 		const { pull, unmount } = source({
 			complete: props.complete
 				? () => {
@@ -25,7 +24,6 @@ export function observe<Value, Err, M extends AnyMulti, Context = void>(
 						})
 					}
 				: (undefined as any),
-			context,
 			error(err) {
 				deferCond(pull, () => {
 					unmount()
