@@ -1,3 +1,4 @@
+import type { NonEmptyArray } from '../../../types'
 import type { AnyPull, Multi, Source } from '../../sources/core'
 
 export function groupWith<Value, P extends AnyPull>(
@@ -5,14 +6,14 @@ export function groupWith<Value, P extends AnyPull>(
 ) {
 	return function <Err>(
 		source: Source<Value, Err, P, Multi>,
-	): Source<Value[], Err, P, Multi> {
+	): Source<NonEmptyArray<Value>, Err, P, Multi> {
 		return function (props) {
 			let last: Value
 			let acc: Value[] = []
 			return source({
 				...props,
 				complete() {
-					if (acc.length > 0) props.next(acc)
+					if (acc.length > 0) props.next(acc as NonEmptyArray<Value>)
 					props.complete()
 				},
 				next(value) {
@@ -21,7 +22,7 @@ export function groupWith<Value, P extends AnyPull>(
 					} else if (eq(value, last!)) {
 						acc.push(value)
 					} else {
-						props.next(acc)
+						props.next(acc as NonEmptyArray<Value>)
 						acc = [value]
 					}
 					last = value
