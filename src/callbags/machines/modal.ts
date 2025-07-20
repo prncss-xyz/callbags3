@@ -1,7 +1,8 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
 import type { AnyTagged, Tagged, Tags, ValueFor } from '../../tags'
-import type { Modify, Prettify, ValueUnion } from '../../types'
+import type { Dedupe, Modify, Prettify, ValueUnion } from '../../types'
+import type { SubMachineEntry } from './sub'
 
 import {
 	just,
@@ -27,6 +28,7 @@ type Transitions<
 	Message extends AnyTagged,
 > = {
 	[S in Exclude<State['type'], 'final'>]:
+		| SubMachineEntry<State, S, Event, Message, any, any>
 		| {
 				always: Sender<State, [ValueFor<State, S>, Emit<Message>]>
 		  }
@@ -57,10 +59,28 @@ type InferResult<O extends Transitions<any, any, any>> = Tags<{
 		: never
 }>
 
+type InferStateFromSender<O extends Transitions<any, any, any>> = Dedupe<
+	| ValueUnion<{
+			[K in InferNonTransitory<O>]: O[K] extends Record<
+				'always',
+				Init<infer R, any[]>
+			>
+				? R
+				: never
+	  }>
+	| ValueUnion<{
+			[K in InferNonTransitory<O>]: O[K] extends Record<
+				'send',
+				Init<infer R, any[]> | Record<PropertyKey, Init<infer R, any[]>>
+			>
+				? R
+				: never
+	  }>
+>
+
 export function modalMachine<
 	Event extends AnyTagged,
 	State extends AnyTagged,
-	// MAYBE: Common extends Empty = Empty,
 	Message extends AnyTagged = Tagged<never, unknown>,
 >() {
 	return function <
@@ -76,7 +96,8 @@ export function modalMachine<
 	): Machine<
 		Param,
 		Prettify<Event>,
-		Prettify<State & { type: InferNonTransitory<T> }>,
+		// Prettify<State & { type: InferNonTransitory<T> }>,
+		Prettify<InferStateFromSender<T> & { type: InferNonTransitory<T> }>,
 		Message,
 		Prettify<InferResult<T>>,
 		Exit | Nothing
@@ -98,12 +119,12 @@ export function modalMachine<
 			return normalize(next) as any
 		}
 		return {
-			exit(state) {
+			exit(state: any) {
 				if (state.type !== 'final') return nothing.void()
-				if (!exit) return just.of(state.value) as never
+				if (!exit) return just.of(state.value) as any
 				return exit(state.value)
 			},
-			getResult(state) {
+			getResult(state: any) {
 				const s = (transitions as any)[state.type].select
 				if (s) {
 					return {
@@ -116,9 +137,9 @@ export function modalMachine<
 			init(param) {
 				return normalize(fromSender(init, param)) as never
 			},
-			send(event, state, emit) {
+			send(event, state: any, emit) {
 				const e = (transitions as any)[state.type as any]?.send[event.type]
-				if (!e) return state
+				if (!e) return state as any
 				return always(fromSender(e, event.value, state.value, emit), emit)
 			},
 		}

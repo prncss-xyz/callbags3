@@ -73,8 +73,3 @@ export const timer = modalMachine<Event, State>()(
 		},
 	},
 )
-
-
-describe('baseMachine', () => {
-	it.todo('send')
-})

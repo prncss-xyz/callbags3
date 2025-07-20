@@ -21,9 +21,8 @@ export function makeSingleton<Type extends PropertyKey>(
 	return { type, value: undefined }
 }
 
-
-export type Tags<T, S = unknown> = Prettify<
-	ValueUnion<{ [K in keyof T]: Tagged<K, S & T[K]> }>
+export type Tags<Tags, Context = unknown> = Prettify<
+	ValueUnion<{ [K in keyof Tags]: Tagged<K, Context & Tags[K]> }>
 >
 export type UnTags<T extends AnyTagged> = {
 	[K in T['type']]: (T & { type: K })['value']

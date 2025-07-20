@@ -1,18 +1,21 @@
 # TODO
-- result
+
+- result ?
 
 - either
   - rename err, succ to error, success
 - machine
 
+  - effects
   - direct:
     - improve inference: use init, event optional
-  - sub
   - slice
+  - history
   - make always access emit
   - forbid init to access always
   - move emit out of send param (maybe)
   - serialization
+  - ?? reverse machine
 
 - tests (improve coverage)
 
@@ -21,21 +24,6 @@
 - id `=>` identity
 
 - merge to utils
-
-- state machine
-
-  - base
-  - combo
-  - operators
-  - extract
-  - effects
-
-- state machine exemples
-
-  - undo/redo
-  - games
-  - wordCOunt
-  - zipCmp
 
 - proc prototype ordering
 
