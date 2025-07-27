@@ -10,7 +10,7 @@ import { deferCond } from '../../utils'
 export function scanMachine<
 	Param,
 	Event extends AnyTagged,
-	State extends AnyTagged,
+	State,
 	Context extends AnyTagged,
 	Result,
 	Exit extends Maybe<unknown>,
@@ -21,20 +21,20 @@ export function scanMachine<
 ) {
 	return function <SourceErr, P extends AnyPull>(
 		source: MultiSource<Event, SourceErr, P>,
-	): MultiSource<State, SourceErr, P> {
+	): MultiSource<Result, SourceErr, P> {
 		return function ({ complete, error, next }) {
 			let lastState: State
-			function handlerState(state: State) {
+			function handleState(state: State) {
 				lastState = state
-				next(state)
+				next(machine.getResult(state))
 				if (just.is(machine.exit(state))) complete()
 			}
 			const res = source({
-				complete: () => next(lastState),
+				complete,
 				error,
-				next: (event) => handlerState(machine.send(event, lastState, context)),
+				next: (event) => handleState(machine.send(event, lastState, context)),
 			})
-			deferCond(res, () => handlerState(machine.init(param)))
+			deferCond(res, () => handleState(machine.init(param)))
 			return res
 		}
 	}

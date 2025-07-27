@@ -10,7 +10,6 @@
   - direct:
     - improve inference: use init, event optional
   - slice
-  - history
   - make always access emit
   - forbid init to access always
   - move emit out of send param (maybe)

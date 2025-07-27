@@ -54,12 +54,10 @@ export function directMachine<Message extends AnyTagged = BottomTag>() {
 			},
 			send(event, s, c) {
 				if (s.type === 'final') return s
-				const value = s.value
 				const t = transitions[event.type]
 				if (t === undefined) return s
-				return normalize(
-					merge(s as any, fromInit(t as any, event.value, value, c)),
-				)
+
+				return normalize(merge(s as any, fromInit(t as any, event.value, s, c)))
 			},
 		}
 	}

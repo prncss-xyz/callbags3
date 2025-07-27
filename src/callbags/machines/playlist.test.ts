@@ -1,6 +1,13 @@
+import { flow, noop } from '@constellar/core'
 import { isoAssert } from '@prncss-xyz/utils'
 
+import type { InferEvent } from './core'
+
+import { result } from '../observe'
+import { fold, toArray } from '../operators/folds'
+import { iterable } from '../sources'
 import { directMachine } from './direct'
+import { scanMachine } from './scan'
 
 const list0 = {
 	currentId: 0,
@@ -58,4 +65,17 @@ export const playlist = directMachine()(
 	},
 )
 
-export const { getResult, init, send } = playlist
+type Event = InferEvent<typeof playlist>
+describe('playlist', () => {
+	it('should work', () => {
+		const res = flow(
+			iterable<Event>([]),
+			scanMachine(playlist, undefined, noop),
+			fold(toArray()),
+			result(),
+		)
+		expect(res).toEqual([
+			{ currentDuration: 0, currentId: 0, items: [{ duration: 0, id: 0 }] },
+		])
+	})
+})

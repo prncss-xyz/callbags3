@@ -1,6 +1,11 @@
-import type { Tagged, Tags } from '../../tags'
+import { flow, noop } from '@constellar/core'
 
+import { tag, type Tagged, type Tags } from '../../tags'
+import { result } from '../observe/result'
+import { fold, toArray } from '../operators/folds'
+import { iterable } from '../sources'
 import { modalMachine } from './modal'
+import { scanMachine } from './scan'
 
 type State = Tags<
 	{
@@ -73,3 +78,26 @@ export const timer = modalMachine<Event, State>()(
 		},
 	},
 )
+
+describe('timer', () => {
+	it('should work', () => {
+		const res = flow(
+			iterable<Event>([
+				tag('tick', 1),
+				tag('toggle'),
+				tag('tick', 2),
+				tag('resetTimer'),
+			]),
+			scanMachine(timer, 0, noop),
+			fold(toArray()),
+			result(),
+		)
+		expect(res).toEqual([
+			tag('idle', { count: 0 }),
+			tag('idle', { count: 0 }),
+			tag('running', { count: 0 }),
+			tag('running', { count: 1 }),
+      tag('running', { count: 0 }),
+		])
+	})
+})

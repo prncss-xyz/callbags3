@@ -33,7 +33,7 @@ class Tag<Type extends PropertyKey, Domain> {
 	}
 }
 
-export function tag<const Type extends PropertyKey, Value>(
+export function createTag<const Type extends PropertyKey, Value>(
 	type: Type,
 	isValue: (v: unknown) => v is Value = isUnknown as any,
 ) {

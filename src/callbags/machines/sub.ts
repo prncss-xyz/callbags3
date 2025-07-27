@@ -7,7 +7,7 @@ import { just, type Maybe, type Nothing } from '../../errors'
 import {
 	type AnyTagged,
 	isTagged,
-	makeTag,
+	tag,
 	type Tagged,
 	type ValueFor,
 } from '../../tags'
@@ -55,7 +55,7 @@ export function subMachine<
 			const s: Tagged<Name, SubState> | ValueFor<Superstate, Name> =
 				state as any
 			if (isTagged(s)) return s
-			return makeTag(name, machine.init(s))
+			return tag(name, machine.init(s))
 		},
 		select(state: ValueFor<Superstate, Name>) {
 			const s: Tagged<Name, SubState> = state as any
@@ -69,7 +69,7 @@ export function subMachine<
 			if (next === last) return s
 			const exit = machine.exit(next)
 			if (just.is(exit)) return onExit(just.get(exit))
-			return makeTag(name, next)
+			return tag(name, next)
 		},
 	}
 }

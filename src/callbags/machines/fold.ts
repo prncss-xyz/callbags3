@@ -2,7 +2,7 @@ import type { InferGuard } from '../../guards'
 import type { AnyPull, MultiSource, SingleSource } from '../sources'
 import type { Emit, Machine } from './core'
 
-import { just, type Just, type Maybe } from '../../errors/maybe/core'
+import { just, type Just, type Maybe, type Nothing } from '../../errors/maybe/core'
 import { type AnyTagged, singleton } from '../../tags'
 import { deferCond } from '../../utils'
 
@@ -15,9 +15,9 @@ export function foldMachine<
 	State extends AnyTagged,
 	Context extends AnyTagged,
 	Result,
-	Exit extends Maybe<unknown>,
+	Exit extends Maybe<any> = Nothing,
 >(
-	machine: Machine<Param, Event, State, Context, Result, Exit>,
+	machine: Machine<Param, Event, State, Context, Result, any>,
 	param: Param,
 	context: Emit<Context>,
 ) {

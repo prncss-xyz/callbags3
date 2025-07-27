@@ -16,10 +16,18 @@ export interface ISR<State, Serialized, E> {
 	validate?: (serialized: unknown) => Err<E> | Succ<State>
 }
 
+export type InferParam<M> =
+	M extends Machine<infer Param, any, any, any, any, any> ? Param : never
+export type InferEvent<M> =
+	M extends Machine<any, infer Event, any, any, any, any> ? Event : never
 export type InferState<M> =
-	M extends Machine<any, any, infer State, any, any, any>
-		? State
-		: never
+	M extends Machine<any, any, infer State, any, any, any> ? State : never
+export type InferMessage<M> =
+	M extends Machine<any, any, any, infer Message, any, any> ? Message : never
+export type InferResult<M> =
+	M extends Machine<any, any, any, any, infer Result, any> ? Result : never
+export type InferExit<M> =
+	M extends Machine<any, any, any, any, any, infer Exit> ? Exit : never
 
 export type Machine<
 	Param,

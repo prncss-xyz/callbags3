@@ -8,7 +8,15 @@ export type Tagged<Type extends PropertyKey, Value> = {
 	value: Value
 }
 
-export function makeTag<Type extends PropertyKey, Value>(
+export function tag<Type extends PropertyKey>(
+	type: Type,
+	value?: undefined,
+): Tagged<Type, void>
+export function tag<Type extends PropertyKey, Value>(
+	type: Type,
+	value: Value,
+): Tagged<Type, Value>
+export function tag<Type extends PropertyKey, Value>(
 	type: Type,
 	value: Value,
 ): Tagged<Type, Value> {
