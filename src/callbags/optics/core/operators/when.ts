@@ -23,11 +23,9 @@ export function when<Here, Err = 'nothing'>(
 	err?: Init<Err, [Here]>,
 ) {
 	return composePrism<Here, Here, Err>({
-		emitter: (w, onSuccess) => cond(w) && onSuccess(w),
-		getter: (w, onSuccess, onError) =>
-			cond(w)
-				? onSuccess(w)
-				: onError(err ? fromInit(err, w) : ('nothing' as any)),
+		emitter: (w, next) => cond(w) && next(w),
+		getter: (w, next, error) =>
+			cond(w) ? next(w) : error(err ? fromInit(err, w) : ('nothing' as any)),
 		modifier: apply, // TODO:
 		remover: trush,
 		setter: trush,

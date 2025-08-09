@@ -7,13 +7,13 @@ export function iso<There, Here>({
 	get: (w: Here) => There
 	set: (p: There) => Here
 }) {
-	const getter = (w: Here, onSuccess: (part: There) => void) =>
-		onSuccess(get(w))
+	const getter = (w: Here, next: (part: There) => void) =>
+		next(get(w))
 	return composePrism<There, Here, never>({
 		emitter: getter,
 		getter,
-		modifier: (m, onSuccess, w) => m(get(w), (p) => onSuccess(set(p))),
+		modifier: (m, next, w) => m(get(w), (p) => next(set(p))),
 		remover: trush,
-		setter: (p, onSuccess) => onSuccess(set(p)),
+		setter: (p, next) => next(set(p)),
 	})
 }

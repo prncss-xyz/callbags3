@@ -36,17 +36,17 @@ export function chainEither<A, B, E, P extends AnyPull, M extends AnyMulti>(
 
 export function toSafe<S>(next: (value: S) => void) {
 	return {
-		onError: (e: never) => {
+		error: (e: never) => {
 			throw new Error(`unexpected error: ${e}`)
 		},
-		onSuccess: next,
+		next,
 	}
 }
 
 export function toEither<S, E>(next: (value: Either<S, E>) => void) {
 	return {
-		onError: (e: E) => next(err.of(e)),
-		onSuccess: (s: S) => next(succ.of(s)),
+		error: (e: E) => next(err.of(e)),
+		next: (s: S) => next(succ.of(s)),
 	}
 }
 

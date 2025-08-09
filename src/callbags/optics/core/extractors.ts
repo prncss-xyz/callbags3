@@ -25,8 +25,8 @@ export function view<T, S, P extends never | void>(o: Optic<T, S, never, P>) {
 export function preview<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
 	return function (s: S): Either<T, E> {
 		let res: Either<T, E>
-		const { onError, onSuccess } = toEither<T, E>((t) => (res = t))
-		o.getter(s, onSuccess, onError)
+		const { error, next } = toEither<T, E>((t) => (res = t))
+		o.getter(s, next, error)
 		return res!
 	}
 }
