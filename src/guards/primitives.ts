@@ -44,7 +44,7 @@ export function isAsyncIterable<Value>(v: unknown): v is AsyncIterable<Value> {
 	return v !== null && typeof v === 'object' && Symbol.asyncIterator in v
 }
 
-export function isFunction<T>(v: unknown): v is Function<T> {
+export function isFunction(v: unknown): v is Function {
 	return typeof v === 'function'
 }
 

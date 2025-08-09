@@ -1,6 +1,7 @@
 import type { AnyTagged } from '../../tags'
+import type { BottomRecord } from '../../types'
 import type { AnyPull, MultiSource } from '../sources'
-import type { Emit, Machine } from './core'
+import type { Machine } from './core'
 
 import { just, type Maybe } from '../../errors'
 import { deferCond } from '../../utils'
@@ -11,13 +12,13 @@ export function scanMachine<
 	Param,
 	Event extends AnyTagged,
 	State,
-	Context extends AnyTagged,
+	Context extends BottomRecord,
 	Result,
 	Exit extends Maybe<unknown>,
 >(
 	machine: Machine<Param, Event, State, Context, Result, Exit>,
 	param: Param,
-	context: Emit<Context>,
+	context: Context,
 ) {
 	return function <SourceErr, P extends AnyPull>(
 		source: MultiSource<Event, SourceErr, P>,

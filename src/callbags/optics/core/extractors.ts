@@ -1,0 +1,82 @@
+import type { Modify, NonFunction } from '../../../types'
+import type { Optic } from './types'
+
+import { type Either, toEither } from '../../../errors/either'
+import { isFunction } from '../../../guards/primitives'
+import { modToCPS } from './_utils'
+
+// TODO: viewIn
+// TODO: emit
+
+export function view<T, S, P extends never | void>(o: Optic<T, S, never, P>) {
+	return function (s: S): T {
+		let res: T
+		o.getter(
+			s,
+			(t) => (res = t),
+			(e) => {
+				throw new Error(`Unexpected error: ${e}`)
+			},
+		)
+		return res!
+	}
+}
+
+export function preview<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+	return function (s: S): Either<T, E> {
+		let res: Either<T, E>
+		const { onError, onSuccess } = toEither<T, E>((t) => (res = t))
+		o.getter(s, onSuccess, onError)
+		return res!
+	}
+}
+
+export function review<T, S, E>(o: Optic<T, S, E, void>) {
+	return function (t: T): S {
+		let res: S
+		o.setter(t, (s) => (res = s))
+		return res!
+	}
+}
+
+function put<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+	return function (t: T) {
+		return function (s: S): S {
+			let res: S
+			o.setter(t, (s) => (res = s), s)
+			return res!
+		}
+	}
+}
+
+function over<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+	return function (m: Modify<T>) {
+		return function (s: S): S {
+			let res: S
+			o.modifier(modToCPS(m), (s) => (res = s), s)
+			return res!
+		}
+	}
+}
+
+function remove<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+	return function (s: S): S {
+		let res: S
+		o.modifier(o.remover, (s) => (res = s), s)
+		return res!
+	}
+}
+
+export const REMOVE = Symbol('REMOVE')
+
+export function update<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+	return function (m: Modify<T> | NonFunction<T> | typeof REMOVE) {
+		if (m === REMOVE) {
+			return remove(o)
+		}
+		if (isFunction(m)) {
+			return over(o)(m)
+		}
+		return put(o)(m)
+	}
+}

@@ -21,11 +21,13 @@ type InferParams<T extends AnyProduct> = Prettify<
 	}>
 >
 
-type InferResult<T extends AnyProduct> = Prettify<{
-	[K in keyof T]: T[K] extends Machine<any, any, any, any, infer R, any>
-		? R
-		: never
-}>
+type InferResult<T extends AnyProduct> = Prettify<
+	{
+		[K in keyof T]: T[K] extends Machine<any, any, any, any, infer R, any>
+			? R
+			: never
+	} & { type: keyof T }
+>
 
 type InferState<T extends AnyProduct> = Prettify<{
 	[K in keyof T]: T[K] extends Machine<any, any, infer S, any, any, any>

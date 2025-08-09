@@ -1,19 +1,20 @@
 # TODO
 
-- result ?
+- result type
+    - Result<Success, Failure>
 
 - either
   - rename err, succ to error, success
 - machine
 
+  - history
+  - ? split modal from sum
   - effects
   - direct:
     - improve inference: use init, event optional
-  - slice
   - make always access emit
   - forbid init to access always
   - move emit out of send param (maybe)
-  - serialization
   - ?? reverse machine
 
 - tests (improve coverage)
@@ -38,6 +39,17 @@
   - race
   - all
 
+## Events
+
+```typescript
+(data: Data, send: (s: State) => void) => () => void
+{
+    init: (data: Data, send: (s: State) => void),
+    change: (data: Data, send: (s: State) => void),
+    exit: (data: Data, send: (s: State) => void)
+}
+```
+
 ## Next
 
 - optics
@@ -58,3 +70,7 @@
 
 - merge nothing.void() to nothing.of()
 - when scan is called with a fold having an init, it should immediately call next, but we cannot do that beacause of index
+
+## Références
+
+[memoize](https://github.com/caiogondim/fast-memoize.js/blob/master/src/index.js)

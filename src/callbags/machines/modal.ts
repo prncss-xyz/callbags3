@@ -1,7 +1,13 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
 import type { AnyTagged, Tagged, Tags, ValueFor } from '../../tags'
-import type { Dedupe, Modify, Prettify, ValueUnion } from '../../types'
+import type {
+	BottomRecord,
+	Dedupe,
+	Modify,
+	Prettify,
+	ValueUnion,
+} from '../../types'
 import type { SubMachineEntry } from './sub'
 
 import {
@@ -13,7 +19,6 @@ import {
 } from '../../errors/maybe'
 import {
 	type AnyFinalState,
-	type Emit,
 	fromSender,
 	type Machine,
 	type Sender,
@@ -25,22 +30,22 @@ import {
 type Transitions<
 	Event extends AnyTagged,
 	State extends AnyTagged,
-	Message extends AnyTagged,
+	Context extends BottomRecord,
 > = {
 	[S in Exclude<State['type'], 'final'>]:
-		| SubMachineEntry<State, S, Event, Message, any, any>
+		| SubMachineEntry<State, S, Event, Context, any, any>
 		| {
-				always: Sender<State, [ValueFor<State, S>, Emit<Message>]>
+				always: Sender<State, [ValueFor<State, S>, Context]>
 		  }
 		| {
 				send:
 					| Partial<{
 							[E in Event['type']]: Sender<
 								State,
-								[ValueFor<Event, E>, ValueFor<State, S>, Emit<Message>]
+								[ValueFor<Event, E>, ValueFor<State, S>, Context]
 							>
 					  }>
-					| Sender<State, [Event, ValueFor<State, S>, Emit<Message>]>
+					| Sender<State, [Event, ValueFor<State, S>, Context]>
 		  }
 } & {
 	[S in State['type']]: {
@@ -81,10 +86,10 @@ type InferStateFromSender<O extends Transitions<any, any, any>> = Dedupe<
 export function modalMachine<
 	Event extends AnyTagged,
 	State extends AnyTagged,
-	Message extends AnyTagged = Tagged<never, unknown>,
+	Context extends BottomRecord = BottomRecord,
 >() {
 	return function <
-		T extends Transitions<Event, State, Message>,
+		T extends Transitions<Event, State, Context>,
 		Param = void,
 		Exit extends Maybe<unknown> =
 			| (State extends AnyFinalState ? Just<ValueFor<State, 'final'>> : never)
@@ -98,7 +103,7 @@ export function modalMachine<
 		Prettify<Event>,
 		// Prettify<State & { type: InferNonTransitory<T> }>,
 		Prettify<InferStateFromSender<T> & { type: InferNonTransitory<T> }>,
-		Message,
+		Context,
 		Prettify<InferResult<T>>,
 		Exit | Nothing
 	> {
@@ -109,11 +114,11 @@ export function modalMachine<
 		}
 		function always(
 			next: State,
-			emit: Emit<Message>,
+			context: Context,
 		): State & { type: InferNonTransitory<T> } {
 			while (true) {
 				const always = (transitions as any)[next.type].always
-				if (always) next = fromSender(always, next.value, emit)
+				if (always) next = fromSender(always, next.value, context)
 				else break
 			}
 			return normalize(next) as any
@@ -137,10 +142,10 @@ export function modalMachine<
 			init(param) {
 				return normalize(fromSender(init, param)) as never
 			},
-			send(event, state: any, emit) {
+			send(event, state: any, context) {
 				const e = (transitions as any)[state.type as any]?.send[event.type]
 				if (!e) return state as any
-				return always(fromSender(e, event.value, state.value, emit), emit)
+				return always(fromSender(e, event.value, state.value, context), context)
 			},
 		}
 	}

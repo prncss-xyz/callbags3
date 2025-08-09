@@ -1,4 +1,4 @@
-import { flow, noop } from '@constellar/core'
+import { flow } from '@constellar/core'
 
 import { tag, type Tagged, type Tags } from '../../tags'
 import { result } from '../observe/result'
@@ -21,6 +21,10 @@ type Event = Tags<{
 	toggle: void
 }>
 
+type Context = {
+	emit: (e: Tags<'alert', void>) => void
+}
+
 type SD<Result, State, S, E = never> = {
 	deserialize: (s: S, last: State) => State
 	serialize: (s: Result) => S
@@ -35,7 +39,7 @@ export const sd: SD<{ count: number }, State, number> = {
 	serialize: ({ count }) => count,
 }
 
-export const timer = modalMachine<Event, State>()(
+export const timer = modalMachine<Event, State, Context>()(
 	(now: number) => ({ type: 'idle', value: { elapsed: 0, now } }),
 	{
 		idle: {
@@ -80,6 +84,9 @@ export const timer = modalMachine<Event, State>()(
 )
 
 describe('timer', () => {
+	const context = {
+		emit: vi.fn(),
+	}
 	it('should work', () => {
 		const res = flow(
 			iterable<Event>([
@@ -88,7 +95,7 @@ describe('timer', () => {
 				tag('tick', 2),
 				tag('resetTimer'),
 			]),
-			scanMachine(timer, 0, noop),
+			scanMachine(timer, 0, context),
 			fold(toArray()),
 			result(),
 		)
@@ -97,7 +104,7 @@ describe('timer', () => {
 			tag('idle', { count: 0 }),
 			tag('running', { count: 0 }),
 			tag('running', { count: 1 }),
-      tag('running', { count: 0 }),
+			tag('running', { count: 0 }),
 		])
 	})
 })

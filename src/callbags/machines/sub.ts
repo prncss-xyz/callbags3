@@ -1,7 +1,7 @@
 import { fromInit } from '@prncss-xyz/utils'
 
-import type { Init } from '../../types'
-import type { Emit, Machine } from './core'
+import type { BottomRecord, Init } from '../../types'
+import type { Machine } from './core'
 
 import { just, type Maybe, type Nothing } from '../../errors'
 import {
@@ -19,20 +19,20 @@ export type SubMachineEntry<
 	Superstate extends Tagged<PropertyKey, unknown>,
 	Name extends Superstate['type'],
 	Event extends AnyTagged,
-	Message extends AnyTagged,
+	Context extends BottomRecord,
 	SubState,
 	Result extends object,
 > = {
 	always(param: ValueFor<Superstate, Name>): any
 	select: Init<Result, [ValueFor<Superstate, Name>]>
-	send(event: Event, state: any, emit: Emit<Message>): Tagged<Name, SubState>
+	send(event: Event, state: any, context: Context): Tagged<Name, SubState>
 }
 
 export function subMachine<
 	Superstate extends Tagged<PropertyKey, unknown>,
 	Name extends Superstate['type'],
 	Event extends AnyTagged,
-	Message extends AnyTagged,
+	Context extends AnyTagged,
 	SubState,
 	SubResult extends object,
 	Result extends object,
@@ -43,7 +43,7 @@ export function subMachine<
 		ValueFor<Superstate, Name>,
 		Event,
 		SubState,
-		Message,
+		Context,
 		SubResult,
 		Exit
 	>,
@@ -62,10 +62,10 @@ export function subMachine<
 			const result = machine.getResult(s.value)
 			return select ? fromInit(select, result) : (result as any)
 		},
-		send(event: Event, state: any, emit: Emit<Message>) {
+		send(event: Event, state: any, context: Context) {
 			const s: Tagged<Name, SubState> = state as any
 			const last = s.value
-			const next = machine.send(event, last, emit)
+			const next = machine.send(event, last, context)
 			if (next === last) return s
 			const exit = machine.exit(next)
 			if (just.is(exit)) return onExit(just.get(exit))

@@ -2,11 +2,11 @@ export type Prettify<T> = {
 	[K in keyof T]: T[K]
 } & {}
 
-export type Modify<T> = (value: T) => T
+export type Modify<T> = (t: T) => T
 
 export type NonEmptyArray<T> = [T, ...T[]]
-export type NonFunction<T> = T extends (...args: any[]) => any ? never : T
-export type Function<T> = T extends (...args: any[]) => never ? any : T
+export type Function = (...args: any[]) => any
+export type NonFunction<T> = T extends Function ? never : T
 
 export type ValueUnion<T> = T[keyof T]
 // Type of the intersection of the values

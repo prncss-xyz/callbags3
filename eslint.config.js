@@ -40,6 +40,7 @@ export default tseslint.config({
 						'rambda',
 						'removables',
 						'tseslint',
+						'trush',
 					],
 				},
 			},

@@ -1,14 +1,13 @@
 import { fromInit, type Init } from '@prncss-xyz/utils'
 
 import type { Err, Maybe, Succ } from '../../errors'
+import type { BottomRecord } from '../../types'
 
 import { type AnyTagged, fromSend, type Send, type Tagged } from '../../tags'
 
 export type AnyFinalState = Tagged<'final', unknown>
 
 export type AnyMachine = Machine<any, any, any, any, any, any>
-
-export type Emit<M extends AnyTagged> = (m: M) => void
 
 export interface ISR<State, Serialized, E> {
 	deserialize: (serialized: Serialized, state: State) => State
@@ -22,8 +21,8 @@ export type InferEvent<M> =
 	M extends Machine<any, infer Event, any, any, any, any> ? Event : never
 export type InferState<M> =
 	M extends Machine<any, any, infer State, any, any, any> ? State : never
-export type InferMessage<M> =
-	M extends Machine<any, any, any, infer Message, any, any> ? Message : never
+export type InferContext<M> =
+	M extends Machine<any, any, any, infer Context, any, any> ? Context : never
 export type InferResult<M> =
 	M extends Machine<any, any, any, any, infer Result, any> ? Result : never
 export type InferExit<M> =
@@ -33,14 +32,14 @@ export type Machine<
 	Param,
 	Event extends AnyTagged,
 	State,
-	Message extends AnyTagged,
+	Context extends BottomRecord,
 	Result,
 	Exit extends Maybe<unknown>,
 > = {
 	exit: (state: State) => Exit
 	getResult: (state: State) => Result
 	init: (param: Param) => State
-	send: (event: Event, state: State, emit: Emit<Message>) => State
+	send: (event: Event, state: State, context: Context) => State
 }
 
 export type Sender<Res extends AnyTagged, Args extends any[]> = Init<
