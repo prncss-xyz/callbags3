@@ -2,7 +2,7 @@ import { pipe } from '@constellar/core'
 
 import { err, succ } from '../../../errors'
 import { preview, review, update, view } from './extractors'
-import { focus, iso, lens, when } from './operators'
+import { filter, focus, iso, lens } from './operators'
 
 describe('iso', () => {
 	type S = { a: number }
@@ -62,16 +62,16 @@ describe('composed lenses', () => {
 describe('when', () => {
 	type S = number
 	const isOdd = (n: number) => n % 2 === 1
-	const o = focus<S>()(when(isOdd))
+	const o = focus<S>()(filter(isOdd))
 	it('view', () => {
-		expect(preview(o)(0)).toBe(err.of('nothing'))
-		expect(preview(o)(1)).toBe(succ.of(1))
+		expect(preview(o)(0)).toEqual(err.of('nothing'))
+		expect(preview(o)(1)).toEqual(succ.of(1))
 	})
 	it('put', () => {
 		expect(review(o)(0)).toEqual(0)
 		expect(review(o)(1)).toEqual(1)
 	})
-	it.skip('over', () => {
+	it('over', () => {
 		expect(update(o)((x) => x + 1)(0)).toBe(0)
 		expect(update(o)((x) => x + 1)(1)).toBe(2)
 	})

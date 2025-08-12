@@ -1,10 +1,10 @@
 import type { Focus, Optic } from '../types'
 
-import { apply, trush } from '../_utils'
+import { apply, emitOnce, trush } from '../_utils'
 
 export function eq<T>(): Optic<T, T, never, void> {
 	return {
-		emitter: trush,
+		emitter: emitOnce,
 		getter: trush,
 		modifier: apply,
 		remover: trush,

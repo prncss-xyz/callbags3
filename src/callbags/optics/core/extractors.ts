@@ -5,9 +5,6 @@ import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
 import { modToCPS } from './_utils'
 
-// TODO: viewIn
-// TODO: emit
-
 export function view<T, S, P extends never | void>(o: Optic<T, S, never, P>) {
 	return function (s: S): T {
 		let res: T
