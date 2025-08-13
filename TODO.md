@@ -1,5 +1,6 @@
 # TODO
 
+- fold needs its own error type
 - result type
     - Result<Success, Failure>
 

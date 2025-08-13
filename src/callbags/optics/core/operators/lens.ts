@@ -1,5 +1,3 @@
-import { noop } from '@constellar/core'
-
 import { composeNonPrism, trush } from '../_utils'
 
 // MAYBE: optimize for get === id or set === id
@@ -19,10 +17,6 @@ export function lens<Part, Whole>({
 }) {
 	const getter = (w: Whole, next: (part: Part) => void) => next(get(w))
 	return composeNonPrism<Part, Whole, never>({
-		emitter: (next) => (w) => {
-			next(get(w))
-			return noop
-		},
 		getter,
 		modifier: mod ? mod : (m, next, w) => m(get(w), (p) => next(set(p, w))),
 		remover: trush,

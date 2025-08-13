@@ -1,4 +1,3 @@
-import { noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
@@ -23,17 +22,6 @@ export function filter<Here, Err = 'nothing'>(
 	err?: Init<Err, [Here]>,
 ) {
 	return composePrism<Here, Here, Err>({
-		emitter: (next, _err, complete) => (t) => {
-      console.log('caca')
-      console.log({ t })
-			return {
-				start: () => {
-					if (cond(t)) next(t)
-					complete()
-				},
-				unmount: noop,
-			}
-		},
 		getter: (w, next, error) =>
 			cond(w) ? next(w) : error(err ? fromInit(err, w) : ('nothing' as any)),
 		modifier: (m, next, w) => (cond(w) ? m(w, (p) => next(p)) : next(w)),

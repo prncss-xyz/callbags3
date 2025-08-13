@@ -1,4 +1,3 @@
-import { noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
@@ -17,16 +16,18 @@ export function scan<Acc, Value, Res>({
 	return composeNonPrism<Res, Value, never>({
 		emitter: (next) => {
 			let acc = fromInit(init)
-			next(result(acc))
 			return (w) => {
 				acc = fold(w, acc)
 				next(result(acc))
-				return noop
+				return {
+					start: () => {
+						next(result(acc))
+					},
+					unmount: () => {},
+				}
 			}
 		},
-		getter: (w, next) => next(result(fold(w, fromInit(init)))),
 		modifier: inert,
 		remover: trush,
-		setter: inert,
 	})
 }

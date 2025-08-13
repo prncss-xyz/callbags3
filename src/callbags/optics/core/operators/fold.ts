@@ -1,37 +1,37 @@
+import { id } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
 import type { Optic } from '../types'
 
-import { composeNonPrism, inert, trush } from '../_utils'
+import { getEmitter, inert, trush } from '../_utils'
 
-export function fold<Value, S, E, P extends never | void>(
-	o: Optic<Value, S, E, P>,
-) {
-	return function <Acc, Res>({
-		fold,
-		init,
-		result,
-	}: {
-		fold: (value: Value, acc: Acc) => Acc
-		init: Init<Acc>
-		result: (acc: Acc) => Res
-	}) {
-		return composeNonPrism({
-			emitter: 0 as any, // TODO: make emitter optional
-			getter: (s: S, next, error) => {
+export function fold<Value, Acc, Res>({
+	fold,
+	init,
+	result,
+}: {
+	fold: (value: Value, acc: Acc) => Acc
+	init: Init<Acc>
+	result?: (acc: Acc) => Res
+}) {
+	return function <S, E, P extends void>(
+		o: Optic<Value, S, E, P>,
+	): Optic<Res, S, never, never> {
+		return {
+			getter: (s, next, error) => {
 				let acc: Acc
 				acc = fromInit(init)
-				const { start, unmount } = o.emitter(
+				const { start, unmount } = getEmitter(o)(
 					(value) => (acc = fold(value, acc)),
-					(e) => (error(e), unmount()),
-					() => (next(result(acc)), unmount()),
+					(e) => (unmount(), error(e)),
+					() => (unmount(), next((result ?? (id as any))(acc))),
 				)(s)
 				start()
 			},
 			modifier: inert,
 			remover: trush,
 			setter: inert,
-		})
+		}
 	}
 }

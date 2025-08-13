@@ -4,7 +4,7 @@ import { fromInit } from '@prncss-xyz/utils'
 import type { Init } from '../../../../types'
 import type { Emitter } from '../types'
 
-import { composeNonPrism, trush } from '../_utils'
+import { composeMulti, trush } from '../_utils'
 
 export type Elems<Acc, Value, Res> = {
 	emitter: Emitter<Value, Res, never>
@@ -41,29 +41,9 @@ export function elems<Acc, Value, Res>({
 		)(s)
 		start()
 	}
-	return composeNonPrism<Value, Res, 'empty'>({
+	return composeMulti<Value, Res, 'empty'>({
 		emitter,
-		getter: (r, next, error) => {
-			let dirty = false
-			const { start, unmount } = emitter(
-				(t) => {
-					dirty = true
-					next(t)
-					unmount()
-				},
-				(e) => {
-					error(e)
-					unmount()
-				},
-				() => {
-					if (!dirty) error('empty')
-					unmount()
-				},
-			)(r)
-			start()
-		},
 		modifier,
 		remover: trush,
-		setter: (p, next, w) => modifier((_t, next) => next(p), next, w),
 	})
 }

@@ -3,12 +3,12 @@ import type { Optic } from './types'
 
 import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
-import { modToCPS } from './_utils'
+import { getGetter, getSetter, modToCPS } from './_utils'
 
-export function view<T, S, P extends never | void>(o: Optic<T, S, never, P>) {
+export function view<T, S, P extends void>(o: Optic<T, S, never, P>) {
 	return function (s: S): T {
 		let res: T
-		o.getter(
+		getGetter(o)(
 			s,
 			(t) => (res = t),
 			(e) => {
@@ -19,11 +19,11 @@ export function view<T, S, P extends never | void>(o: Optic<T, S, never, P>) {
 	}
 }
 
-export function preview<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+export function preview<T, S, E, P extends void>(o: Optic<T, S, E, P>) {
 	return function (s: S): Either<T, E> {
 		let res: Either<T, E>
 		const { error, next } = toEither<T, E>((t) => (res = t))
-		o.getter(s, next, error)
+		getGetter(o)(s, next, error)
 		return res!
 	}
 }
@@ -31,7 +31,7 @@ export function preview<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
 export function review<T, S, E>(o: Optic<T, S, E, void>) {
 	return function (t: T): S {
 		let res: S
-		o.setter(t, (s) => (res = s))
+		getSetter(o)(t, (s) => (res = s))
 		return res!
 	}
 }
@@ -40,7 +40,7 @@ function put<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
 	return function (t: T) {
 		return function (s: S): S {
 			let res: S
-			o.setter(t, (s) => (res = s), s)
+			getSetter(o)(t, (s) => (res = s), s)
 			return res!
 		}
 	}

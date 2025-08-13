@@ -1,10 +1,11 @@
 import { pipe } from '@constellar/core'
 
 import { succ } from '../../../../errors'
-import { preview, update } from '../extractors'
+import { preview, update, view } from '../extractors'
 import { elems, type Elems } from './elems'
 import { filter } from './filter'
 import { focus } from './focus'
+import { fold } from './fold'
 
 function inArray<Value>(): Elems<Value[], Value, Value[]> {
 	return {
@@ -33,7 +34,7 @@ describe('elems', () => {
 	it('view', () => {
 		expect(preview(o)([1, 2, 3])).toEqual(succ.of(1))
 	})
-	it.skip('modify', () => {
+	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([2, 4, 6])
 	})
 })
@@ -44,10 +45,23 @@ describe('compose', () => {
 			filter((x) => x % 2 === 0),
 		),
 	)
-	it.only('view', () => {
+	it('view', () => {
 		expect(preview(o)([1, 2, 3])).toEqual(succ.of(2))
 	})
 	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([1, 4, 3])
+	})
+})
+
+describe('fold', () => {
+	const o = focus<number[]>()(
+		pipe(
+			elems(inArray()),
+			filter((x) => x % 2 === 0),
+			fold(inArray()),
+		),
+	)
+	it('view', () => {
+		expect(view(o)([1, 2, 3])).toEqual([2])
 	})
 })
