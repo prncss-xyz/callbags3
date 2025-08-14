@@ -1,9 +1,7 @@
 // TODO: W -> W | never
 // TODO: D -> (typeof REMOVE & W) | never
-
-export type Focus<T, S, E, P extends void> = (
-	eq: Optic<S, S, never, void>,
-) => Optic<T, S, E, P>
+// R -> RW -> prism, removable
+// tags: getter, (optional), (traversable), async
 
 export type Emitter<T, S, E> = (
 	next: (t: T) => void,
@@ -17,7 +15,7 @@ export type Getter<T, S, E> = (
 	error: (e: E) => void,
 ) => void
 
-export type Optic<T, S, E, P extends void> = {
+export type Optic<T, S, E, P extends void, _F = object> = {
 	modifier: (
 		m: (t: T, next: (t: T) => void) => void,
 		next: (s: S) => void,

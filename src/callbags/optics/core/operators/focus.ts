@@ -1,8 +1,14 @@
-import type { Focus, Optic } from '../types'
+import type { Optic } from '../types'
 
 import { apply, trush } from '../_utils'
 
-export function eq<T>(): Optic<T, T, never, void> {
+type Eq<T> = Optic<T, T, never, void, true>
+
+export type Focus<T, S, E, P extends void, _F> = (
+	eq: Eq<S>,
+) => Optic<T, S, E, P, _F>
+
+export function eq<T>(): Eq<T> {
 	return {
 		getter: trush,
 		modifier: apply,
@@ -12,7 +18,7 @@ export function eq<T>(): Optic<T, T, never, void> {
 }
 
 export function focus<S>() {
-	return function <T, E, P extends never | void>(o: Focus<T, S, E, P>) {
+	return function <T, E, P extends void, F>(o: Focus<T, S, E, P, F>) {
 		return o(eq())
 	}
 }

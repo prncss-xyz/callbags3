@@ -41,7 +41,7 @@ export function elems<Acc, Value, Res>({
 		)(s)
 		start()
 	}
-	return composeMulti<Value, Res, 'empty'>({
+	return composeMulti<Value, Res, 'empty', unknown>({
 		emitter,
 		modifier,
 		remover: trush,

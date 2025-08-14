@@ -1,6 +1,6 @@
 import { pipe } from '@constellar/core'
 
-import { err, succ } from '../../../errors'
+import { type Either, err, succ } from '../../../errors'
 import { preview, review, update, view } from './extractors'
 import { filter, focus, iso, lens } from './operators'
 
@@ -42,14 +42,20 @@ describe('lens', () => {
 describe('composed lenses', () => {
 	type S = { a: number; b: { c: string } }
 	const o = focus<S>()(pipe(prop('b'), prop('c')))
+  // @ts-expect-error view must fail with a lens
+  review(o)
 	it('view', () => {
-		expect(view(o)({ a: 1, b: { c: 'c' } })).toBe('c')
+		const res = view(o)({ a: 1, b: { c: 'c' } })
+		expect(res).toBe('c')
+		expectTypeOf(res).toEqualTypeOf<string>()
 	})
 	it('put', () => {
-		expect(update(o)('d')({ a: 1, b: { c: 'c' } })).toEqual({
+		const res = update(o)('d')({ a: 1, b: { c: 'c' } })
+		expect(res).toEqual({
 			a: 1,
 			b: { c: 'd' },
 		})
+		expectTypeOf(res).toEqualTypeOf<{ a: number; b: { c: string } }>()
 	})
 	it('over', () => {
 		expect(update(o)((x) => x + 1)({ a: 1, b: { c: 'c' } })).toEqual({
@@ -63,8 +69,14 @@ describe('when', () => {
 	type S = number
 	const isOdd = (n: number) => n % 2 === 1
 	const o = focus<S>()(filter(isOdd))
-	it('view', () => {
-		expect(preview(o)(0)).toEqual(err.of('nothing'))
+  // @ts-expect-error view must fail with a prism
+  view(o)
+	it('view, failure', () => {
+		const res = preview(o)(0)
+		expect(res).toEqual(err.of('nothing'))
+		expectTypeOf(res).toEqualTypeOf<Either<number, 'nothing'>>()
+	})
+	it('view, success', () => {
 		expect(preview(o)(1)).toEqual(succ.of(1))
 	})
 	it('put', () => {

@@ -19,12 +19,15 @@ export function fold<Value, Acc, Res>({
 		o: Optic<Value, S, E, P>,
 	): Optic<Res, S, never, never> {
 		return {
-			getter: (s, next, error) => {
+			getter: (s, next) => {
 				let acc: Acc
 				acc = fromInit(init)
 				const { start, unmount } = getEmitter(o)(
 					(value) => (acc = fold(value, acc)),
-					(e) => (unmount(), error(e)),
+					() => {
+						unmount()
+						throw new Error('unexpected error')
+					},
 					() => (unmount(), next((result ?? (id as any))(acc))),
 				)(s)
 				start()

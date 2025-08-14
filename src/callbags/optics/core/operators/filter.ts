@@ -21,7 +21,7 @@ export function filter<Here, Err = 'nothing'>(
 	cond: (w: Here) => boolean,
 	err?: Init<Err, [Here]>,
 ) {
-	return composePrism<Here, Here, Err>({
+	return composePrism<Here, Here, Err, unknown>({
 		getter: (w, next, error) =>
 			cond(w) ? next(w) : error(err ? fromInit(err, w) : ('nothing' as any)),
 		modifier: (m, next, w) => (cond(w) ? m(w, (p) => next(p)) : next(w)),

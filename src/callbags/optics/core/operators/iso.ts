@@ -8,7 +8,7 @@ export function iso<There, Here>({
 	set: (p: There) => Here
 }) {
 	const getter = (w: Here, next: (part: There) => void) => next(get(w))
-	return composePrism<There, Here, never>({
+	return composePrism<There, Here, never, unknown>({
 		getter,
 		modifier: (m, next, w) => m(get(w), (p) => next(set(p))),
 		remover: trush,

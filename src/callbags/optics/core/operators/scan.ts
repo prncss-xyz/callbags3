@@ -13,7 +13,7 @@ export function scan<Acc, Value, Res>({
 	init: Init<Acc>
 	result: (acc: Acc) => Res
 }) {
-	return composeNonPrism<Res, Value, never>({
+	return composeNonPrism<Res, Value, never, unknown>({
 		emitter: (next) => {
 			let acc = fromInit(init)
 			return (w) => {

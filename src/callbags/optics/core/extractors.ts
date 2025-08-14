@@ -5,7 +5,7 @@ import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
 import { getGetter, getSetter, modToCPS } from './_utils'
 
-export function view<T, S, P extends void>(o: Optic<T, S, never, P>) {
+export function view<T, S, P extends void, F>(o: Optic<T, S, never, P, F>) {
 	return function (s: S): T {
 		let res: T
 		getGetter(o)(
@@ -19,7 +19,7 @@ export function view<T, S, P extends void>(o: Optic<T, S, never, P>) {
 	}
 }
 
-export function preview<T, S, E, P extends void>(o: Optic<T, S, E, P>) {
+export function preview<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	return function (s: S): Either<T, E> {
 		let res: Either<T, E>
 		const { error, next } = toEither<T, E>((t) => (res = t))
@@ -28,7 +28,7 @@ export function preview<T, S, E, P extends void>(o: Optic<T, S, E, P>) {
 	}
 }
 
-export function review<T, S, E>(o: Optic<T, S, E, void>) {
+export function review<T, S, E, F>(o: Optic<T, S, E, void, F>) {
 	return function (t: T): S {
 		let res: S
 		getSetter(o)(t, (s) => (res = s))
@@ -36,7 +36,7 @@ export function review<T, S, E>(o: Optic<T, S, E, void>) {
 	}
 }
 
-function put<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+function put<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	return function (t: T) {
 		return function (s: S): S {
 			let res: S
@@ -46,7 +46,7 @@ function put<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
 	}
 }
 
-function over<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+function over<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	return function (m: Modify<T>) {
 		return function (s: S): S {
 			let res: S
@@ -56,7 +56,7 @@ function over<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
 	}
 }
 
-function remove<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+function remove<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	return function (s: S): S {
 		let res: S
 		o.modifier(o.remover, (s) => (res = s), s)
@@ -66,7 +66,9 @@ function remove<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
 
 export const REMOVE = Symbol('REMOVE')
 
-export function update<T, S, E, P extends never | void>(o: Optic<T, S, E, P>) {
+export function update<T, S, E, P extends void, F extends true>(
+	o: Optic<T, S, E, P, F>,
+) {
 	return function (m: Modify<T> | NonFunction<T> | typeof REMOVE) {
 		if (m === REMOVE) {
 			return remove(o)

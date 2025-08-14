@@ -16,7 +16,7 @@ export function lens<Part, Whole>({
 	set: (p: Part, w: Whole) => Whole
 }) {
 	const getter = (w: Whole, next: (part: Part) => void) => next(get(w))
-	return composeNonPrism<Part, Whole, never>({
+	return composeNonPrism<Part, Whole, never, unknown>({
 		getter,
 		modifier: mod ? mod : (m, next, w) => m(get(w), (p) => next(set(p, w))),
 		remover: trush,

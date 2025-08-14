@@ -131,10 +131,10 @@ export const getEmitter = <T, S, E, P extends void>(
 	}
 }
 
-export function composeNonPrism<U, T, E1>(o1: Optic<U, T, E1, never>) {
-	return function <S, E2, P extends AnyPrism>(
-		o2: Optic<T, S, E2, P>,
-	): Optic<U, S, E1 | E2, never> {
+export function composeNonPrism<U, T, E1, F1>(o1: Optic<U, T, E1, never, F1>) {
+	return function <S, E2, P extends AnyPrism, F2>(
+		o2: Optic<T, S, E2, P, F2>,
+	): Optic<U, S, E1 | E2, never, F1 & F2> {
 		if ('emitter' in o2) {
 			const emitter = composeEmitter(getEmitter(o1), o2.emitter)
 			return {
@@ -158,10 +158,10 @@ export function composeNonPrism<U, T, E1>(o1: Optic<U, T, E1, never>) {
 	}
 }
 
-export function composePrism<U, T, E2>(o1: Optic<U, T, E2, void>) {
-	return function <S, E1, P extends AnyPrism>(
-		o2: Optic<T, S, E1, P>,
-	): Optic<U, S, E1 | E2, P> {
+export function composePrism<U, T, E2, F1>(o1: Optic<U, T, E2, void, F1>) {
+	return function <S, E1, P extends AnyPrism, F2>(
+		o2: Optic<T, S, E1, P, F2>,
+	): Optic<U, S, E1 | E2, P, F1 & F2> {
 		if ('emitter' in o2) {
 			const emitter = composeEmitter(getEmitter(o1), o2.emitter)
 			return {
@@ -182,10 +182,10 @@ export function composePrism<U, T, E2>(o1: Optic<U, T, E2, void>) {
 	}
 }
 
-export function composeMulti<U, T, E2>(o1: Optic<U, T, E2, never>) {
-	return function <S, E1, P extends AnyPrism>(
-		o2: Optic<T, S, E1, P>,
-	): Optic<U, S, E1 | E2, never> {
+export function composeMulti<U, T, E2, F1>(o1: Optic<U, T, E2, never, F1>) {
+	return function <S, E1, P extends AnyPrism, F2>(
+		o2: Optic<T, S, E1, P, F2>,
+	): Optic<U, S, E1 | E2, never, F1 & F2> {
 		return {
 			// with better typing we could use `o1.emitter` here
 			emitter: composeEmitter(getEmitter(o1), getEmitter(o2)),
