@@ -1,4 +1,4 @@
-import { composePrism, trush } from '../_utils'
+import { _compo, trush } from '../core/compose'
 
 export function iso<There, Here>({
 	get,
@@ -7,11 +7,10 @@ export function iso<There, Here>({
 	get: (w: Here) => There
 	set: (p: There) => Here
 }) {
-	const getter = (w: Here, next: (part: There) => void) => next(get(w))
-	return composePrism<There, Here, never, unknown>({
-		getter,
+	return _compo<There, Here, never>({
+		getter: (w, next) => next(get(w)),
 		modifier: (m, next, w) => m(get(w), (p) => next(set(p))),
 		remover: trush,
-		setter: (p, next) => next(set(p)),
+		reviewer: (p, next) => next(set(p)),
 	})
 }

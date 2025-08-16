@@ -2,9 +2,9 @@ import { noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
-import type { Emitter } from '../types'
+import type { Emitter } from '../core/types'
 
-import { composeMulti, trush } from '../_utils'
+import { _compo, trush } from '../core/compose'
 
 export type Elems<Acc, Value, Res> = {
 	emitter: Emitter<Value, Res, never>
@@ -41,7 +41,7 @@ export function elems<Acc, Value, Res>({
 		)(s)
 		start()
 	}
-	return composeMulti<Value, Res, 'empty', unknown>({
+	return _compo<Value, Res, 'empty', { prims: true; traversable: true }>({
 		emitter,
 		modifier,
 		remover: trush,

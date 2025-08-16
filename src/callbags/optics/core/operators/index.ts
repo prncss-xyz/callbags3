@@ -1,5 +1,4 @@
 export * from './filter'
-export * from './focus'
 export * from './iso'
 export * from './lens'
 

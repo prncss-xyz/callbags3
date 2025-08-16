@@ -1,11 +1,7 @@
-import { composeNonPrism, inert, trush } from '../_utils'
+import { _compo } from '../core/compose'
 
 export function getter<Part, Whole>(get: (w: Whole) => Part) {
-	const getter = (w: Whole, next: (part: Part) => void) => next(get(w))
-	return composeNonPrism<Part, Whole, never, never>({
-		getter,
-		modifier: inert,
-		remover: trush,
-		setter: inert,
+	return _compo<Part, Whole, never, { getter: true }>({
+		getter: (w, next) => next(get(w)),
 	})
 }

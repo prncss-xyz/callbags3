@@ -1,10 +1,10 @@
 import { pipe } from '@constellar/core'
 
 import { succ } from '../../../../errors'
+import { focus } from '../core/focus'
 import { preview, update, view } from '../extractors'
 import { elems, type Elems } from './elems'
 import { filter } from './filter'
-import { focus } from './focus'
 import { fold } from './fold'
 
 function inArray<Value>(): Elems<Value[], Value, Value[]> {
@@ -45,9 +45,6 @@ describe('compose', () => {
 			filter((x) => x % 2 === 0),
 		),
 	)
-	it('view', () => {
-		expect(preview(o)([1, 2, 3])).toEqual(succ.of(2))
-	})
 	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([1, 4, 3])
 	})

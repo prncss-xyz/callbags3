@@ -1,5 +1,5 @@
+import { focus } from '../core/focus'
 import { update, view } from '../extractors'
-import { focus } from './focus'
 import { getter } from './getter'
 
 describe('getter', () => {
@@ -8,7 +8,8 @@ describe('getter', () => {
 		expect(view(o)('toto')).toBe(4)
 	})
 
-  update(o)(3)
+	// @ts-expect-error update must fail with a getter
+	update(o)(3)
 
 	// @ts-expect-error review must fail with a getter
 	review(o)

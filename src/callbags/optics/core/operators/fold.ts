@@ -2,9 +2,9 @@ import { id } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
-import type { Optic } from '../types'
+import type { _OpticArg, Optic } from '../core/types'
 
-import { getEmitter, inert, trush } from '../_utils'
+import { _compo, getEmitter } from '../core/compose'
 
 export function fold<Value, Acc, Res>({
 	fold,
@@ -14,10 +14,19 @@ export function fold<Value, Acc, Res>({
 	fold: (value: Value, acc: Acc) => Acc
 	init: Init<Acc>
 	result?: (acc: Acc) => Res
+}): <S, E, F>(o: Optic<Value, S, E, F>) => Optic<Res, S, never>
+export function fold<Value, Acc, Res>({
+	fold,
+	init,
+	result,
+}: {
+	fold: (value: Value, acc: Acc) => Acc
+	init: Init<Acc>
+	result?: (acc: Acc) => Res
 }) {
-	return function <S, E, P extends void>(
-		o: Optic<Value, S, E, P>,
-	): Optic<Res, S, never, never> {
+	return function <S, E, F>(
+		o: Optic<Value, S, E, F>,
+	): _OpticArg<Res, S, { getter: true }> {
 		return {
 			getter: (s, next) => {
 				let acc: Acc
@@ -32,9 +41,6 @@ export function fold<Value, Acc, Res>({
 				)(s)
 				start()
 			},
-			modifier: inert,
-			remover: trush,
-			setter: inert,
 		}
 	}
 }

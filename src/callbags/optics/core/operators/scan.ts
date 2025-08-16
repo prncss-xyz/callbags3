@@ -1,8 +1,10 @@
+import { noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
 
-import { composeNonPrism, inert, trush } from '../_utils'
+import { _compo } from '../core/compose'
+import { sequence } from './sequence'
 
 export function scan<Acc, Value, Res>({
 	fold,
@@ -13,21 +15,17 @@ export function scan<Acc, Value, Res>({
 	init: Init<Acc>
 	result: (acc: Acc) => Res
 }) {
-	return composeNonPrism<Res, Value, never, unknown>({
-		emitter: (next) => {
-			let acc = fromInit(init)
-			return (w) => {
-				acc = fold(w, acc)
-				next(result(acc))
-				return {
-					start: () => {
-						next(result(acc))
-					},
-					unmount: () => {},
-				}
+	return sequence<Res, Value, never>((next) => {
+		let acc = fromInit(init)
+		return (w) => {
+			acc = fold(w, acc)
+			next(result(acc))
+			return {
+				start: () => {
+					next(result(acc))
+				},
+				unmount: noop,
 			}
-		},
-		modifier: inert,
-		remover: trush,
+		}
 	})
 }

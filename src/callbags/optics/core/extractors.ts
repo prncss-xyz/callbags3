@@ -1,11 +1,13 @@
+import { isoAssert } from '@prncss-xyz/utils'
+
 import type { Modify, NonFunction } from '../../../types'
-import type { Optic } from './types'
+import type { Optic } from './core/types'
 
 import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
-import { getGetter, getSetter, modToCPS } from './_utils'
+import { getGetter, getSetter, modToCPS } from './core/compose'
 
-export function view<T, S, P extends void, F>(o: Optic<T, S, never, P, F>) {
+export function view<T, S, F>(o: Optic<T, S, never, F>) {
 	return function (s: S): T {
 		let res: T
 		getGetter(o)(
@@ -19,7 +21,7 @@ export function view<T, S, P extends void, F>(o: Optic<T, S, never, P, F>) {
 	}
 }
 
-export function preview<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
+export function preview<T, S, E, F>(o: Optic<T, S, E, F>) {
 	return function (s: S): Either<T, E> {
 		let res: Either<T, E>
 		const { error, next } = toEither<T, E>((t) => (res = t))
@@ -28,17 +30,21 @@ export function preview<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	}
 }
 
-export function review<T, S, E, F>(o: Optic<T, S, E, void, F>) {
+export function review<T, S, E, F>(
+	o: Optic<T, S, E, Exclude<F, { optional: true }>>,
+) {
+	isoAssert('reviewer' in o)
 	return function (t: T): S {
 		let res: S
-		getSetter(o)(t, (s) => (res = s))
+		o.reviewer(t, (s) => (res = s))
 		return res!
 	}
 }
 
-function put<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
+function put<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 	return function (t: T) {
 		return function (s: S): S {
+			isoAssert('modifier' in o)
 			let res: S
 			getSetter(o)(t, (s) => (res = s), s)
 			return res!
@@ -46,9 +52,10 @@ function put<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	}
 }
 
-function over<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
+function over<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 	return function (m: Modify<T>) {
 		return function (s: S): S {
+			isoAssert('modifier' in o)
 			let res: S
 			o.modifier(modToCPS(m), (s) => (res = s), s)
 			return res!
@@ -56,8 +63,9 @@ function over<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 	}
 }
 
-function remove<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
+function remove<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 	return function (s: S): S {
+		isoAssert('modifier' in o)
 		let res: S
 		o.modifier(o.remover, (s) => (res = s), s)
 		return res!
@@ -66,8 +74,8 @@ function remove<T, S, E, P extends void, F>(o: Optic<T, S, E, P, F>) {
 
 export const REMOVE = Symbol('REMOVE')
 
-export function update<T, S, E, P extends void, F extends true>(
-	o: Optic<T, S, E, P, F>,
+export function update<T, S, E, F>(
+	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
 ) {
 	return function (m: Modify<T> | NonFunction<T> | typeof REMOVE) {
 		if (m === REMOVE) {

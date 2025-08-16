@@ -1,11 +1,37 @@
 import { noop } from '@constellar/core'
 
-import type { Modify } from '../../../types'
+import type { Modify } from '../../../../types'
 
-import { emptyError } from '../../../errors/empty'
-import { type Emitter, type Getter, type Optic } from './types'
+import { emptyError } from '../../../../errors/empty'
+import {
+	type _OpticArg,
+	type _SetterArg,
+	type Emitter,
+	type Getter,
+	type Optic,
+	type Prism,
+	TAGS,
+} from './types'
 
-type AnyPrism = never | void
+type Eq<T> = Prism<T, T, never> & { [TAGS]: { prism: true } }
+
+export type Focus<T, S, E, O extends Optic<T, S, E>> = (eq: Eq<S>) => O
+
+export function eq<T>(): Eq<T> {
+	return {
+		getter: trush,
+		modifier: apply,
+		remover: trush,
+		reviewer: trush,
+		type: 'prism',
+	} as any
+}
+
+export function focus<S>() {
+	return function <T, E, O extends Optic<T, S, E>>(o: Focus<T, S, E, O>) {
+		return o(eq())
+	}
+}
 
 export const apply = <V>(
 	m: (v: V, next: (v: V) => void) => void,
@@ -83,7 +109,7 @@ function composeModify<T, S, U>(
 }
 
 // TODO: make sure EmptyError is in Multi
-export const getGetter = <T, S, E, P extends void>(o: Optic<T, S, E, P>) => {
+export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
 	if ('getter' in o) return o.getter
 	return (r: S, next: (t: T) => void, error: (e: E) => void) => {
 		let dirty = false
@@ -106,15 +132,14 @@ export const getGetter = <T, S, E, P extends void>(o: Optic<T, S, E, P>) => {
 	}
 }
 
-// FIXME: multi cannot be affine
-export const getSetter = <T, S, E, P extends void>(o: Optic<T, S, E, P>) => {
+export const getSetter = <T, S, E>(o: _SetterArg<T, S, E>) => {
 	if ('setter' in o) return o.setter
-	return (t: T, next: (s: S) => void, s: P | S) =>
+	return (t: T, next: (s: S) => void, s: S) =>
 		o.modifier((_t, next) => next(t), next, s as any)
 }
 
-export const getEmitter = <T, S, E, P extends void>(
-	o: Optic<T, S, E, P>,
+export const getEmitter = <T, S, E>(
+	o: _OpticArg<T, S, E>,
 ): Emitter<T, S, E> => {
 	if ('emitter' in o) return o.emitter
 	return (next, _error, complete) => (s) => {
@@ -131,66 +156,70 @@ export const getEmitter = <T, S, E, P extends void>(
 	}
 }
 
-export function composeNonPrism<U, T, E1, F1>(o1: Optic<U, T, E1, never, F1>) {
-	return function <S, E2, P extends AnyPrism, F2>(
-		o2: Optic<T, S, E2, P, F2>,
-	): Optic<U, S, E1 | E2, never, F1 & F2> {
-		if ('emitter' in o2) {
-			const emitter = composeEmitter(getEmitter(o1), o2.emitter)
-			return {
-				emitter,
-				modifier: composeModify(o1.modifier, o2.modifier),
-				remover: o1.remover,
-			}
-		}
-		return {
-			getter: composeGetter(getGetter(o1), o2.getter),
-			modifier: composeModify(o1.modifier, o2.modifier),
-			remover: o1.remover,
-			setter(t: U, next: (s: S) => void, s: S) {
-				o2.getter(
-					s,
-					(u) => getSetter(o1)(t, (t) => o2.setter(t, next, s), u),
-					() => next(s),
-				)
-			},
-		}
-	}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export function _compo<U, T, E1, F1 = {}>(
+	o1: _OpticArg<U, T, E1>,
+): <S, E2, F2>(
+	o2: Optic<T, S, E2> & { [TAGS]: F2 },
+) => Optic<U, S, E1 | E2> & { [TAGS]: F1 & F2 }
+export function _compo(o1: any) {
+	return _compose(o1) as any
 }
 
-export function composePrism<U, T, E2, F1>(o1: Optic<U, T, E2, void, F1>) {
-	return function <S, E1, P extends AnyPrism, F2>(
-		o2: Optic<T, S, E1, P, F2>,
-	): Optic<U, S, E1 | E2, P, F1 & F2> {
-		if ('emitter' in o2) {
-			const emitter = composeEmitter(getEmitter(o1), o2.emitter)
-			return {
-				emitter,
-				modifier: composeModify(o1.modifier, o2.modifier),
-				remover: o1.remover,
-			}
-		}
-		return {
-			getter: composeGetter(getGetter(o1), o2.getter),
-			modifier: composeModify(o1.modifier, o2.modifier),
-			remover: o1.remover,
-			setter(t: U, next: (s: S) => void, s: P | S) {
-				const f = getSetter(o1)
-				f(t, (t) => o2.setter(t, next, s))
-			},
-		}
-	}
+export function compose<U, T, E1, F1>(
+	o1: Optic<U, T, E1> & { [TAGS]: F1 },
+): <S, E2, F2>(
+	o2: Optic<T, S, E2> & { [TAGS]: F2 },
+) => Optic<U, S, E1 | E2> & { [TAGS]: F1 & F2 }
+export function compose<U, T, E1>(o1: Optic<U, T, E1>) {
+	return _compose(o1) as any
 }
 
-export function composeMulti<U, T, E2, F1>(o1: Optic<U, T, E2, never, F1>) {
-	return function <S, E1, P extends AnyPrism, F2>(
-		o2: Optic<T, S, E1, P, F2>,
-	): Optic<U, S, E1 | E2, never, F1 & F2> {
+function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
+	return function <S, E2>(o2: _OpticArg<T, S, E2>): _OpticArg<U, S, E1 | E2> {
+		if ('emitter' in o1 || 'emitter' in o2) {
+			const emitter = composeEmitter(getEmitter(o1), getEmitter(o2))
+			if ('modifier' in o1 && 'modifier' in o2)
+				return {
+					emitter,
+					modifier: composeModify(o1.modifier, o2.modifier),
+					remover: o1.remover,
+				}
+			return { emitter }
+		}
+		if ('reviewer' in o1 && 'reviewer' in o2) {
+			return {
+				getter: composeGetter(getGetter(o1), o2.getter),
+				modifier: composeModify(o1.modifier, o2.modifier),
+				remover: o1.remover,
+				reviewer: (t: U, next: (s: S) => void) =>
+					o1.reviewer(t, (t) => o2.reviewer(t, next)),
+			}
+		}
+		if ('modifier' in o1 && 'modifier' in o2)
+			return {
+				getter: composeGetter(getGetter(o1), o2.getter),
+				modifier: composeModify(o1.modifier, o2.modifier),
+				remover: o1.remover,
+				setter:
+					'setter' in o2
+						? (t: U, next: (s: S) => void, s: S) => {
+								o2.getter(
+									s,
+									(u) => getSetter(o1)(t, (t) => o2.setter(t, next, s), u),
+									() => next(s),
+								)
+							}
+						: (t: U, next: (s: S) => void, s: S) => {
+								o2.getter(
+									s,
+									(u) => getSetter(o1)(t, (t) => o2.reviewer(t, next), u),
+									() => next(s),
+								)
+							},
+			}
 		return {
-			// with better typing we could use `o1.emitter` here
-			emitter: composeEmitter(getEmitter(o1), getEmitter(o2)),
-			modifier: composeModify(o1.modifier, o2.modifier),
-			remover: o1.remover,
+			getter: composeGetter(getGetter(o1), o2.getter),
 		}
 	}
 }
