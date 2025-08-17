@@ -9,9 +9,8 @@ export function lens<Part, Whole>({
 	get: (w: Whole) => Part
 	set: (p: Part, w: Whole) => Whole
 }) {
-	const getter = (w: Whole, next: (part: Part) => void) => next(get(w))
 	return _compo<Part, Whole, never, { optional: true }>({
-		getter,
+		getter: (w, next) => next(get(w)),
 		modifier: (m, next, w) => m(get(w), (p) => next(set(p, w))),
 		remover: trush,
 		setter: (p, next, w) => next(set(p, w)),

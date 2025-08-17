@@ -9,8 +9,10 @@ describe('getter', () => {
 	})
 
 	// @ts-expect-error update must fail with a getter
-	update(o)(3)
+	update(o)
 
-	// @ts-expect-error review must fail with a getter
-	review(o)
+	expect(() => {
+		// @ts-expect-error review must fail with a getter
+		review(o)
+	}).toThrow()
 })

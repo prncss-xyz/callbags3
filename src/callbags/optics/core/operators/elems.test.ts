@@ -2,7 +2,7 @@ import { pipe } from '@constellar/core'
 
 import { succ } from '../../../../errors'
 import { focus } from '../core/focus'
-import { preview, update, view } from '../extractors'
+import { preview, REMOVE, update, view } from '../extractors'
 import { elems, type Elems } from './elems'
 import { filter } from './filter'
 import { fold } from './fold'
@@ -37,6 +37,9 @@ describe('elems', () => {
 	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([2, 4, 6])
 	})
+	it('remove', () => {
+		expect(update(o)(REMOVE)([1, 2, 3])).toEqual([])
+	})
 })
 describe('compose', () => {
 	const o = focus<number[]>()(
@@ -47,6 +50,9 @@ describe('compose', () => {
 	)
 	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([1, 4, 3])
+	})
+	it('remove', () => {
+		expect(update(o)(REMOVE)([1, 2, 3])).toEqual([1, 3])
 	})
 })
 

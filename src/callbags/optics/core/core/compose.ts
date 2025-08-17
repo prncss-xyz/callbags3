@@ -33,6 +33,7 @@ export function focus<S>() {
 	}
 }
 
+
 export const apply = <V>(
 	m: (v: V, next: (v: V) => void) => void,
 	next: (v: V) => void,
@@ -183,7 +184,8 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 				return {
 					emitter,
 					modifier: composeModify(o1.modifier, o2.modifier),
-					remover: o1.remover,
+					remover: (s: S, next: (s: S) => void) =>
+						o2.modifier(o1.remover, next, s),
 				}
 			return { emitter }
 		}
@@ -191,7 +193,8 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
 				modifier: composeModify(o1.modifier, o2.modifier),
-				remover: o1.remover,
+				remover: (s: S, next: (s: S) => void) =>
+					o2.modifier(o1.remover, next, s),
 				reviewer: (t: U, next: (s: S) => void) =>
 					o1.reviewer(t, (t) => o2.reviewer(t, next)),
 			}
@@ -200,7 +203,8 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
 				modifier: composeModify(o1.modifier, o2.modifier),
-				remover: o1.remover,
+				remover: (s: S, next: (s: S) => void) =>
+					o2.modifier(o1.remover, next, s),
 				setter:
 					'setter' in o2
 						? (t: U, next: (s: S) => void, s: S) => {

@@ -42,9 +42,9 @@ export function review<T, S, E, F>(
 }
 
 function put<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
+	isoAssert('modifier' in o)
 	return function (t: T) {
 		return function (s: S): S {
-			isoAssert('modifier' in o)
 			let res: S
 			getSetter(o)(t, (s) => (res = s), s)
 			return res!
@@ -53,9 +53,9 @@ function put<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 }
 
 function over<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
+	isoAssert('modifier' in o)
 	return function (m: Modify<T>) {
 		return function (s: S): S {
-			isoAssert('modifier' in o)
 			let res: S
 			o.modifier(modToCPS(m), (s) => (res = s), s)
 			return res!
@@ -64,10 +64,10 @@ function over<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 }
 
 function remove<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
+	isoAssert('modifier' in o)
 	return function (s: S): S {
-		isoAssert('modifier' in o)
 		let res: S
-		o.modifier(o.remover, (s) => (res = s), s)
+		o.remover(s, (s) => (res = s))
 		return res!
 	}
 }

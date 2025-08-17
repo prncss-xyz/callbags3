@@ -1,10 +1,10 @@
-import { noop } from '@constellar/core'
+import { id, noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
 import type { Emitter } from '../core/types'
 
-import { _compo, trush } from '../core/compose'
+import { _compo } from '../core/compose'
 
 export type Elems<Acc, Value, Res> = {
 	emitter: Emitter<Value, Res, never>
@@ -44,6 +44,6 @@ export function elems<Acc, Value, Res>({
 	return _compo<Value, Res, 'empty', { prims: true; traversable: true }>({
 		emitter,
 		modifier,
-		remover: trush,
+		remover: (_s, next) => next((result ?? (id as any))(fromInit(init))),
 	})
 }

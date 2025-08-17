@@ -1,6 +1,5 @@
 // TODO: D -> (typeof REMOVE & W) | never
-// tags: getter, async
-//
+
 
 export declare const TAGS: unique symbol
 
@@ -22,7 +21,7 @@ type OpticCore<T, S> = {
 		next: (s: S) => void,
 		s: S,
 	) => void
-	remover: (t: T, next: (t: T) => void) => void
+	remover: (s: S, next: (s: S) => void) => void
 }
 
 export type Traversable<T, S, E> = OpticCore<T, S> & {
