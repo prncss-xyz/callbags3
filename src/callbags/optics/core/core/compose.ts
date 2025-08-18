@@ -8,6 +8,8 @@ import {
 	type _SetterArg,
 	type Emitter,
 	type Getter,
+	LTAGS,
+	type Modifier,
 	type Optic,
 	type Prism,
 	TAGS,
@@ -32,7 +34,6 @@ export function focus<S>() {
 		return o(eq())
 	}
 }
-
 
 export const apply = <V>(
 	m: (v: V, next: (v: V) => void) => void,
@@ -93,7 +94,6 @@ function composeModify<T, S, U>(
 		next: (s: T) => void,
 		s: T,
 	) => void,
-
 	m2: (
 		m: (t: T, next: (t: T) => void) => void,
 		next: (s: S) => void,
@@ -133,8 +133,31 @@ export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
 	}
 }
 
+export const getModifier = <T, S, E>(
+	o: _SetterArg<T, S, E>,
+): Modifier<T, S> => {
+	if ('getter' in o) {
+		if ('setter' in o)
+			return (m, next, s) =>
+				o.getter(
+					s,
+					(t) => m(t, (t1) => o.setter(t1, next, s)),
+					() => next(s),
+				)
+		if ('reviewer' in o)
+			return (m, next, s) =>
+				o.getter(
+					s,
+					(t) => m(t, (t1) => o.reviewer(t1, next)),
+					() => next(s),
+				)
+	}
+	return o.modifier
+}
+
 export const getSetter = <T, S, E>(o: _SetterArg<T, S, E>) => {
 	if ('setter' in o) return o.setter
+	if ('reviewer' in o) return o.reviewer
 	return (t: T, next: (s: S) => void, s: S) =>
 		o.modifier((_t, next) => next(t), next, s as any)
 }
@@ -158,11 +181,11 @@ export const getEmitter = <T, S, E>(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export function _compo<U, T, E1, F1 = {}>(
+export function _compo<U, T, E1, F1 = {}, LF = {}>(
 	o1: _OpticArg<U, T, E1>,
 ): <S, E2, F2>(
 	o2: Optic<T, S, E2> & { [TAGS]: F2 },
-) => Optic<U, S, E1 | E2> & { [TAGS]: F1 & F2 }
+) => Optic<U, S, E1 | E2> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
 export function _compo(o1: any) {
 	return _compose(o1) as any
 }
@@ -176,35 +199,42 @@ export function compose<U, T, E1>(o1: Optic<U, T, E1>) {
 	return _compose(o1) as any
 }
 
+export function isSetter<U, T, E>(
+	o: _OpticArg<U, T, E>,
+): o is _SetterArg<U, T, E> {
+	return 'emitter' in o || 'setter' in o || 'reviewer' in o
+}
+
+// TODO: optimize for inert removers
 function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 	return function <S, E2>(o2: _OpticArg<T, S, E2>): _OpticArg<U, S, E1 | E2> {
 		if ('emitter' in o1 || 'emitter' in o2) {
 			const emitter = composeEmitter(getEmitter(o1), getEmitter(o2))
-			if ('modifier' in o1 && 'modifier' in o2)
+			if (isSetter(o1) && isSetter(o2)) {
+				const m2 = getModifier(o2)
 				return {
 					emitter,
-					modifier: composeModify(o1.modifier, o2.modifier),
-					remover: (s: S, next: (s: S) => void) =>
-						o2.modifier(o1.remover, next, s),
+					modifier: composeModify(getModifier(o1), m2),
+					remover: (s: S, next: (s: S) => void) => m2(o1.remover, next, s),
 				}
+			}
 			return { emitter }
 		}
 		if ('reviewer' in o1 && 'reviewer' in o2) {
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
-				modifier: composeModify(o1.modifier, o2.modifier),
-				remover: (s: S, next: (s: S) => void) =>
-					o2.modifier(o1.remover, next, s),
 				reviewer: (t: U, next: (s: S) => void) =>
 					o1.reviewer(t, (t) => o2.reviewer(t, next)),
 			}
 		}
-		if ('modifier' in o1 && 'modifier' in o2)
+		if (isSetter(o1) && isSetter(o2))
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
-				modifier: composeModify(o1.modifier, o2.modifier),
-				remover: (s: S, next: (s: S) => void) =>
-					o2.modifier(o1.remover, next, s),
+				remover:
+					'remover' in o1
+						? (s: S, next: (s: S) => void) =>
+								getModifier(o2)(o1.remover, next, s)
+						: trush,
 				setter:
 					'setter' in o2
 						? (t: U, next: (s: S) => void, s: S) => {

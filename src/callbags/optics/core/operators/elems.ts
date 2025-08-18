@@ -1,4 +1,4 @@
-import { id, noop } from '@constellar/core'
+import { id, noop, REMOVE } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
@@ -32,7 +32,11 @@ export function elems<Acc, Value, Res>({
 		let acc: Acc
 		acc = fromInit(init)
 		const { start, unmount } = emitter(
-			(value) => m(value, (t) => (acc = fold(t, acc))),
+			(value) =>
+				m(value, (t) => {
+					if (t === REMOVE) return
+					acc = fold(t, acc)
+				}),
 			noop,
 			() => {
 				next(result ? result(acc) : (acc as any))

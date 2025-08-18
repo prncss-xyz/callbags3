@@ -20,7 +20,6 @@ export function filter<Here, Err = 'nothing'>(
 	return _compo<Here, Here, Err>({
 		getter: (w, next, error) =>
 			cond(w) ? next(w) : error(err ? fromInit(err, w) : ('nothing' as any)),
-		modifier: (m, next, w) => (cond(w) ? m(w, (p) => next(p)) : next(w)),
 		remover: trush,
 		reviewer: trush,
 	})

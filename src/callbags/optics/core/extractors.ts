@@ -5,7 +5,13 @@ import type { Optic } from './core/types'
 
 import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
-import { getGetter, getSetter, modToCPS } from './core/compose'
+import {
+	getGetter,
+	getModifier,
+	getSetter,
+	isSetter,
+	modToCPS,
+} from './core/compose'
 
 export function view<T, S, F>(o: Optic<T, S, never, F>) {
 	return function (s: S): T {
@@ -42,7 +48,7 @@ export function review<T, S, E, F>(
 }
 
 function put<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
-	isoAssert('modifier' in o)
+	isoAssert(isSetter(o))
 	return function (t: T) {
 		return function (s: S): S {
 			let res: S
@@ -53,18 +59,20 @@ function put<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 }
 
 function over<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
-	isoAssert('modifier' in o)
+	isoAssert(isSetter(o))
 	return function (m: Modify<T>) {
 		return function (s: S): S {
 			let res: S
-			o.modifier(modToCPS(m), (s) => (res = s), s)
+			getModifier(o)(modToCPS(m), (s) => (res = s), s)
 			return res!
 		}
 	}
 }
 
-function remove<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
-	isoAssert('modifier' in o)
+function remove<T, S, E, F>(
+	o: Optic<T, S, E, Exclude<F, { getter: true }>, { optional: true }>,
+) {
+	isoAssert('remover' in o)
 	return function (s: S): S {
 		let res: S
 		o.remover(s, (s) => (res = s))
@@ -75,11 +83,38 @@ function remove<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
 export const REMOVE = Symbol('REMOVE')
 
 export function update<T, S, E, F>(
+	o: Optic<
+		T,
+		S,
+		E,
+		Exclude<
+			F,
+			{
+				getter: true
+			}
+		>,
+		{ removable: true }
+	>,
+): (m: Modify<T> | NonFunction<T> | typeof REMOVE) => (s: S) => S
+export function update<T, S, E, F>(
+	o: Optic<
+		T,
+		S,
+		E,
+		Exclude<
+			F,
+			{
+				getter: true
+			}
+		>
+	>,
+): (m: Modify<T> | NonFunction<T>) => (s: S) => S
+export function update<T, S, E, F>(
 	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
 ) {
-	return function (m: Modify<T> | NonFunction<T> | typeof REMOVE) {
+	return function (m: Modify<T> | NonFunction<T>) {
 		if (m === REMOVE) {
-			return remove(o)
+			return remove(o as any)
 		}
 		if (isFunction(m)) {
 			return over(o)(m)

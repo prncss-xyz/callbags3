@@ -11,7 +11,6 @@ export function lens<Part, Whole>({
 }) {
 	return _compo<Part, Whole, never, { optional: true }>({
 		getter: (w, next) => next(get(w)),
-		modifier: (m, next, w) => m(get(w), (p) => next(set(p, w))),
 		remover: trush,
 		setter: (p, next, w) => next(set(p, w)),
 	})

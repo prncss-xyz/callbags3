@@ -1,7 +1,7 @@
 // TODO: D -> (typeof REMOVE & W) | never
 
-
 export declare const TAGS: unique symbol
+export declare const LTAGS: unique symbol
 
 export type Emitter<T, S, E> = (
 	next: (t: T) => void,
@@ -15,27 +15,33 @@ export type Getter<T, S, E> = (
 	error: (e: E) => void,
 ) => void
 
-type OpticCore<T, S> = {
+export type Modifier<T, S> = (
+	m: (t: T, next: (t: T) => void) => void,
+	next: (s: S) => void,
+	s: S,
+) => void
+
+type OpticCore<S> = {
+	remover: (s: S, next: (s: S) => void) => void
+}
+
+export type Traversable<T, S, E> = OpticCore<S> & {
+	emitter: Emitter<T, S, E>
 	modifier: (
 		m: (t: T, next: (t: T) => void) => void,
 		next: (s: S) => void,
 		s: S,
 	) => void
-	remover: (s: S, next: (s: S) => void) => void
 }
 
-export type Traversable<T, S, E> = OpticCore<T, S> & {
-	emitter: Emitter<T, S, E>
-}
-
-export type Prism<T, S, E> = OpticCore<T, S> & {
+export type Prism<T, S, E> = OpticCore<S> & {
 	getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
 	reviewer: (t: T, next: (s: S) => void, s: S | void) => void
 }
 
 export type Types = 'optional' | 'prism' | 'traversable'
 
-export type Optional<T, S, E> = OpticCore<T, S> & {
+export type Optional<T, S, E> = OpticCore<S> & {
 	getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
 	setter: (t: T, next: (s: S) => void, s: S) => void
 }
@@ -55,4 +61,6 @@ export type _OpticArg<T, S, E> =
 	  }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type Optic<T, S, E, F = {}> = _OpticArg<T, S, E> & { [TAGS]: F }
+export type Optic<T, S, E, F = {}, LF = {}> = _OpticArg<T, S, E> & {
+	[LTAGS]: LF
+} & { [TAGS]: F }
