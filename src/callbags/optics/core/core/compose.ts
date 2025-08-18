@@ -205,7 +205,6 @@ export function isSetter<U, T, E>(
 	return 'emitter' in o || 'setter' in o || 'reviewer' in o
 }
 
-// TODO: optimize for inert removers
 function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 	return function <S, E2>(o2: _OpticArg<T, S, E2>): _OpticArg<U, S, E1 | E2> {
 		if ('emitter' in o1 || 'emitter' in o2) {
@@ -215,7 +214,10 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 				return {
 					emitter,
 					modifier: composeModify(getModifier(o1), m2),
-					remover: (s: S, next: (s: S) => void) => m2(o1.remover, next, s),
+					remover:
+						o1.remover === trush
+							? trush
+							: (s: S, next: (s: S) => void) => m2(o1.remover, next, s),
 				}
 			}
 			return { emitter }
@@ -231,7 +233,7 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
 				remover:
-					'remover' in o1
+					'remover' in o1 && o1.remover !== trush
 						? (s: S, next: (s: S) => void) =>
 								getModifier(o2)(o1.remover, next, s)
 						: trush,
