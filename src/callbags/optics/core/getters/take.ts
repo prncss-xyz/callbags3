@@ -1,6 +1,7 @@
-import { _compo } from '../core/compose'
-import { sequence } from './sequence'
+import { id } from '@constellar/core'
 
-export function take(n: number) {
-  // TODO:
+import { _compo } from '../core/compose'
+
+export function take(_n: number) {
+	return id
 }

@@ -1,4 +1,5 @@
-import { isoAssert } from '@prncss-xyz/utils'
+import { noop } from '@constellar/core'
+import { fromInit, isoAssert } from '@prncss-xyz/utils'
 
 import type { Modify, NonFunction } from '../../../types'
 import type { Optic } from './core/types'
@@ -6,12 +7,14 @@ import type { Optic } from './core/types'
 import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
 import {
+	getEmitter,
 	getGetter,
 	getModifier,
 	getSetter,
 	isSetter,
 	modToCPS,
 } from './core/compose'
+import { inArray } from './operators/traversal'
 
 export function view<T, S, F>(o: Optic<T, S, never, F>) {
 	return function (s: S): T {
@@ -33,6 +36,24 @@ export function preview<T, S, E, F>(o: Optic<T, S, E, F>) {
 		const { error, next } = toEither<T, E>((t) => (res = t))
 		getGetter(o)(s, next, error)
 		return res!
+	}
+}
+
+export function collect<Value, S, E, F>(o: Optic<Value, S, E, F>) {
+	const t = inArray<Value>()
+	return (s: S) => {
+		let acc: Value[]
+		acc = fromInit(t.init)
+		const { start, unmount } = getEmitter(o)(
+			(value) => (acc = t.fold(value, acc)),
+			() => {
+				unmount()
+				throw new Error('unexpected error')
+			},
+			() => (unmount(), noop),
+		)(s)
+		start()
+		return acc
 	}
 }
 

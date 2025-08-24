@@ -1,10 +1,11 @@
-import { id } from '@constellar/core'
+import { id, toArray } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
 import type { _OpticArg, Optic } from '../core/types'
 
 import { _compo, getEmitter } from '../core/compose'
+import { inArray } from '../operators/traversal'
 
 export function fold<Value, Acc, Res>({
 	fold,
