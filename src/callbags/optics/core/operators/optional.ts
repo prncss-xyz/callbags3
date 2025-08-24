@@ -1,6 +1,6 @@
 import type { Either } from '../../../../errors'
 
-import { _compo, trush } from '../core/compose'
+import { _compo } from '../core/compose'
 
 export function optional<Part, Whole, E>({
 	get,
@@ -15,7 +15,7 @@ export function optional<Part, Whole, E>({
 			if (res.type === 'err') return err(res.value)
 			return next(res.value)
 		},
-		remover: trush,
+		remover: (w, next) => get(w).type === 'err' && next(w),
 		setter: (p, next, w) => next(set(p, w)),
 	})
 }

@@ -1,34 +1,22 @@
-import type { LTAGS, Optic, Prism, TAGS } from './types'
+import type { Optic } from './types'
 
-import { trush } from './compose'
+import { apply, trush } from './compose'
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-type Eq<T> = Prism<T, T, never> & { [LTAGS]: {} } & { [TAGS]: {} }
+export type Eq<T> = Optic<T, T, never>
 
-export type Focus<T, S, E, F, LF> = (eq: Eq<S>) => Optic<T, S, E, F, LF>
-
-// TODO: remove
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export function tagged<F = {}>() {
-	return function <T>(t: T) {
-		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-		return t as T & { [LTAGS]: {} } & { [TAGS]: F }
-	}
-}
-
-const _t = tagged()
+export type Focus<T, S, E, O extends Optic<T, S, E>> = (eq: Eq<S>) => O
 
 export function eq<T>(): Eq<T> {
-	return _t({
+	return {
 		getter: trush,
+		modifier: apply,
 		remover: trush,
 		reviewer: trush,
-	})
+	} as any
 }
 
 export function focus<S>() {
-	return function <T, E, F, LF>(o: Focus<T, S, E, F, LF>) {
+	return function <T, E, O extends Optic<T, S, E>>(o: Focus<T, S, E, O>) {
 		return o(eq())
 	}
 }

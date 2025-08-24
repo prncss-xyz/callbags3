@@ -27,22 +27,18 @@ type OpticCore<S> = {
 
 export type Traversable<T, S, E> = OpticCore<S> & {
 	emitter: Emitter<T, S, E>
-	modifier: (
-		m: (t: T, next: (t: T) => void) => void,
-		next: (s: S) => void,
-		s: S,
-	) => void
+	modifier: Modifier<T, S>
 }
 
 export type Prism<T, S, E> = OpticCore<S> & {
 	getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
+	modifier?: Modifier<T, S>
 	reviewer: (t: T, next: (s: S) => void, s: S | void) => void
 }
 
-export type Types = 'optional' | 'prism' | 'traversable'
-
 export type Optional<T, S, E> = OpticCore<S> & {
 	getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
+	modifier?: Modifier<T, S>
 	setter: (t: T, next: (s: S) => void, s: S) => void
 }
 

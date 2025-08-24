@@ -11,29 +11,8 @@ import {
 	LTAGS,
 	type Modifier,
 	type Optic,
-	type Prism,
 	TAGS,
 } from './types'
-
-type Eq<T> = Prism<T, T, never> & { [TAGS]: { prism: true } }
-
-export type Focus<T, S, E, O extends Optic<T, S, E>> = (eq: Eq<S>) => O
-
-export function eq<T>(): Eq<T> {
-	return {
-		getter: trush,
-		modifier: apply,
-		remover: trush,
-		reviewer: trush,
-		type: 'prism',
-	} as any
-}
-
-export function focus<S>() {
-	return function <T, E, O extends Optic<T, S, E>>(o: Focus<T, S, E, O>) {
-		return o(eq())
-	}
-}
 
 export const apply = <V>(
 	m: (v: V, next: (v: V) => void) => void,
@@ -136,6 +115,7 @@ export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
 export const getModifier = <T, S, E>(
 	o: _SetterArg<T, S, E>,
 ): Modifier<T, S> => {
+	if (o.modifier) return o.modifier
 	if ('getter' in o) {
 		if ('setter' in o)
 			return (m, next, s) =>
@@ -152,7 +132,7 @@ export const getModifier = <T, S, E>(
 					() => next(s),
 				)
 	}
-	return o.modifier
+	throw new Error('unreachable')
 }
 
 export const getSetter = <T, S, E>(o: _SetterArg<T, S, E>) => {
@@ -181,11 +161,17 @@ export const getEmitter = <T, S, E>(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export type Compo<U, T, E1, F1 = {}, LF = {}> = <S, E2, F2>(
+	o2: Optic<T, S, E2> & { [TAGS]: F2 },
+) => Optic<U, S, E1 | E2> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export function _compo<U, T, E1, F1 = {}, LF = {}>(
 	o1: _OpticArg<U, T, E1>,
 ): <S, E2, F2>(
 	o2: Optic<T, S, E2> & { [TAGS]: F2 },
 ) => Optic<U, S, E1 | E2> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
+
 export function _compo(o1: any) {
 	return _compose(o1) as any
 }
@@ -222,16 +208,23 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 			}
 			return { emitter }
 		}
-		if ('reviewer' in o1 && 'reviewer' in o2) {
+		if ('reviewer' in o1 && 'reviewer' in o2)
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
+				modifier:
+					o1.modifier || o2.modifier
+						? composeModify(getModifier(o1), getModifier(o2))
+						: undefined,
 				reviewer: (t: U, next: (s: S) => void) =>
 					o1.reviewer(t, (t) => o2.reviewer(t, next)),
 			}
-		}
 		if (isSetter(o1) && isSetter(o2))
 			return {
 				getter: composeGetter(getGetter(o1), o2.getter),
+				modifier:
+					o1.modifier || o2.modifier
+						? composeModify(getModifier(o1), getModifier(o2))
+						: undefined,
 				remover:
 					'remover' in o1 && o1.remover !== trush
 						? (s: S, next: (s: S) => void) =>

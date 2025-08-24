@@ -1,3 +1,5 @@
+import { isNumber } from '@prncss-xyz/utils'
+
 import { filter } from '.'
 import { type Either, err, succ } from '../../../../errors'
 import { focus } from '../core/focus'
@@ -24,5 +26,10 @@ describe('filter', () => {
 	it('over', () => {
 		expect(update(o)((x) => x + 1)(0)).toBe(0)
 		expect(update(o)((x) => x + 1)(1)).toBe(2)
+	})
+	it('should refine type', () => {
+		const o = focus<number | string>()(filter(isNumber))
+		const res = preview(o)('')
+		expectTypeOf(res).toEqualTypeOf<Either<number, 'nothing'>>()
 	})
 })

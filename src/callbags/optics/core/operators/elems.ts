@@ -1,4 +1,4 @@
-import { id, noop, REMOVE } from '@constellar/core'
+import { id, noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
@@ -34,7 +34,6 @@ export function elems<Acc, Value, Res>({
 		const { start, unmount } = emitter(
 			(value) =>
 				m(value, (t) => {
-					if (t === REMOVE) return
 					acc = fold(t, acc)
 				}),
 			noop,
@@ -45,7 +44,18 @@ export function elems<Acc, Value, Res>({
 		)(s)
 		start()
 	}
-	return _compo<Value, Res, 'empty', { prims: true; traversable: true }>({
+	return _compo<
+		Value,
+		Res,
+		'empty',
+		{
+			prims: true
+			traversable: true
+		},
+		{
+			removable: true
+		}
+	>({
 		emitter,
 		modifier,
 		remover: (_s, next) => next((result ?? (id as any))(fromInit(init))),

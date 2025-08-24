@@ -38,8 +38,7 @@ describe('elems', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([2, 4, 6])
 	})
 	it('remove', () => {
-		// @ts-expect-error REMOVE is not a valid modify
-		update(o)(REMOVE)
+		expect(update(o)(REMOVE)([1, 2, 3])).toEqual([])
 	})
 })
 describe('compose with prism', () => {
@@ -51,6 +50,10 @@ describe('compose with prism', () => {
 	)
 	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([1, 4, 3])
+	})
+	it('remove', () => {
+		// @ts-expect-error REMOVE is not a valid modify
+		expect(update(o)(REMOVE)([1, 2, 3])).toEqual([1, 3])
 	})
 })
 describe('compose with lens', () => {

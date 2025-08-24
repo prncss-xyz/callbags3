@@ -1,4 +1,6 @@
-import { _compo, trush } from '../core/compose'
+import { noop } from '@constellar/core'
+
+import { _compo } from '../core/compose'
 
 export function iso<There, Here>({
 	get,
@@ -7,9 +9,18 @@ export function iso<There, Here>({
 	get: (w: Here) => There
 	set: (p: There) => Here
 }) {
-	return _compo<There, Here, never>({
+	return _compo<
+		There,
+		Here,
+		never,
+		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+		{},
+		{
+			removable: true
+		}
+	>({
 		getter: (w, next) => next(get(w)),
-		remover: trush,
+		remover: noop,
 		reviewer: (p, next) => next(set(p)),
 	})
 }
