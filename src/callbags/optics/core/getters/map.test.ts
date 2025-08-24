@@ -1,9 +1,9 @@
 import { focus } from '../core/focus'
 import { update, view } from '../extractors'
-import { getter } from './getter'
+import { map } from './map'
 
-describe('getter', () => {
-	const o = focus<string>()(getter((s) => s.length))
+describe('map', () => {
+	const o = focus<string>()(map((s) => s.length))
 	it('view', () => {
 		expect(view(o)('toto')).toBe(4)
 	})

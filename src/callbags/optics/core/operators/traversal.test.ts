@@ -3,12 +3,12 @@ import { pipe } from '@constellar/core'
 import { succ } from '../../../../errors'
 import { focus } from '../core/focus'
 import { preview, REMOVE, update, view } from '../extractors'
-import { elems, type Elems } from './elems'
+import { fold } from '../getters/fold'
 import { filter } from './filter'
-import { fold } from './fold'
 import { lens } from './lens'
+import { elems, type Traversal } from './traversal'
 
-function inArray<Value>(): Elems<Value[], Value, Value[]> {
+function inArray<Value>(): Traversal<Value[], Value, Value[]> {
 	return {
 		emitter: (next, _error, complete) => (acc) => {
 			let done = false
@@ -30,7 +30,7 @@ function inArray<Value>(): Elems<Value[], Value, Value[]> {
 	}
 }
 describe('elems', () => {
-	const o = focus<number[]>()(elems(inArray()))
+	const o = focus<number[]>()(elems())
 	it('view', () => {
 		expect(preview(o)([1, 2, 3])).toEqual(succ.of(1))
 	})
@@ -44,7 +44,7 @@ describe('elems', () => {
 describe('compose with prism', () => {
 	const o = focus<number[]>()(
 		pipe(
-			elems(inArray()),
+			elems(),
 			filter((x) => x % 2 === 0),
 		),
 	)
@@ -63,7 +63,7 @@ describe('compose with lens', () => {
 			set: (v, s) => ({ ...s, [k]: v }),
 		})
 	}
-	const o = focus<{ a: number }[]>()(pipe(elems(inArray()), prop('a')))
+	const o = focus<{ a: number }[]>()(pipe(elems(), prop('a')))
 	it('modify', () => {
 		const res = update(o)((x) => x * 2)([{ a: 1 }, { a: 3 }])
 		expect(res).toEqual([{ a: 2 }, { a: 6 }])
@@ -74,7 +74,7 @@ describe('compose with lens', () => {
 	})
 })
 describe('compose with elems', () => {
-	const o = focus<number[][]>()(pipe(elems(inArray()), elems(inArray())))
+	const o = focus<number[][]>()(pipe(elems(), elems()))
 	it('modify', () => {
 		expect(
 			update(o)((x) => x * 2)([
@@ -90,7 +90,7 @@ describe('compose with elems', () => {
 describe('fold', () => {
 	const o = focus<number[]>()(
 		pipe(
-			elems(inArray()),
+			elems(),
 			filter((x) => x % 2 === 0),
 			fold(inArray()),
 		),
