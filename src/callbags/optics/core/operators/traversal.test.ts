@@ -6,29 +6,8 @@ import { preview, REMOVE, update, view } from '../extractors'
 import { fold } from '../getters/fold'
 import { filter } from './filter'
 import { lens } from './lens'
-import { elems, type Traversal } from './traversal'
+import { elems } from './traversal'
 
-function inArray<Value>(): Traversal<Value[], Value, Value[]> {
-	return {
-		emitter: (next, _error, complete) => (acc) => {
-			let done = false
-			return {
-				start: () => {
-					for (const t of acc) {
-						if (done) break
-						next(t)
-					}
-					complete()
-				},
-				unmount: () => {
-					done = true
-				},
-			}
-		},
-		fold: (t, acc) => [...acc, t],
-		init: () => [],
-	}
-}
 describe('elems', () => {
 	const o = focus<number[]>()(elems())
 	it('view', () => {
@@ -68,6 +47,7 @@ describe('compose with lens', () => {
 		const res = update(o)((x) => x * 2)([{ a: 1 }, { a: 3 }])
 		expect(res).toEqual([{ a: 2 }, { a: 6 }])
 	})
+  // this is to make sure the call stack doesn't grow with data length
 	it.skip('modify, long array', { timeout: 20_000 }, () => {
 		const xs: { a: number }[] = Array(50_000).fill({ a: 1 })
 		expect(update(o)((x) => x * 2)(xs)[0]).toEqual({ a: 2 })
@@ -92,10 +72,13 @@ describe('fold', () => {
 		pipe(
 			elems(),
 			filter((x) => x % 2 === 0),
-			fold(inArray()),
+			fold({
+				fold: (x, y) => x + y,
+				init: 100,
+			}),
 		),
 	)
 	it('view', () => {
-		expect(view(o)([1, 2, 3])).toEqual([2])
+		expect(view(o)([1, 2, 3])).toEqual(102)
 	})
 })

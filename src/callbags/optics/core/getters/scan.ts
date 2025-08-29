@@ -1,4 +1,4 @@
-import { noop } from '@constellar/core'
+import { id } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
@@ -6,25 +6,30 @@ import type { Init } from '../../../../types'
 import { _compo } from '../core/compose'
 import { sequence } from './sequence'
 
-export function scan<Acc, Value, Res>({
+export function scan<Acc, Value, Res = Acc>({
 	fold,
 	init,
 	result,
 }: {
 	fold: (value: Value, acc: Acc) => Acc
 	init: Init<Acc>
-	result: (acc: Acc) => Res
+	result?: (acc: Acc) => Res
 }) {
-	return sequence<Res, Value, never>((next) => {
+	const res = result ?? (id as any)
+	return sequence<Res, Value, never>((source) => {
 		let acc = fromInit(init)
-		return (w) => {
-			acc = fold(w, acc)
-			next(result(acc))
+		return (n, e, c) => {
+			const { start, unmount } = source(
+				(v) => n(res((acc = fold(v, acc)))),
+				e,
+				c,
+			)
 			return {
 				start: () => {
-					next(result(acc))
+					start()
+					n(res(acc))
 				},
-				unmount: noop,
+				unmount,
 			}
 		}
 	})

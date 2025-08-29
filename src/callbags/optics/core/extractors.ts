@@ -13,6 +13,7 @@ import {
 	getSetter,
 	isSetter,
 	modToCPS,
+	once,
 } from './core/compose'
 import { inArray } from './operators/traversal'
 
@@ -44,14 +45,14 @@ export function collect<Value, S, E, F>(o: Optic<Value, S, E, F>) {
 	return (s: S) => {
 		let acc: Value[]
 		acc = fromInit(t.init)
-		const { start, unmount } = getEmitter(o)(
+		const { start, unmount } = getEmitter(o)(once(s))(
 			(value) => (acc = t.fold(value, acc)),
 			() => {
 				unmount()
 				throw new Error('unexpected error')
 			},
 			() => (unmount(), noop),
-		)(s)
+		)
 		start()
 		return acc
 	}

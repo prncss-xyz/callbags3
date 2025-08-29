@@ -1,13 +1,12 @@
-import { id, toArray } from '@constellar/core'
+import { id } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
 import type { _OpticArg, Optic } from '../core/types'
 
-import { _compo, getEmitter } from '../core/compose'
-import { inArray } from '../operators/traversal'
+import { _compo, getEmitter, once } from '../core/compose'
 
-export function fold<Value, Acc, Res>({
+export function fold<Value, Acc, Res = Acc>({
 	fold,
 	init,
 	result,
@@ -32,14 +31,14 @@ export function fold<Value, Acc, Res>({
 			getter: (s, next) => {
 				let acc: Acc
 				acc = fromInit(init)
-				const { start, unmount } = getEmitter(o)(
+				const { start, unmount } = getEmitter(o)(once(s))(
 					(value) => (acc = fold(value, acc)),
 					() => {
 						unmount()
 						throw new Error('unexpected error')
 					},
 					() => (unmount(), next((result ?? (id as any))(acc))),
-				)(s)
+				)
 				start()
 			},
 		}

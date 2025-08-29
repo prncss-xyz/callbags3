@@ -1,4 +1,4 @@
-import { noop } from '@constellar/core'
+import { noop, pipe } from '@constellar/core'
 
 import type { Modify } from '../../../../types'
 
@@ -28,33 +28,25 @@ export function modToCPS<T>(m: Modify<T>) {
 	return (t: T, next: (t: T) => void) => next(m(t))
 }
 
-export const emitOnce =
-	<T, E>(next: (t: T) => void, _error: (e: E) => void, complete: () => void) =>
-	(t: T) => (next(t), complete(), noop)
+export function once<S>(s: S) {
+	return <E>(
+		next: (s: S) => void,
+		_error: (e: E) => void,
+		complete: () => void,
+	) => ({
+		start: () => {
+			next(s)
+			return complete()
+		},
+		unmount: noop,
+	})
+}
 
 function composeEmitter<T, S, U, E1, E2>(
 	e1: Emitter<U, T, E1>,
-	e2: Emitter<T, S, E2>,
+	e2: Emitter<T, S, E1>,
 ): Emitter<U, S, E1 | E2> {
-	return (next, error, complete) => (s) => {
-		let unmount1 = noop
-		const { start, unmount } = e2(
-			(t) => {
-				const { start, unmount } = e1(next, error, noop)(t)
-				unmount1 = unmount
-				start()
-			},
-			(e) => (unmount1(), error(e)),
-			() => (unmount1(), complete()),
-		)(s)
-		return {
-			start,
-			unmount: () => {
-				unmount1()
-				unmount()
-			},
-		}
-	}
+	return pipe(e2, e1)
 }
 
 function composeGetter<T, S, U, E1, E2>(
@@ -93,13 +85,13 @@ export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
 	if ('getter' in o) return o.getter
 	return (r: S, next: (t: T) => void, error: (e: E) => void) => {
 		let dirty = false
-		const { start, unmount } = o.emitter(
+		const { start, unmount } = o.emitter(once(r))(
 			(t) => {
 				dirty = true
-				unmount()
 				next(t)
+				unmount()
 			},
-			(e) => {
+			(e: E) => {
 				unmount()
 				error(e)
 			},
@@ -107,7 +99,7 @@ export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
 				unmount()
 				if (!dirty) error(emptyError as E)
 			},
-		)(r)
+		)
 		start()
 	}
 }
@@ -146,18 +138,8 @@ export const getEmitter = <T, S, E>(
 	o: _OpticArg<T, S, E>,
 ): Emitter<T, S, E> => {
 	if ('emitter' in o) return o.emitter
-	return (next, _error, complete) => (s) => {
-		let open = true
-		return {
-			start: () => {
-				if (open) o.getter(s, (t) => next(t), noop)
-				complete()
-			},
-			unmount: () => {
-				open = false
-			},
-		}
-	}
+	return (source) => (next, err, complete) =>
+		source((s) => o.getter(s, next, noop), err, complete)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -188,7 +170,7 @@ export function compose<U, T, E1>(o1: Optic<U, T, E1>) {
 export function isSetter<U, T, E>(
 	o: _OpticArg<U, T, E>,
 ): o is _SetterArg<U, T, E> {
-	return 'emitter' in o || 'setter' in o || 'reviewer' in o
+	return 'modifier' in o || 'setter' in o || 'reviewer' in o
 }
 
 function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {

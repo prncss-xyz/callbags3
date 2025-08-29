@@ -6,8 +6,14 @@ import { elems } from '../operators/traversal'
 import { take } from './take'
 
 describe('take', () => {
-	const o = focus<number[]>()(pipe(elems(), take(2)))
 	it('view', () => {
-		expect(collect(o)([0, 1, 2, 3])).toBe([0, 1])
+		const o = focus<number[]>()(pipe(elems(), take(2)))
+		expect(collect(o)([0, 1, 2, 3])).toEqual([0, 1])
+    // it should be idempotent
+    expect(collect(o)([0, 1, 2, 3])).toEqual([0, 1])
+	})
+	it('view', () => {
+		const o = focus<number[]>()(pipe(elems(), take(0)))
+		expect(collect(o)([0, 1, 2, 3])).toEqual([])
 	})
 })

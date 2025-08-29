@@ -3,11 +3,15 @@
 export declare const TAGS: unique symbol
 export declare const LTAGS: unique symbol
 
-export type Emitter<T, S, E> = (
+export type Source<T, E> = (
 	next: (t: T) => void,
 	error: (e: E) => void,
 	complete: () => void,
-) => (s: S) => { start: () => void; unmount: () => void }
+) => { start: () => void; unmount: () => void }
+
+export type Emitter<T, S, E1> = <E2>(
+	source: Source<S, E2>,
+) => Source<T, E1 | E2>
 
 export type Getter<T, S, E> = (
 	s: S,

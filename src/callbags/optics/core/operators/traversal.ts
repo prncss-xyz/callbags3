@@ -2,27 +2,27 @@ import { id, noop } from '@constellar/core'
 import { fromInit } from '@prncss-xyz/utils'
 
 import type { Init } from '../../../../types'
-import type { Emitter } from '../core/types'
+import type { Source } from '../core/types'
 
 import { _compo } from '../core/compose'
 
 export type Traversal<Acc, Value, Res> = {
-	emitter: Emitter<Value, Res, never>
 	fold: (value: Value, acc: Acc) => Acc
 	init: Init<Acc>
 	result?: (acc: Acc) => Res
+	source: (r: Res) => Source<Value, never>
 }
 
 export function traversal<Acc, Value, Res>({
-	emitter,
 	fold,
 	init,
 	result,
+	source,
 }: {
-	emitter: Emitter<Value, Res, never>
 	fold: (value: Value, acc: Acc) => Acc
 	init: Init<Acc>
 	result?: (acc: Acc) => Res
+	source: (r: Res) => Source<Value, never>
 }) {
 	const modifier = (
 		m: (t: Value, next: (t: Value) => void) => void,
@@ -31,7 +31,7 @@ export function traversal<Acc, Value, Res>({
 	) => {
 		let acc: Acc
 		acc = fromInit(init)
-		const { start, unmount } = emitter(
+		const { start, unmount } = source(s)(
 			(value) =>
 				m(value, (t) => {
 					acc = fold(t, acc)
@@ -41,7 +41,7 @@ export function traversal<Acc, Value, Res>({
 				next(result ? result(acc) : (acc as any))
 				unmount()
 			},
-		)(s)
+		)
 		start()
 	}
 	return _compo<
@@ -56,7 +56,27 @@ export function traversal<Acc, Value, Res>({
 			removable: true
 		}
 	>({
-		emitter,
+		emitter: <E>(s: Source<Res, E>) => {
+			return (next, error, complete) => {
+				let unmount = noop
+				const su = s(
+					(r) => {
+						const ss = source(r)(next, error, noop)
+						unmount = ss.unmount
+						ss.start()
+					},
+					noop,
+					complete,
+				)
+				return {
+					start: su.start,
+					unmount: () => {
+						unmount()
+						su.unmount()
+					},
+				}
+			}
+		},
 		modifier,
 		remover: (_s, next) => next((result ?? (id as any))(fromInit(init))),
 	})
@@ -64,7 +84,9 @@ export function traversal<Acc, Value, Res>({
 
 export function inArray<Value>(): Traversal<Value[], Value, Value[]> {
 	return {
-		emitter: (next, _error, complete) => (acc) => {
+		fold: (t, acc) => [...acc, t],
+		init: () => [],
+		source: (acc) => (next, _error, complete) => {
 			let done = false
 			return {
 				start: () => {
@@ -79,8 +101,6 @@ export function inArray<Value>(): Traversal<Value[], Value, Value[]> {
 				},
 			}
 		},
-		fold: (t, acc) => [...acc, t],
-		init: () => [],
 	}
 }
 
