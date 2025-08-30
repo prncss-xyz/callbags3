@@ -2,10 +2,11 @@ import { noop } from '@constellar/core'
 import { fromInit, isoAssert } from '@prncss-xyz/utils'
 
 import type { Modify, NonFunction } from '../../../types'
-import type { Optic } from './core/types'
+import type { Optic, Source } from './core/types'
 
 import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
+import { inArray } from './bx/traversal'
 import {
 	getEmitter,
 	getGetter,
@@ -15,7 +16,6 @@ import {
 	modToCPS,
 	once,
 } from './core/compose'
-import { inArray } from './operators/traversal'
 
 export function view<T, S, F>(o: Optic<T, S, never, F>) {
 	return function (s: S): T {
@@ -55,6 +55,40 @@ export function collect<Value, S, E, F>(o: Optic<Value, S, E, F>) {
 		)
 		start()
 		return acc
+	}
+}
+
+type Observer<T, E> =
+	| ((t: T) => void)
+	| Partial<{
+			complete: () => void
+			error: (e: E) => void
+			next: (t: T) => void
+	  }>
+
+function resolveObserver<T, E>(observer: Observer<T, E>, unmount: () => void) {
+	if (typeof observer === 'function') return [observer, noop, unmount] as const
+	const { complete, error, next } = observer
+	return [
+		next ?? noop,
+		error ?? noop,
+		complete
+			? () => {
+					observer.complete!()
+					unmount()
+				}
+			: unmount,
+	] as const
+}
+
+export function observe<T, S, E, F>(o: Optic<T, S, E, F>) {
+	return function (observer: Observer<T, E>) {
+		return function (source: Source<S, E>) {
+			const { start, unmount } = getEmitter(o)(source)(
+				...resolveObserver(observer, () => unmount!),
+			)
+			start()
+		}
 	}
 }
 

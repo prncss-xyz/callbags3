@@ -34,3 +34,28 @@ export function scan<Acc, Value, Res = Acc>({
 		}
 	})
 }
+
+export function fold<Acc, Value, Res = Acc>({
+	fold,
+	init,
+	result,
+}: {
+	fold: (value: Value, acc: Acc) => Acc
+	init: Init<Acc>
+	result?: (acc: Acc) => Res
+}) {
+	const res = result ?? (id as any)
+	return sequence<Res, Value, never>((source) => {
+		let acc = fromInit(init)
+		return (n, e, c) => {
+			return source(
+				(v) => (acc = fold(v, acc)),
+				e,
+				() => {
+					n(res(acc))
+					c()
+				},
+			)
+		}
+	})
+}

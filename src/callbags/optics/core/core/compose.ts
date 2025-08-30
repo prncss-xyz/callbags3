@@ -81,7 +81,7 @@ function composeModify<T, S, U>(
 }
 
 // TODO: make sure EmptyError is in Multi
-export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
+export function getGetter<T, S, E>(o: _OpticArg<T, S, E>) {
 	if ('getter' in o) return o.getter
 	return (r: S, next: (t: T) => void, error: (e: E) => void) => {
 		let dirty = false
@@ -104,9 +104,7 @@ export const getGetter = <T, S, E>(o: _OpticArg<T, S, E>) => {
 	}
 }
 
-export const getModifier = <T, S, E>(
-	o: _SetterArg<T, S, E>,
-): Modifier<T, S> => {
+export function getModifier<T, S, E>(o: _SetterArg<T, S, E>): Modifier<T, S> {
 	if (o.modifier) return o.modifier
 	if ('getter' in o) {
 		if ('setter' in o)
@@ -127,16 +125,14 @@ export const getModifier = <T, S, E>(
 	throw new Error('unreachable')
 }
 
-export const getSetter = <T, S, E>(o: _SetterArg<T, S, E>) => {
+export function getSetter<T, S, E>(o: _SetterArg<T, S, E>) {
 	if ('setter' in o) return o.setter
 	if ('reviewer' in o) return o.reviewer
 	return (t: T, next: (s: S) => void, s: S) =>
 		o.modifier((_t, next) => next(t), next, s as any)
 }
 
-export const getEmitter = <T, S, E>(
-	o: _OpticArg<T, S, E>,
-): Emitter<T, S, E> => {
+export function getEmitter<T, S, E>(o: _OpticArg<T, S, E>): Emitter<T, S, E> {
 	if ('emitter' in o) return o.emitter
 	return (source) => (next, err, complete) =>
 		source((s) => o.getter(s, next, noop), err, complete)

@@ -2,7 +2,7 @@ import { pipe } from '@constellar/core'
 
 import { focus } from '../core/focus'
 import { collect } from '../extractors'
-import { elems } from '../operators/traversal'
+import { elems } from '../bx/traversal'
 import { take } from './take'
 
 describe('take', () => {

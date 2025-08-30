@@ -1,4 +1,4 @@
-import { iso } from '../operators/iso'
+import { iso } from './iso'
 
 export function linear(m: number, b = 0) {
 	return iso<number, number>({
