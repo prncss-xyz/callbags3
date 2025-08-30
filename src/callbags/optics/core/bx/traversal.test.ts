@@ -3,7 +3,7 @@ import { pipe } from '@constellar/core'
 import { succ } from '../../../../errors'
 import { focus } from '../core/focus'
 import { preview, REMOVE, update, view } from '../extractors'
-import { fold } from '../getters/fold'
+import { fold } from '../getters/scan'
 import { filter } from './filter'
 import { lens } from './lens'
 import { elems } from './traversal'
@@ -47,7 +47,7 @@ describe('compose with lens', () => {
 		const res = update(o)((x) => x * 2)([{ a: 1 }, { a: 3 }])
 		expect(res).toEqual([{ a: 2 }, { a: 6 }])
 	})
-  // this is to make sure the call stack doesn't grow with data length
+	// this is to make sure the call stack doesn't grow with data length
 	it.skip('modify, long array', { timeout: 20_000 }, () => {
 		const xs: { a: number }[] = Array(50_000).fill({ a: 1 })
 		expect(update(o)((x) => x * 2)(xs)[0]).toEqual({ a: 2 })
@@ -79,6 +79,7 @@ describe('fold', () => {
 		),
 	)
 	it('view', () => {
+    // @ts-expect-error TODO:
 		expect(view(o)([1, 2, 3])).toEqual(102)
 	})
 })
