@@ -7,7 +7,10 @@ export type Source<T, E> = (
 	next: (t: T) => void,
 	error: (e: E) => void,
 	complete: () => void,
-) => { start: () => void; unmount: () => void }
+) => {
+  start: () => void;
+  unmount: () => void;
+}
 
 export type Emitter<T, S, E1> = <E2>(
 	source: Source<S, E2>,

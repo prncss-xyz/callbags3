@@ -11,10 +11,6 @@ import { interval } from './interval'
 describe('interval', () => {
 	const o = focus<number>()(pipe(take(4), fold(inArray())))
 	it('sums interval', () => {
-		observe(o)({
-			next(v) {
-				expect(v).toEqual([0, 1, 2, 3])
-			},
-		})(interval(10))
+		observe(interval(10), o, (res) => expect(res).toEqual([0, 1, 2, 3]))
 	})
 })

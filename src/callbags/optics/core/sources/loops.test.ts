@@ -9,10 +9,6 @@ import { range } from './loops'
 describe('range', () => {
 	const o = focus<number>()(fold(inArray()))
 	it('sums range', () => {
-		observe(o)({
-			next(v) {
-				expect(v).toEqual([0, 1, 2, 3])
-			},
-		})(range(0, 4))
+		observe(range(0, 4), o, (v) => expect(v).toEqual([0, 1, 2, 3]))
 	})
 })

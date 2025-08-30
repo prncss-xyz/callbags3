@@ -1,11 +1,12 @@
 import { noop } from '@constellar/core'
-import { fromInit, isoAssert } from '@prncss-xyz/utils'
+import { fromInit, type Init, isoAssert } from '@prncss-xyz/utils'
 
 import type { Modify, NonFunction } from '../../../types'
 import type { Optic, Source } from './core/types'
 
 import { type Either, toEither } from '../../../errors/either'
 import { isFunction } from '../../../guards/primitives'
+import { exhaustive } from '../../../utils'
 import { inArray } from './bx/traversal'
 import {
 	getEmitter,
@@ -16,18 +17,24 @@ import {
 	modToCPS,
 	once,
 } from './core/compose'
+import { eq, type Eq } from './core/focus'
 
 export function view<T, S, F>(o: Optic<T, S, never, F>) {
-	return function (s: S): T {
+	return function (s: S | Source<S, never>): T {
 		let res: T
-		getGetter(o)(
-			s,
-			(t) => (res = t),
-			(e) => {
-				throw new Error(`Unexpected error: ${e}`)
-			},
-		)
+		const resolve = (t: T) => (res = t)
+		if (isFunction(s)) _observe(s, o, resolve, exhaustive)
+		else getGetter(o)(s, resolve, exhaustive)
 		return res!
+	}
+}
+
+export function viewAsync<T, S, F>(o: Optic<T, S, never, F>) {
+	return function (s: S | Source<S, never>) {
+		return new Promise<T>((resolve) => {
+			if (isFunction(s)) _observe(s, o, resolve, exhaustive)
+			else getGetter(o)(s, resolve, exhaustive)
+		})
 	}
 }
 
@@ -81,15 +88,40 @@ function resolveObserver<T, E>(observer: Observer<T, E>, unmount: () => void) {
 	] as const
 }
 
-export function observe<T, S, E, F>(o: Optic<T, S, E, F>) {
-	return function (observer: Observer<T, E>) {
-		return function (source: Source<S, E>) {
-			const { start, unmount } = getEmitter(o)(source)(
-				...resolveObserver(observer, () => unmount!),
-			)
-			start()
-		}
-	}
+function _observe<T, S, E1, E2, F>(
+	source: Source<S, E1>,
+	o: Init<Optic<T, S, E2, F>, [Eq<S>]>,
+	next: (t: T) => void,
+	error: (e: E1 | E2) => void,
+) {
+	const { start, unmount } = getEmitter(fromInit(o, eq()))(source)(
+		next,
+		error,
+		() => unmount,
+	)
+	start()
+}
+
+export function observe<T, S, E1, E2, F>(
+	source: Source<S, E1>,
+	o: Init<Optic<T, S, E2, F>, [Eq<S>]>,
+	observer: Observer<T, E1 | E2>,
+) {
+	const { start, unmount } = getEmitter(fromInit(o, eq()))(source)(
+		...resolveObserver(observer, () => unmount!),
+	)
+	start()
+}
+
+export function process<T, S, F>(
+	source: Source<S, never>,
+	o: Init<Optic<T, S, never, F>, [Eq<S>]>,
+	observer: Observer<T, never>,
+) {
+	const { start, unmount } = getEmitter(fromInit(o, eq()))(source)(
+		...resolveObserver(observer, () => unmount!),
+	)
+	start()
 }
 
 export function review<T, S, E, F>(
