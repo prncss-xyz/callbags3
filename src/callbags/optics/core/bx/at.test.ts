@@ -1,13 +1,13 @@
-import { pipe } from '@constellar/core'
+import { flow } from '@constellar/core'
 
 import { succ } from '../../../../errors/either'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { preview, REMOVE, update } from '../extractors'
 import { at } from './at'
 
 describe('at', () => {
 	type S = number[]
-	const o = focus<S>()(at(1))
+	const o = flow(eq<S>(), at(1))
 	it('view', () => {
 		expect(preview(o)([1, 2, 3])).toEqual(succ.of(2))
 	})
@@ -24,7 +24,7 @@ describe('at', () => {
 
 describe('composed at', () => {
 	type S = number[][]
-	const o = focus<S>()(pipe(at(1), at(2)))
+	const o = flow(eq<S>(), at(1), at(2))
 	it('view', () => {
 		const res = preview(o)([
 			[1, 2, 3],

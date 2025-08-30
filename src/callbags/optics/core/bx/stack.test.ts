@@ -1,5 +1,7 @@
+import { flow } from '@constellar/core'
+
 import { err, succ } from '../../../../errors'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { preview, REMOVE, update } from '../extractors'
 import { stack } from './stack'
 
@@ -7,7 +9,7 @@ describe('foot', () => {
 	type Source = string[]
 	const sourceDefined: Source = ['a', 'b', 'c']
 	const sourceUndefined: Source = []
-	const o = focus<string[]>()(stack())
+	const o = flow(eq<string[]>(), stack())
 	describe('view', () => {
 		it('defined', () => {
 			expect(preview(o)(sourceDefined)).toEqual(succ.of('c'))

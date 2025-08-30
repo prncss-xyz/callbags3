@@ -1,10 +1,12 @@
+import { flow } from '@constellar/core'
+
 import { iso } from '.'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { review, update, view } from '../extractors'
 
 describe('iso', () => {
 	type S = { a: number }
-	const o = focus<S>()(iso({ get: (s) => s.a, set: (a) => ({ a }) }))
+	const o = flow(eq<S>(), iso({ get: (s) => s.a, set: (a) => ({ a }) }))
 	it('view', () => {
 		expect(view(o)({ a: 1 })).toBe(1)
 	})

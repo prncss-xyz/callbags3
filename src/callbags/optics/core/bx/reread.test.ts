@@ -1,9 +1,14 @@
-import { focus } from '../core/focus'
+import { flow } from '@constellar/core'
+
+import { eq } from '../core/eq'
 import { update, view } from '../extractors'
 import { reread } from './reread'
 
 describe('reread', () => {
-	const o = focus<string>()(reread((s) => s.toUpperCase()))
+	const o = flow(
+		eq<string>(),
+		reread((s) => s.toUpperCase()),
+	)
 	it('view', () => {
 		expect(view(o)('foo')).toBe('FOO')
 	})

@@ -1,7 +1,7 @@
-import { pipe } from '@constellar/core'
+import { flow } from '@constellar/core'
 
 import { lens } from '.'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { review, update, view } from '../extractors'
 
 function prop<S, K extends keyof S>(k: K) {
@@ -13,7 +13,7 @@ function prop<S, K extends keyof S>(k: K) {
 
 describe('lens', () => {
 	type S = { a: number; b: string }
-	const o = focus<S>()(prop('a'))
+	const o = flow(eq<S>(), prop('a'))
 	it('view', () => {
 		expect(view(o)({ a: 1, b: 'b' })).toBe(1)
 	})
@@ -27,7 +27,7 @@ describe('lens', () => {
 
 describe('composed lenses', () => {
 	type S = { a: number; b: { c: string } }
-	const o = focus<S>()(pipe(prop('b'), prop('c')))
+	const o = flow(eq<S>(), prop('b'), prop('c'))
 	it('review', () => {
 		expect(() => {
 			// @ts-expect-error view must fail with a lens

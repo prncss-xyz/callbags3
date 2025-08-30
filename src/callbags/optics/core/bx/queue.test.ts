@@ -1,5 +1,7 @@
+import { flow } from '@constellar/core'
+
 import { err, succ } from '../../../../errors'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { preview, REMOVE, update, view } from '../extractors'
 import { prop } from './prop'
 import { queue } from './queue'
@@ -8,7 +10,7 @@ describe('queue', () => {
 	type Source = string[]
 	const sourceDefined: Source = ['a', 'b', 'c']
 	const sourceUndefined: Source = []
-	const o = focus<string[]>()(queue())
+	const o = flow(eq<string[]>(), queue())
 	describe('view', () => {
 		it('defined', () => {
 			expect(preview(o)(sourceDefined)).toEqual(succ.of('a'))
@@ -42,9 +44,9 @@ describe('prop', () => {
 	}
 	const sourceDefined: Source = { a: 'A', b: 'B', c: 'C' }
 	const sourceUndefined: Source = { a: 'A', c: null }
-	const focusA = focus<Source>()(prop('a'))
-	const focusB = focus<Source>()(prop('b'))
-	const focusC = focus<Source>()(prop('c'))
+	const focusA = flow(eq<Source>(), prop('a'))
+	const focusB = flow(eq<Source>(), prop('b'))
+	const focusC = flow(eq<Source>(), prop('c'))
 
 	it('view, preview', () => {
 		// @ts-expect-error focusB is optional

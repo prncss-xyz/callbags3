@@ -1,5 +1,7 @@
+import { flow } from '@constellar/core'
+
 import { err, succ } from '../../../../errors/either'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { preview, REMOVE, update } from '../extractors'
 import { findOne } from './findOne'
 
@@ -15,7 +17,10 @@ describe('findOne', () => {
 		{ bar: 'nomatch' },
 		{ bar: 'xx' },
 	]
-	const o = focus<Source[]>()(findOne((item) => item.bar === 'quux'))
+	const o = flow(
+		eq<Source[]>(),
+		findOne((item) => item.bar === 'quux'),
+	)
 	describe('view', () => {
 		it('defined', () => {
 			expect(preview(o)(sourceDefined)).toEqual(succ.of({ bar: 'quux' }))
@@ -70,7 +75,10 @@ describe('findOne', () => {
 	})
 	test('refine type', () => {
 		type T = number | string
-		const o = focus<T[]>()(findOne((item) => typeof item === 'string'))
+		const o = flow(
+			eq<T[]>(),
+			findOne((item) => typeof item === 'string'),
+		)
 		const source: T[] = []
 		const res = preview(o)(source)
 		// TODO:

@@ -17,7 +17,7 @@ import {
 	modToCPS,
 	once,
 } from './core/compose'
-import { eq, type Eq } from './core/focus'
+import { eq, type Eq } from './core/eq'
 
 export function view<T, S, F>(o: Optic<T, S, never, F>) {
 	return function (s: S | Source<S, never>): T {

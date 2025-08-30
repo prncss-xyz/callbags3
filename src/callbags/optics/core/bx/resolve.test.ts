@@ -1,7 +1,7 @@
-import { pipe } from '@constellar/core'
+import { flow, pipe } from '@constellar/core'
 
 import { succ } from '../../../../errors/either'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { preview, update } from '../extractors'
 import { prop } from './prop'
 import { resolve } from './resolve'
@@ -11,12 +11,11 @@ describe('resolve', () => {
 		current: string
 		items: Partial<Record<string, { name: string }>>
 	}
-	const o = focus<S>()(
-		pipe(
-			prop('current'),
-			resolve((k) => pipe(prop('items'), prop(k))),
-			prop('name'),
-		),
+	const o = flow(
+		eq<S>(),
+		prop('current'),
+		resolve((k) => pipe(prop('items'), prop(k))),
+		prop('name'),
 	)
 	it('view', () => {
 		expect(

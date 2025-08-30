@@ -3,7 +3,7 @@ import { noop } from '@constellar/core'
 import type { _OpticArg, Optic } from '../core/types'
 
 import { _compo, getGetter, getSetter, trush } from '../core/compose'
-import { eq, type Eq } from '../core/focus'
+import { eq, type Eq } from '../core/eq'
 
 export function resolve<K, T, S, E1, F1, T1>(
 	r: (k: K) => (eq: Eq<S>) => Optic<T, S, E1, F1, T1>,

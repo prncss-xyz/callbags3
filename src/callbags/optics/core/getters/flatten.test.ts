@@ -1,7 +1,7 @@
 import { flow } from '@constellar/core'
 
 import { inArray } from '../bx/traversal'
-import { eq } from '../core/focus'
+import { eq } from '../core/eq'
 import { view, viewAsync } from '../extractors'
 import { interval } from '../sources/interval'
 import { range } from '../sources/loops'

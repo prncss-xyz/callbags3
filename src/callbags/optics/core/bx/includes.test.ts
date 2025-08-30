@@ -1,6 +1,6 @@
-import { pipe } from '@constellar/core'
+import { flow } from '@constellar/core'
 
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { update, view } from '../extractors'
 import { includes } from './includes'
 import { rewrite } from './rewrite'
@@ -8,11 +8,10 @@ import { rewrite } from './rewrite'
 describe('includes', () => {
 	const sourceDefined = ['a', 'b', 'c']
 	const sourceUndefined = ['a', 'c']
-	const o = focus<string[]>()(
-		pipe(
-			rewrite((x) => x.sort()),
-			includes('b'),
-		),
+	const o = flow(
+		eq<string[]>(),
+		rewrite((x) => x.sort()),
+		includes('b'),
 	)
 	describe('view', () => {
 		it('defined', () => {

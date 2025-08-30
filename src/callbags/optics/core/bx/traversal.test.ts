@@ -1,7 +1,7 @@
-import { pipe } from '@constellar/core'
+import { flow } from '@constellar/core'
 
 import { succ } from '../../../../errors'
-import { focus } from '../core/focus'
+import { eq } from '../core/eq'
 import { preview, REMOVE, update, view } from '../extractors'
 import { fold } from '../getters/scan'
 import { filter } from './filter'
@@ -9,7 +9,7 @@ import { lens } from './lens'
 import { elems } from './traversal'
 
 describe('elems', () => {
-	const o = focus<number[]>()(elems())
+	const o = flow(eq<number[]>(), elems())
 	it('view', () => {
 		expect(preview(o)([1, 2, 3])).toEqual(succ.of(1))
 	})
@@ -21,11 +21,10 @@ describe('elems', () => {
 	})
 })
 describe('compose with prism', () => {
-	const o = focus<number[]>()(
-		pipe(
-			elems(),
-			filter((x) => x % 2 === 0),
-		),
+	const o = flow(
+		eq<number[]>(),
+		elems(),
+		filter((x) => x % 2 === 0),
 	)
 	it('modify', () => {
 		expect(update(o)((x) => x * 2)([1, 2, 3])).toEqual([1, 4, 3])
@@ -42,7 +41,7 @@ describe('compose with lens', () => {
 			set: (v, s) => ({ ...s, [k]: v }),
 		})
 	}
-	const o = focus<{ a: number }[]>()(pipe(elems(), prop('a')))
+	const o = flow(eq<{ a: number }[]>(), elems(), prop('a'))
 	it('modify', () => {
 		const res = update(o)((x) => x * 2)([{ a: 1 }, { a: 3 }])
 		expect(res).toEqual([{ a: 2 }, { a: 6 }])
@@ -54,7 +53,7 @@ describe('compose with lens', () => {
 	})
 })
 describe('compose with elems', () => {
-	const o = focus<number[][]>()(pipe(elems(), elems()))
+	const o = flow(eq<number[][]>(), elems(), elems())
 	it('modify', () => {
 		expect(
 			update(o)((x) => x * 2)([
@@ -68,18 +67,17 @@ describe('compose with elems', () => {
 	})
 })
 describe('fold', () => {
-	const o = focus<number[]>()(
-		pipe(
-			elems(),
-			filter((x) => x % 2 === 0),
-			fold({
-				fold: (x, y) => x + y,
-				init: 100,
-			}),
-		),
+	const o = flow(
+		eq<number[]>(),
+		elems(),
+		filter((x) => x % 2 === 0),
+		fold({
+			fold: (x, y) => x + y,
+			init: 100,
+		}),
 	)
 	it('view', () => {
-    // @ts-expect-error TODO:
+		// @ts-expect-error TODO:
 		expect(view(o)([1, 2, 3])).toEqual(102)
 	})
 })
