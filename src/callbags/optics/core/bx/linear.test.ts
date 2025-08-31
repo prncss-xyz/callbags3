@@ -1,7 +1,8 @@
 import { flow } from '@constellar/core'
 
 import { eq } from '../core/eq'
-import { update, view } from '../extractors'
+import { update } from '../extractors/update'
+import { view } from '../extractors/view'
 import { linear } from './linear'
 
 describe('linear', () => {

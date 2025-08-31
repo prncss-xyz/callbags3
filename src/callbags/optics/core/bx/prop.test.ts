@@ -2,7 +2,9 @@ import { flow } from '@constellar/core'
 
 import { err, succ } from '../../../../errors'
 import { eq } from '../core/eq'
-import { preview, REMOVE, update, view } from '../extractors'
+import { preview } from '../extractors/preview'
+import { REMOVE, update } from '../extractors/update'
+import { view } from '../extractors/view'
 import { prop } from './prop'
 
 describe('prop', () => {

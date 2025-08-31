@@ -2,7 +2,8 @@ import { flow } from '@constellar/core'
 
 import { lens } from '.'
 import { eq } from '../core/eq'
-import { review, update, view } from '../extractors'
+import { update } from '../extractors/update'
+import { view } from '../extractors/view'
 
 function prop<S, K extends keyof S>(k: K) {
 	return lens<S[K], S>({

@@ -2,7 +2,7 @@ import { flow } from '@constellar/core'
 
 import { elems } from '../bx/traversal'
 import { eq } from '../core/eq'
-import { collect } from '../extractors'
+import { collect } from '../extractors/collect'
 import { take } from './take'
 
 describe('take', () => {

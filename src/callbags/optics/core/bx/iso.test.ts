@@ -2,7 +2,9 @@ import { flow } from '@constellar/core'
 
 import { iso } from '.'
 import { eq } from '../core/eq'
-import { review, update, view } from '../extractors'
+import { review } from '../extractors/review'
+import { update } from '../extractors/update'
+import { view } from '../extractors/view'
 
 describe('iso', () => {
 	type S = { a: number }

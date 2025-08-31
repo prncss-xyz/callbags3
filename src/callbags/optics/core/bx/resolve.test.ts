@@ -2,7 +2,8 @@ import { flow, pipe } from '@constellar/core'
 
 import { succ } from '../../../../errors/either'
 import { eq } from '../core/eq'
-import { preview, update } from '../extractors'
+import { preview } from '../extractors/preview'
+import { update } from '../extractors/update'
 import { prop } from './prop'
 import { resolve } from './resolve'
 

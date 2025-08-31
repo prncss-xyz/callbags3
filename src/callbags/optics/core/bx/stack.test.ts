@@ -2,7 +2,8 @@ import { flow } from '@constellar/core'
 
 import { err, succ } from '../../../../errors'
 import { eq } from '../core/eq'
-import { preview, REMOVE, update } from '../extractors'
+import { preview } from '../extractors/preview'
+import { REMOVE, update } from '../extractors/update'
 import { stack } from './stack'
 
 describe('foot', () => {

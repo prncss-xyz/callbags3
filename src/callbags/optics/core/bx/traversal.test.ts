@@ -2,7 +2,9 @@ import { flow } from '@constellar/core'
 
 import { succ } from '../../../../errors'
 import { eq } from '../core/eq'
-import { preview, REMOVE, update, view } from '../extractors'
+import { preview } from '../extractors/preview'
+import { REMOVE, update } from '../extractors/update'
+import { view } from '../extractors/view'
 import { fold } from '../getters/scan'
 import { filter } from './filter'
 import { lens } from './lens'
@@ -77,7 +79,7 @@ describe('fold', () => {
 		}),
 	)
 	it('view', () => {
-		// @ts-expect-error TODO:
+    // @ts-expect-error TODO:
 		expect(view(o)([1, 2, 3])).toEqual(102)
 	})
 })

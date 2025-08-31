@@ -2,7 +2,8 @@ import { flow } from '@constellar/core'
 
 import { err, succ } from '../../../../errors/either'
 import { eq } from '../core/eq'
-import { preview, REMOVE, update } from '../extractors'
+import { preview } from '../extractors/preview'
+import { REMOVE, update } from '../extractors/update'
 import { findOne } from './findOne'
 
 describe('findOne', () => {

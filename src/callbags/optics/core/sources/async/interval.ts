@@ -1,6 +1,6 @@
 type Handler = ReturnType<typeof setInterval>
 
-import type { Source } from '../core/types'
+import type { Source } from '../../core/types'
 
 export function interval(period: number): Source<number, never> {
 	return function (next) {

@@ -1,11 +1,11 @@
 import { add, fromInit, gt, type Init, lt } from '@prncss-xyz/utils'
 
-import type { Source } from '../core/types'
+import type { Source } from '../../core/types'
 
 export function loop<Value>(
-	cond: (value: Value) => unknown,
-	step: (value: Value) => Value,
 	init: Init<Value, []>,
+	cond: (value: Value) => boolean,
+	step: (value: Value) => Value,
 ): Source<Value, never> {
 	return function (next, _err, complete) {
 		let closed = false
@@ -25,7 +25,7 @@ export function loop<Value>(
 }
 
 export function range(start: number, end: number, step = 1) {
-	return loop<number>(step > 0 ? lt(end) : gt(end), add(step), start)
+	return loop<number>(start, step > 0 ? lt(end) : gt(end), add(step))
 }
 
 export function times(n: number) {

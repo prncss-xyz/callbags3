@@ -4,14 +4,17 @@ import { isNumber } from '@prncss-xyz/utils'
 import { filter } from '.'
 import { type Either, err, succ } from '../../../../errors'
 import { eq } from '../core/eq'
-import { preview, review, update, view } from '../extractors'
+import { preview } from '../extractors/preview'
+import { review } from '../extractors/review'
+import { update } from '../extractors/update'
+import { view } from '../extractors/view'
 
 describe('filter', () => {
 	type S = number
 	const isOdd = (n: number) => n % 2 === 1
 	const o = flow(eq<S>(), filter(isOdd))
 	it('view, preview', () => {
-		// @ts-expect-error view must fail with a prism
+		// @ts-expect-error must fail with a prism
 		view(o)
 		const res = preview(o)(0)
 		expect(res).toEqual(err.of('nothing'))

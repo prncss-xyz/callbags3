@@ -3,6 +3,7 @@ import { noop, pipe } from '@constellar/core'
 import type { Modify } from '../../../../types'
 
 import { emptyError } from '../../../../errors/empty'
+import { once } from '../sources/sync/once'
 import {
 	type _OpticArg,
 	type _SetterArg,
@@ -26,20 +27,6 @@ export const trush = <V>(v: V, cb: (v: V) => void) => cb(v)
 
 export function modToCPS<T>(m: Modify<T>) {
 	return (t: T, next: (t: T) => void) => next(m(t))
-}
-
-export function once<S>(s: S) {
-	return <E>(
-		next: (s: S) => void,
-		_error: (e: E) => void,
-		complete: () => void,
-	) => ({
-		start: () => {
-			next(s)
-			return complete()
-		},
-		unmount: noop,
-	})
 }
 
 function composeEmitter<T, S, U, E1, E2>(
