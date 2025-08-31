@@ -6,39 +6,6 @@ import type { Optic } from '../core/types'
 import { isFunction } from '../../../../guards/primitives'
 import { getModifier, getSetter, isSetter, modToCPS } from '../core/compose'
 
-function put<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
-	isoAssert(isSetter(o))
-	return function (t: T) {
-		return function (s: S): S {
-			let res: S
-			getSetter(o)(t, (s) => (res = s), s)
-			return res!
-		}
-	}
-}
-
-function over<T, S, E, F>(o: Optic<T, S, E, Exclude<F, { getter: true }>>) {
-	isoAssert(isSetter(o))
-	return function (m: Modify<T>) {
-		return function (s: S): S {
-			let res: S
-			getModifier(o)(modToCPS(m), (s) => (res = s), s)
-			return res!
-		}
-	}
-}
-
-function remove<T, S, E, F>(
-	o: Optic<T, S, E, Exclude<F, { getter: true }>, { optional: true }>,
-) {
-	isoAssert('remover' in o)
-	return function (s: S): S {
-		let res: S
-		o.remover(s, (s) => (res = s))
-		return res!
-	}
-}
-
 export const REMOVE = Symbol('REMOVE')
 
 export function update<T, S, E, F>(
@@ -72,12 +39,67 @@ export function update<T, S, E, F>(
 	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
 ) {
 	return function (m: Modify<T> | NonFunction<T>) {
-		if (m === REMOVE) {
-			return remove(o as any)
+		return function (s: S): S {
+			let res: S
+			_update(o, s, m, (r) => (res = r))
+			return res!
 		}
-		if (isFunction(m)) {
-			return over(o)(m)
-		}
-		return put(o)(m)
 	}
+}
+
+export function updateAsync<T, S, E, F>(
+	o: Optic<
+		T,
+		S,
+		E,
+		Exclude<
+			F,
+			{
+				getter: true
+			}
+		>,
+		{ removable: true }
+	>,
+): (m: Modify<T> | NonFunction<T> | typeof REMOVE) => (s: S) => S
+export function updateAsync<T, S, E, F>(
+	o: Optic<
+		T,
+		S,
+		E,
+		Exclude<
+			F,
+			{
+				getter: true
+			}
+		>
+	>,
+): (m: Modify<T> | NonFunction<T>) => (s: S) => S
+export function updateAsync<T, S, E, F>(
+	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
+) {
+	return function (m: Modify<T> | NonFunction<T>) {
+		return function (s: S): Promise<S> {
+			return new Promise<S>((resolve) => {
+				_update(o, s, m, resolve)
+			})
+		}
+	}
+}
+
+function _update<T, S, E, F>(
+	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
+	s: S,
+	t: Modify<T> | T | typeof REMOVE,
+	resolve: (s: S) => void,
+) {
+	isoAssert(isSetter(o))
+	if (t === REMOVE) {
+		o.remover(s, resolve)
+		return
+	}
+	if (isFunction(t)) {
+		getModifier(o)(modToCPS(t), resolve, s)
+		return
+	}
+	getSetter(o)(t, resolve, s)
 }
