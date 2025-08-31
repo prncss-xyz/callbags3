@@ -4,7 +4,7 @@ import type { Modify, NonFunction } from '../../../../types'
 import type { Optic } from '../core/types'
 
 import { isFunction } from '../../../../guards/primitives'
-import { getModifier, getSetter, isSetter, modToCPS } from '../core/compose'
+import { getModifier, getSetter, isSetter } from '../core/compose'
 
 export const REMOVE = Symbol('REMOVE')
 
@@ -86,20 +86,24 @@ export function updateAsync<T, S, E, F>(
 	}
 }
 
+export function modToCPS<T>(m: Modify<T>) {
+	return (t: T, next: (t: T) => void) => next(m(t))
+}
+
 function _update<T, S, E, F>(
 	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
 	s: S,
-	t: Modify<T> | T | typeof REMOVE,
+	m: Modify<T> | T | typeof REMOVE,
 	resolve: (s: S) => void,
 ) {
 	isoAssert(isSetter(o))
-	if (t === REMOVE) {
+	if (m === REMOVE) {
 		o.remover(s, resolve)
 		return
 	}
-	if (isFunction(t)) {
-		getModifier(o)(modToCPS(t), resolve, s)
+	if (isFunction(m)) {
+		getModifier(o)(modToCPS(m), resolve, s)
 		return
 	}
-	getSetter(o)(t, resolve, s)
+	getSetter(o)(m, resolve, s)
 }

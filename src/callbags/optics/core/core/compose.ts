@@ -25,10 +25,6 @@ export const inert = <V, M>(_m: M, next: (v: V) => void, v: V) => next(v)
 
 export const trush = <V>(v: V, cb: (v: V) => void) => cb(v)
 
-export function modToCPS<T>(m: Modify<T>) {
-	return (t: T, next: (t: T) => void) => next(m(t))
-}
-
 function composeEmitter<T, S, U, E1, E2>(
 	e1: Emitter<U, T, E1>,
 	e2: Emitter<T, S, E1>,
