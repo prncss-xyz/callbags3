@@ -8,11 +8,11 @@ import { getModifier, getSetter, isSetter } from '../core/compose'
 
 export const REMOVE = Symbol('REMOVE')
 
-export function update<T, S, E, F>(
+export function update<T, S, EG, EF, F>(
 	o: Optic<
 		T,
 		S,
-		E,
+		EG, EF,
 		Exclude<
 			F,
 			{
@@ -22,11 +22,11 @@ export function update<T, S, E, F>(
 		{ removable: true }
 	>,
 ): (m: Modify<T> | NonFunction<T> | typeof REMOVE) => (s: S) => S
-export function update<T, S, E, F>(
+export function update<T, S, EG, EF, F>(
 	o: Optic<
 		T,
 		S,
-		E,
+		EG, EF,
 		Exclude<
 			F,
 			{
@@ -47,11 +47,11 @@ export function update<T, S, E, F>(
 	}
 }
 
-export function updateAsync<T, S, E, F>(
+export function updateAsync<T, S, EG, EF, F>(
 	o: Optic<
 		T,
 		S,
-		E,
+		EG, EF,
 		Exclude<
 			F,
 			{
@@ -61,11 +61,11 @@ export function updateAsync<T, S, E, F>(
 		{ removable: true }
 	>,
 ): (m: Modify<T> | NonFunction<T> | typeof REMOVE) => (s: S) => S
-export function updateAsync<T, S, E, F>(
+export function updateAsync<T, S, EG, EF, F>(
 	o: Optic<
 		T,
 		S,
-		E,
+		EG, EF,
 		Exclude<
 			F,
 			{
@@ -86,12 +86,12 @@ export function updateAsync<T, S, E, F>(
 	}
 }
 
-export function modToCPS<T>(m: Modify<T>) {
+function modToCPS<T>(m: Modify<T>) {
 	return (t: T, next: (t: T) => void) => next(m(t))
 }
 
-function _update<T, S, E, F>(
-	o: Optic<T, S, E, Exclude<F, { getter: true }>>,
+function _update<T, S, EG, EF, F>(
+	o: Optic<T, S, EG, EF, Exclude<F, { getter: true }>>,
 	s: S,
 	m: Modify<T> | T | typeof REMOVE,
 	resolve: (s: S) => void,

@@ -12,6 +12,7 @@ export function prop<Key extends keyof O, O>(key: Key) {
 		Exclude<O[Key], null | undefined>,
 		O,
 		OptionalValue<O[Key]>,
+		never,
 		{ optional: true },
 		Key extends OptionalKeys<O> ? { removable: true } : {}
 	>({

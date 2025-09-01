@@ -7,7 +7,7 @@ import { inArray } from '../bx/traversal'
 import { getEmitter } from '../core/compose'
 import { once } from '../sources/sync/once'
 
-export function collect<Value, S, E, F>(o: Optic<Value, S, E, F>) {
+export function collect<Value, S, EG, EF, F>(o: Optic<Value, S, EG, EF, F>) {
 	return function (s: S | Source<S, never>) {
 		let res: Value[]
 		_collect(o, (r) => (res = r), s)
@@ -15,7 +15,7 @@ export function collect<Value, S, E, F>(o: Optic<Value, S, E, F>) {
 	}
 }
 
-export function collectAsync<Value, S, E, F>(o: Optic<Value, S, E, F>) {
+export function collectAsync<Value, S, EG, EF, F>(o: Optic<Value, S, EG, EF, F>) {
 	return function (s: S | Source<S, never>) {
 		return new Promise<Value[]>((resolve) => {
 			_collect(o, resolve, s)
@@ -23,8 +23,8 @@ export function collectAsync<Value, S, E, F>(o: Optic<Value, S, E, F>) {
 	}
 }
 
-export function _collect<Value, S, E, F>(
-	o: Optic<Value, S, E, F>,
+export function _collect<Value, S, EG, EF, F>(
+	o: Optic<Value, S, EG, EF, F>,
 	resolve: (values: Value[]) => void,
 	s: S | Source<S, never>,
 ) {

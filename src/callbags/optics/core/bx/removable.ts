@@ -11,13 +11,15 @@ export function removable<Part, Whole, E>({
 	remove: (w: Whole) => Whole
 	set: (p: Part, w: Whole) => Whole
 }) {
-	return _compo<Part, Whole, E, { optional: true }, { removable: true }>({
-		getter: (w, next, err) => {
-			const res = get(w)
-			if (res.type === 'err') return err(res.value)
-			return next(res.value)
+	return _compo<Part, Whole, E, never, { optional: true }, { removable: true }>(
+		{
+			getter: (w, next, err) => {
+				const res = get(w)
+				if (res.type === 'err') return err(res.value)
+				return next(res.value)
+			},
+			remover: (s, next) => next(remove(s)),
+			setter: (p, next, w) => next(set(p, w)),
 		},
-		remover: (s, next) => next(remove(s)),
-		setter: (p, next, w) => next(set(p, w)),
-	})
+	)
 }

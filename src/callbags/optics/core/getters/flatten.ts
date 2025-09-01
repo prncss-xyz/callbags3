@@ -1,4 +1,5 @@
 import type { Source } from '../core/types'
+import type { _OpticArg } from '../core/types'
 
 import { _compo } from '../core/compose'
 import { sequence } from './sequence'

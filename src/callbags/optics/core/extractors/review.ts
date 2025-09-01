@@ -2,8 +2,8 @@ import { isoAssert } from '@prncss-xyz/utils'
 
 import type { Optic } from '../core/types'
 
-export function review<T, S, E, F>(
-	o: Optic<T, S, E, Exclude<F, { optional: true }>>,
+export function review<T, S, EG, EF, F>(
+	o: Optic<T, S, EG, EF, Exclude<F, { optional: true }>>,
 ) {
 	isoAssert('reviewer' in o)
 	return function (t: T): S {
@@ -13,8 +13,8 @@ export function review<T, S, E, F>(
 	}
 }
 
-export function reviewAsync<T, S, E, F>(
-	o: Optic<T, S, E, Exclude<F, { optional: true }>>,
+export function reviewAsync<T, S, EG, EF, F>(
+	o: Optic<T, S, EG, EF, Exclude<F, { optional: true }>>,
 ) {
 	isoAssert('reviewer' in o)
 	return function (t: T) {

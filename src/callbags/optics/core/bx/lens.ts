@@ -15,7 +15,7 @@ export function lens<Part, Whole>({
 	remove?: (w: Whole) => Whole
 	set: (p: Part, w: Whole) => Whole
 }) {
-	return _compo<Part, Whole, never, { optional: true }>({
+	return _compo<Part, Whole, never, never, { optional: true }>({
 		getter: (w, next) => next(get(w)),
 		modifier,
 		remover: remove ? (s, next) => next(remove(s)) : undefined,

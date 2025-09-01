@@ -1,13 +1,11 @@
 import { flow } from '@constellar/core'
 
-import { inArray } from '../bx/traversal'
 import { eq } from '../core/eq'
-import { view, viewAsync } from '../extractors/view'
+import { collect, collectAsync } from '../extractors/collect'
 import { interval } from '../sources/async/interval'
 import { range } from '../sources/sync/loop'
 import { flatten } from './flatten'
 import { map } from './map'
-import { fold } from './scan'
 import { take } from './take'
 
 describe('flatten', () => {
@@ -16,9 +14,8 @@ describe('flatten', () => {
 			eq<number>(),
 			map((i) => range(0, i)),
 			flatten(),
-			fold(inArray()),
 		)
-		const res = view(o)(range(1, 4))
+		const res = collect(o)(range(1, 4))
 		expect(res).toEqual([0, 0, 1, 0, 1, 2])
 	})
 	it('async', async () => {
@@ -27,9 +24,8 @@ describe('flatten', () => {
 			map((i) => interval((i + 1) * 4)),
 			flatten(),
 			take(6),
-			fold(inArray()),
 		)
-		const res = await viewAsync(o)(interval(6))
+		const res = await collectAsync(o)(interval(6))
 		expect(res).toEqual([0, 1, 2, 0, 3, 4])
 	})
 })

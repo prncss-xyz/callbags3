@@ -1,8 +1,6 @@
 import { noop, pipe } from '@constellar/core'
 
-import type { Modify } from '../../../../types'
-
-import { emptyError } from '../../../../errors/empty'
+import { forbidden } from '../../../../utils'
 import { once } from '../sources/sync/once'
 import {
 	type _OpticArg,
@@ -27,7 +25,7 @@ export const trush = <V>(v: V, cb: (v: V) => void) => cb(v)
 
 function composeEmitter<T, S, U, E1, E2>(
 	e1: Emitter<U, T, E1>,
-	e2: Emitter<T, S, E1>,
+	e2: Emitter<T, S, E2>,
 ): Emitter<U, S, E1 | E2> {
 	return pipe(e2, e1)
 }
@@ -64,9 +62,9 @@ function composeModify<T, S, U>(
 }
 
 // TODO: make sure EmptyError is in Multi
-export function getGetter<T, S, E>(o: _OpticArg<T, S, E>) {
+export function getGetter<T, S, EG, EF>(o: _OpticArg<T, S, EG, EF>) {
 	if ('getter' in o) return o.getter
-	return (r: S, next: (t: T) => void, error: (e: E) => void) => {
+	return (r: S, next: (t: T) => void, error: (e: EF | EG) => void) => {
 		let dirty = false
 		const { start, unmount } = o.emitter(once(r))(
 			(t) => {
@@ -74,20 +72,22 @@ export function getGetter<T, S, E>(o: _OpticArg<T, S, E>) {
 				next(t)
 				unmount()
 			},
-			(e: E) => {
+			(e: EF | EG) => {
 				unmount()
 				error(e)
 			},
 			() => {
 				unmount()
-				if (!dirty) error(emptyError as E)
+				if (!dirty) error(o.toEmpty())
 			},
 		)
 		start()
 	}
 }
 
-export function getModifier<T, S, E>(o: _SetterArg<T, S, E>): Modifier<T, S> {
+export function getModifier<T, S, EG, EF>(
+	o: _SetterArg<T, S, EG, EF>,
+): Modifier<T, S> {
 	if (o.modifier) return o.modifier
 	if ('getter' in o) {
 		if ('setter' in o)
@@ -108,66 +108,85 @@ export function getModifier<T, S, E>(o: _SetterArg<T, S, E>): Modifier<T, S> {
 	throw new Error('unreachable')
 }
 
-export function getSetter<T, S, E>(o: _SetterArg<T, S, E>) {
+export function getSetter<T, S, EG, ES>(o: _SetterArg<T, S, EG, ES>) {
 	if ('setter' in o) return o.setter
 	if ('reviewer' in o) return o.reviewer
 	return (t: T, next: (s: S) => void, s: S) =>
 		o.modifier((_t, next) => next(t), next, s as any)
 }
 
-export function getEmitter<T, S, E>(o: _OpticArg<T, S, E>): Emitter<T, S, E> {
+export function getEmitter<T, S, EG, ES>(
+	o: _OpticArg<T, S, EG, ES>,
+): Emitter<T, S, ES> {
 	if ('emitter' in o) return o.emitter
 	return (source) => (next, err, complete) =>
 		source((s) => o.getter(s, next, noop), err, complete)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type Compo<U, T, E1, F1 = {}, LF = {}> = <S, E2, F2>(
-	o2: Optic<T, S, E2> & { [TAGS]: F2 },
-) => Optic<U, S, E1 | E2> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
+export function isSetter<U, T, ES, EG>(
+	o: _OpticArg<U, T, ES, EG>,
+): o is _SetterArg<U, T, ES, EG> {
+	return 'modifier' in o || 'setter' in o || 'reviewer' in o
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export function _compo<U, T, E1, F1 = {}, LF = {}>(
-	o1: _OpticArg<U, T, E1>,
-): <S, E2, F2>(
-	o2: Optic<T, S, E2> & { [TAGS]: F2 },
-) => Optic<U, S, E1 | E2> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
+export type Compo<U, T, E1G, E1F, F1 = {}, LF = {}> = <S, E2G, E2F, F2>(
+	o2: Optic<T, S, E2G, E2F> & { [TAGS]: F2 },
+) => Optic<U, S, E1G | E2G, E1F | E2F> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export function _compo<U, T, E1G, E1F, F1 = {}, LF = {}>(
+	o1: _OpticArg<U, T, E1G, E1F>,
+): <S, E2G, E2F, F2>(
+	o2: Optic<T, S, E2G, E2F> & { [TAGS]: F2 },
+) => Optic<U, S, E1G | E2G, E1F | E2F> & { [LTAGS]: LF } & { [TAGS]: F1 & F2 }
 
 export function _compo(o1: any) {
 	return _compose(o1) as any
 }
 
-export function compose<U, T, E1, F1>(
-	o1: Optic<U, T, E1> & { [TAGS]: F1 },
-): <S, E2, F2>(
-	o2: Optic<T, S, E2> & { [TAGS]: F2 },
-) => Optic<U, S, E1 | E2> & { [TAGS]: F1 & F2 }
-export function compose<U, T, E1>(o1: Optic<U, T, E1>) {
+export function compose<U, T, E1G, E1F, F1>(
+	o1: Optic<U, T, E1G, E1F> & { [TAGS]: F1 },
+): <S, E2G, E2F, F2>(
+	o2: Optic<T, S, E2G, E2F> & { [TAGS]: F2 },
+) => Optic<U, S, E1G | E2G, E1F | E2F> & { [TAGS]: F1 & F2 }
+export function compose<U, T, E1G, E1F>(o1: Optic<U, T, E1G, E1F>) {
 	return _compose(o1) as any
 }
 
-export function isSetter<U, T, E>(
-	o: _OpticArg<U, T, E>,
-): o is _SetterArg<U, T, E> {
-	return 'modifier' in o || 'setter' in o || 'reviewer' in o
-}
-
-function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
-	return function <S, E2>(o2: _OpticArg<T, S, E2>): _OpticArg<U, S, E1 | E2> {
+function _compose<U, T, E1G, E1F>(o1: _OpticArg<U, T, E1G, E1F>) {
+	return function <S, E2G, E2F>(
+		o2: _OpticArg<T, S, E2G, E2F>,
+	): _OpticArg<U, S, E1G | E2G, E1F | E2F> {
 		if ('emitter' in o1 || 'emitter' in o2) {
 			const emitter = composeEmitter(getEmitter(o1), getEmitter(o2))
+			const toEmpty =
+				'toEmpty' in o2
+					? o2.toEmpty
+					: 'toEmpty' in o1
+						? o1.toEmpty
+						: forbidden() // TODO: improve with type guard
 			if (isSetter(o1) && isSetter(o2)) {
 				const m2 = getModifier(o2)
 				return {
 					emitter,
-					modifier: composeModify(getModifier(o1), m2),
+					modifier: composeModify(getModifier(o1), m2) as any,
 					remover:
 						o1.remover === trush
 							? trush
 							: (s: S, next: (s: S) => void) => m2(o1.remover, next, s),
+					toEmpty:
+						'toEmpty' in o2
+							? o2.toEmpty
+							: 'toEmpty' in o1
+								? o1.toEmpty
+								: forbidden(),
 				}
 			}
-			return { emitter }
+			return {
+				emitter,
+				toEmpty,
+			}
 		}
 		if ('reviewer' in o1 && 'reviewer' in o2)
 			return {
@@ -176,6 +195,7 @@ function _compose<U, T, E1>(o1: _OpticArg<U, T, E1>) {
 					o1.modifier || o2.modifier
 						? composeModify(getModifier(o1), getModifier(o2))
 						: undefined,
+				remover: trush,
 				reviewer: (t: U, next: (s: S) => void) =>
 					o1.reviewer(t, (t) => o2.reviewer(t, next)),
 			}

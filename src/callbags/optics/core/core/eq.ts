@@ -2,11 +2,11 @@ import type { Optic } from './types'
 
 import { trush } from './compose'
 
-export type Eq<T, E = never> = Optic<T, T, E>
+export type Eq<T, EF = never> = Optic<T, T, never, EF>
 
-export type Focus<T, S, E, O extends Optic<T, S, E>> =
+export type Focus<T, S, EG, EF, O extends Optic<T, S, EG, EF>> =
 	| ((eq: Eq<S>) => O)
-	| Optic<T, S, E>
+	| Optic<T, S, EG, EF>
 
 export function eq<T, E = never>(): Eq<T, E> {
 	return {

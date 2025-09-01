@@ -6,6 +6,7 @@ export function sequence<Part, Whole, E>(emitter: Emitter<Part, Whole, E>) {
 	return _compo<
 		Part,
 		Whole,
+		'empty',
 		E,
 		{
 			getter: true
@@ -14,5 +15,6 @@ export function sequence<Part, Whole, E>(emitter: Emitter<Part, Whole, E>) {
 		}
 	>({
 		emitter,
+		toEmpty: () => 'empty',
 	})
 }

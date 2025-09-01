@@ -9,7 +9,7 @@ export function optional<Part, Whole, E>({
 	get: (w: Whole) => Either<Part, E>
 	set: (p: Part, w: Whole) => Whole
 }) {
-	return _compo<Part, Whole, E, { optional: true }>({
+	return _compo<Part, Whole, E, never, { optional: true }>({
 		getter: (w, next, err) => {
 			const res = get(w)
 			if (res.type === 'err') return err(res.value)

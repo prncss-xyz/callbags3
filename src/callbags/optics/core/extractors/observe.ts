@@ -30,21 +30,21 @@ function resolveObserver<T, E>(observer: Observer<T, E>, unmount: () => void) {
 	] as const
 }
 
-export function _get<T, S, EO, ES, F>(
-	o: Optic<T, S, EO, F>,
+export function _get<T, S, EG, EF, ES, F>(
+	o: Optic<T, S, EG, EF, F>,
 	s: S | Source<S, ES>,
 	success: (t: T) => void,
-	err: (e: EO | ES) => void,
+	err: (e: EF | EG | ES) => void,
 ) {
 	if (isFunction(s)) _first(s, o, success, err)
 	else getGetter(o)(s, success, err)
 }
 
-export function _first<T, S, E1, E2, F>(
-	source: Source<S, E1>,
-	o: Init<Optic<T, S, E2, F>, [Eq<S>]>,
+export function _first<T, S, ES, EG, EF, F>(
+	source: Source<S, ES>,
+	o: Init<Optic<T, S, EG, EF, F>, [Eq<S>]>,
 	success: (t: T) => void,
-	error: (e: E1 | E2) => void,
+	error: (e: EF | EG | ES) => void,
 ) {
 	const { start, unmount } = getEmitter(fromInit(o, eq()))(source)(
 		(t) => {
@@ -57,11 +57,11 @@ export function _first<T, S, E1, E2, F>(
 	start()
 }
 
-export function _observe<T, S, E1, E2, F>(
-	source: Source<S, E1>,
-	o: Init<Optic<T, S, E2, F>, [Eq<S>]>,
+export function _observe<T, S, ES, EG, EF, F>(
+	source: Source<S, ES>,
+	o: Init<Optic<T, S, EG, EF, F>, [Eq<S>]>,
 	next: (t: T) => void,
-	error: (e: E1 | E2) => void,
+	error: (e: EF | EG | ES) => void,
 ) {
 	const { start, unmount } = getEmitter(fromInit(o, eq()))(source)(
 		next,
@@ -71,10 +71,10 @@ export function _observe<T, S, E1, E2, F>(
 	start()
 }
 
-export function observe<T, S, E1, E2, F>(
-	source: Source<S, E1>,
-	o: Init<Optic<T, S, E2, F>, [Eq<S>]>,
-	observer: Observer<T, E1 | E2>,
+export function observe<T, S, ES, EG, EF, F>(
+	source: Source<S, ES>,
+	o: Init<Optic<T, S, EG, EF, F>, [Eq<S>]>,
+	observer: Observer<T, EF | EG | ES>,
 ) {
 	const { start, unmount } = getEmitter(fromInit(o, eq()))(source)(
 		...resolveObserver(observer, () => unmount!),

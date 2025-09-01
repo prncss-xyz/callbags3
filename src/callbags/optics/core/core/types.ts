@@ -8,13 +8,11 @@ export type Source<T, E> = (
 	error: (e: E) => void,
 	complete: () => void,
 ) => {
-  start: () => void;
-  unmount: () => void;
+	start: () => void
+	unmount: () => void
 }
 
-export type Emitter<T, S, E1> = <E2>(
-	source: Source<S, E2>,
-) => Source<T, E1 | E2>
+export type Emitter<T, S, E> = <E2>(source: Source<S, E2>) => Source<T, E | E2>
 
 export type Getter<T, S, E> = (
 	s: S,
@@ -32,38 +30,40 @@ type OpticCore<S> = {
 	remover: (s: S, next: (s: S) => void) => void
 }
 
-export type Traversable<T, S, E> = OpticCore<S> & {
-	emitter: Emitter<T, S, E>
+export type Traversable<T, S, EG, EF> = OpticCore<S> & {
+	emitter: Emitter<T, S, EF>
 	modifier: Modifier<T, S>
+	toEmpty: () => EG
 }
 
-export type Prism<T, S, E> = OpticCore<S> & {
-	getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
+export type Prism<T, S, EG, EF> = OpticCore<S> & {
+	getter: Getter<T, S, EF | EG>
 	modifier?: Modifier<T, S>
 	reviewer: (t: T, next: (s: S) => void, s: S | void) => void
 }
 
-export type Optional<T, S, E> = OpticCore<S> & {
-	getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
+export type Optional<T, S, EG, EF> = OpticCore<S> & {
+	getter: Getter<T, S, EF | EG>
 	modifier?: Modifier<T, S>
 	setter: (t: T, next: (s: S) => void, s: S) => void
 }
 
-export type _SetterArg<T, S, E> =
-	| Optional<T, S, E>
-	| Prism<T, S, E>
-	| Traversable<T, S, E>
+export type _SetterArg<T, S, EG, EF> =
+	| Optional<T, S, EF, EG>
+	| Prism<T, S, EF, EG>
+	| Traversable<T, S, EG, EF>
 
-export type _OpticArg<T, S, E> =
-	| _SetterArg<T, S, E>
+export type _OpticArg<T, S, EG, EF> =
+	| _SetterArg<T, S, EG, EF>
 	| {
-			emitter: Emitter<T, S, E>
+			emitter: Emitter<T, S, EF>
+			toEmpty: () => EG
 	  }
 	| {
-			getter: (s: S, next: (t: T) => void, error: (e: E) => void) => void
+			getter: Getter<T, S, EF | EG>
 	  }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type Optic<T, S, E, F = {}, LF = {}> = _OpticArg<T, S, E> & {
+export type Optic<T, S, EG, EF, F = {}, LF = {}> = _OpticArg<T, S, EG, EF> & {
 	[LTAGS]: LF
 } & { [TAGS]: F }

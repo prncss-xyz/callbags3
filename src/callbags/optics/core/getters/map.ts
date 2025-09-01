@@ -5,6 +5,7 @@ export function map<A, B>(fn: (w: A) => B) {
 		B,
 		A,
 		never,
+		never,
 		{
 			getter: true
 			optional: true

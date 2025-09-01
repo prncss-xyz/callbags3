@@ -12,6 +12,7 @@ export function iso<There, Here>({
 	return _compo<
 		There,
 		Here,
+    never,
 		never,
 		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 		{},

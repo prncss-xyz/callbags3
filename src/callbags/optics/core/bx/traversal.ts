@@ -48,6 +48,7 @@ export function traversal<Acc, Value, Res>({
 		Value,
 		Res,
 		'empty',
+		never,
 		{
 			prims: true
 			traversable: true
@@ -79,6 +80,7 @@ export function traversal<Acc, Value, Res>({
 		},
 		modifier,
 		remover: (_s, next) => next((result ?? (id as any))(fromInit(init))),
+		toEmpty: () => 'empty',
 	})
 }
 

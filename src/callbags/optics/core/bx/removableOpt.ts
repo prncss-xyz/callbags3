@@ -2,23 +2,30 @@ import type { Modifier } from '../core/types'
 
 import { _compo } from '../core/compose'
 
-export function removableOpt<Part, Whole, E = 'empty'>({
+export function removableOpt<Part, Whole, EG = 'empty'>({
 	error,
 	get,
 	modifier,
 	remove,
 	set,
 }: {
-	error?: E
+	error?: EG
 	get: (w: Whole) => Part | undefined
 	modifier?: Modifier<Part, Whole>
 	remove: (w: Whole) => Whole
 	set: (p: Part, w: Whole) => Whole
 }) {
-	return _compo<Part, Whole, E, { optional: true }, { removable: true }>({
+	return _compo<
+		Part,
+		Whole,
+		EG,
+		never,
+		{ optional: true },
+		{ removable: true }
+	>({
 		getter: (w, next, err) => {
 			const res = get(w)
-			if (res === undefined) return err(error ?? ('empty' as E))
+			if (res === undefined) return err(error ?? ('empty' as EG))
 			return next(res)
 		},
 		modifier,
